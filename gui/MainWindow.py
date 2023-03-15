@@ -1,8 +1,10 @@
-from PyQt5.QtCore import QUrl, Qt
+from PyQt5.QtCore import QUrl, Qt, QEvent
 from PyQt5.QtWidgets import QMainWindow, QTabWidget, QVBoxLayout, QWidget, QHBoxLayout, QLineEdit, QPushButton
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 HOME_PAGE = "https://www.google.com"
+URL_SEARCH_ENGINE = "https://www.google.com/search?q="
+PLACEHOLDER_TEXT = "Search with Google or enter a URL"
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -42,12 +44,17 @@ class MainWindow(QMainWindow):
         self.url_field = QLineEdit(self.navigation_bar)
         self.url_field.returnPressed.connect(self.load_url)
         self.navigation_bar_layout.addWidget(self.url_field)
+        self.url_field.setPlaceholderText(PLACEHOLDER_TEXT)
+        self.url_field.setClearButtonEnabled(True)
 
         self.browser_tab_layout.addWidget(self.navigation_bar, 0, Qt.AlignTop)
 
-        self.browser.load(QUrl(HOME_PAGE))
+        self.load_homepage()
         self.browser_tab_layout.addWidget(self.browser, 1)
         self.tabs.addTab(self.browser_tab, "Browser")
+
+        # Connect the urlChanged signal to update the URL field
+        self.browser.urlChanged.connect(self.update_url_field)
 
         # Create a tab for the processes
         self.processes_tab = QWidget(self.tabs)
@@ -70,11 +77,18 @@ class MainWindow(QMainWindow):
 
     def load_url(self):
         url = self.url_field.text()
-        if url.startswith("http://") or url.startswith("https://"):
+        if " " in url or "." not in url:
+            # If the URL contains spaces or doesn't contain a dot, search for it
+            search_query = URL_SEARCH_ENGINE + url.replace(" ", "+")
+            self.browser.load(QUrl(search_query))
+            self.url_field.setText(search_query)
+        elif url.startswith("http://") or url.startswith("https://"):
             self.browser.load(QUrl(url))
+            self.url_field.setText(url)
         else:
-            self.browser.load(QUrl("http://" + url))
-        self.url_field.setText(url)
+            url = "https://" + url
+            self.browser.load(QUrl(url))
+            self.url_field.setText(url)
 
     def tab_changed(self, index):
         if index == 0:
@@ -82,3 +96,6 @@ class MainWindow(QMainWindow):
             self.browser = QWebEngineView(self.browser_tab)
             self.browser.load(QUrl(HOME_PAGE))
             self.browser_tab_layout.addWidget(self.browser, 1)
+
+    def update_url_field(self, url):
+        self.url_field.setText(url.toString())
