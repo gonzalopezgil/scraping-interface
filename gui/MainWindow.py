@@ -1,6 +1,8 @@
-from PyQt5.QtCore import QUrl, Qt, QEvent
-from PyQt5.QtWidgets import QMainWindow, QTabWidget, QVBoxLayout, QWidget, QHBoxLayout, QLineEdit, QPushButton
+from PyQt5.QtCore import QUrl, Qt
+from PyQt5.QtWidgets import QMainWindow, QTabWidget, QVBoxLayout, QWidget, QHBoxLayout, QLineEdit, QPushButton, QLabel
 from PyQt5.QtWebEngineWidgets import QWebEngineView
+from gui.ProcessesTab import ProcessesTab
+from gui.SettingsTab import SettingsTab
 
 HOME_PAGE = "https://www.google.com"
 URL_SEARCH_ENGINE = "https://www.google.com/search?q="
@@ -11,9 +13,6 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Scraping Interface")
         self.resize(1800, 1000)
-
-        # Initialize the stored URL attribute
-        self.stored_url = ""
 
         # Create a QTabWidget to hold the tabs
         self.tabs = QTabWidget(self)
@@ -58,23 +57,37 @@ class MainWindow(QMainWindow):
         self.browser_tab_layout.addWidget(self.browser, 1)
         self.tabs.addTab(self.browser_tab, "Browser")
 
-        # Create a tab for the processes
-        self.processes_tab = QWidget(self.tabs)
-        self.processes_tab_layout = QVBoxLayout(self.processes_tab)
-        self.processes_tab_layout.addWidget(QWidget(self.processes_tab))
-        self.tabs.addTab(self.processes_tab, "Processes")
+        # Create the tabs
+        self.processes_tab = ProcessesTab(self)
+        self.settings_tab = SettingsTab(self)
 
-        # Create a tab for the settings
-        self.settings_tab = QWidget(self.tabs)
-        self.settings_tab_layout = QVBoxLayout(self.settings_tab)
-        self.settings_tab_layout.addWidget(QWidget(self.settings_tab))
+        # Add the tabs to the tab widget
+        self.tabs.addTab(self.processes_tab, "Processes")
         self.tabs.addTab(self.settings_tab, "Settings")
+
 
         # Connect the "Browser" tab to open the Python browser
         self.tabs.currentChanged.connect(self.tab_changed)
 
         # Store the current URL when switching away from the "Browser" tab
         self.tabs.tabBarClicked.connect(self.store_current_url)
+
+        # Create a widget for scraping
+        self.scrape_widget = QWidget(self.browser_tab)
+        self.scrape_widget_layout = QVBoxLayout(self.scrape_widget)
+        self.scrape_widget.hide()
+
+        # Create a button to toggle the scrape widget
+        self.scrape_button = QPushButton("Scrape", self.navigation_bar)
+        self.scrape_button.clicked.connect(self.toggle_scrape_widget)
+        self.navigation_bar_layout.addWidget(self.scrape_button, 0, Qt.AlignRight)
+
+        # Add a placeholder label to the scrape widget
+        self.scrape_label = QLabel("Scrape Widget", self.scrape_widget)
+        self.scrape_widget_layout.addWidget(self.scrape_label)
+
+        # Add the scrape widget at the bottom of the browser
+        self.browser_tab_layout.addWidget(self.scrape_widget, 0)
 
     def load_homepage(self):
         self.browser.load(QUrl(HOME_PAGE))
@@ -103,12 +116,16 @@ class MainWindow(QMainWindow):
 
     def tab_changed(self, index):
         if index == 0 and not self.browser.url().isEmpty():
-            self.browser_tab_layout.removeWidget(self.browser)
-            self.browser = QWebEngineView(self.browser_tab)
-            self.browser.load(QUrl(self.stored_url))
-            self.browser_tab_layout.addWidget(self.browser, 1)
+            #self.browser_tab_layout.removeWidget(self.browser)
+            #self.browser = QWebEngineView(self.browser_tab)
+            #self.browser.load(QUrl(self.stored_url))
+            #self.browser_tab_layout.addWidget(self.browser, 1)
             # Connect the urlChanged signal to update the URL field
-            self.browser.urlChanged.connect(self.update_url_field)
+            #self.browser.urlChanged.connect(self.update_url_field)
+            pass
 
     def update_url_field(self, url):
         self.url_field.setText(url.toString())
+
+    def toggle_scrape_widget(self):
+        self.scrape_widget.setVisible(not self.scrape_widget.isVisible())
