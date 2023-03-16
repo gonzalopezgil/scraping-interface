@@ -12,6 +12,9 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Scraping Interface")
         self.resize(1800, 1000)
 
+        # Initialize the stored URL attribute
+        self.stored_url = ""
+
         # Create a QTabWidget to hold the tabs
         self.tabs = QTabWidget(self)
         self.setCentralWidget(self.tabs)
@@ -21,6 +24,8 @@ class MainWindow(QMainWindow):
         self.browser_tab_layout = QVBoxLayout(self.browser_tab)
         # Create a browser window
         self.browser = QWebEngineView(self.browser_tab)
+        # Connect the urlChanged signal to update the URL field
+        self.browser.urlChanged.connect(self.update_url_field)
 
         # Create a URL bar with navigation buttons
         self.navigation_bar = QWidget(self.browser_tab)
@@ -53,9 +58,6 @@ class MainWindow(QMainWindow):
         self.browser_tab_layout.addWidget(self.browser, 1)
         self.tabs.addTab(self.browser_tab, "Browser")
 
-        # Connect the urlChanged signal to update the URL field
-        self.browser.urlChanged.connect(self.update_url_field)
-
         # Create a tab for the processes
         self.processes_tab = QWidget(self.tabs)
         self.processes_tab_layout = QVBoxLayout(self.processes_tab)
@@ -70,6 +72,9 @@ class MainWindow(QMainWindow):
 
         # Connect the "Browser" tab to open the Python browser
         self.tabs.currentChanged.connect(self.tab_changed)
+
+        # Store the current URL when switching away from the "Browser" tab
+        self.tabs.tabBarClicked.connect(self.store_current_url)
 
     def load_homepage(self):
         self.browser.load(QUrl(HOME_PAGE))
@@ -90,11 +95,17 @@ class MainWindow(QMainWindow):
             self.browser.load(QUrl(url))
             self.url_field.setText(url)
 
+    def store_current_url(self, index):
+        # Check if the clicked tab is not the "Browser" tab
+        if index != self.tabs.indexOf(self.browser_tab):
+            # Store the current URL of the browser
+            self.stored_url = self.browser.url().toString()
+
     def tab_changed(self, index):
-        if index == 0:
+        if index == 0 and not self.browser.url().isEmpty():
             self.browser_tab_layout.removeWidget(self.browser)
             self.browser = QWebEngineView(self.browser_tab)
-            self.browser.load(QUrl(HOME_PAGE))
+            self.browser.load(QUrl(self.stored_url))
             self.browser_tab_layout.addWidget(self.browser, 1)
 
     def update_url_field(self, url):
