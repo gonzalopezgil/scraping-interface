@@ -47,9 +47,6 @@ class BrowserTab(QWidget):
         self.load_homepage()
         self.browser_tab_layout.addWidget(self.browser, 1)
 
-        # Connect the "Browser" tab to open the Python browser
-        #self.tabs.currentChanged.connect(self.tab_changed)
-
         # Create a widget for scraping
         self.scrape_widget = QWidget(self)
         self.scrape_widget_layout = QVBoxLayout(self.scrape_widget)
@@ -69,22 +66,15 @@ class BrowserTab(QWidget):
 
     def load_homepage(self):
         self.browser.load(QUrl(HOME_PAGE))
-        self.url_field.setText(HOME_PAGE)
 
     def load_url(self):
         url = self.url_field.text()
         if " " in url or "." not in url:
             # If the URL contains spaces or doesn't contain a dot, search for it
-            search_query = URL_SEARCH_ENGINE + url.replace(" ", "+")
-            self.browser.load(QUrl(search_query))
-            self.url_field.setText(search_query)
-        elif url.startswith("http://") or url.startswith("https://"):
-            self.browser.load(QUrl(url))
-            self.url_field.setText(url)
-        else:
+            url = URL_SEARCH_ENGINE + url.replace(" ", "+")
+        elif not url.startswith("http://") and not url.startswith("https://"):
             url = "https://" + url
-            self.browser.load(QUrl(url))
-            self.url_field.setText(url)
+        self.browser.load(QUrl(url))
 
     def update_url_field(self, url):
         self.url_field.setText(url.toString())
