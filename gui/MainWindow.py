@@ -107,6 +107,8 @@ class MainWindow(QMainWindow):
             self.browser = QWebEngineView(self.browser_tab)
             self.browser.load(QUrl(self.stored_url))
             self.browser_tab_layout.addWidget(self.browser, 1)
+            # Connect the urlChanged signal to update the URL field
+            self.browser.urlChanged.connect(self.update_url_field)
 
     def update_url_field(self, url):
         self.url_field.setText(url.toString())
