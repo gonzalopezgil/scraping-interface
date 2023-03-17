@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtCore import QTimer
 
 HOME_PAGE = "https://www.google.com"
 URL_SEARCH_ENGINE = "https://www.google.com/search?q="
@@ -64,6 +65,9 @@ class BrowserTab(QWidget):
         # Add the scrape widget at the bottom of the browser
         self.browser_tab_layout.addWidget(self.scrape_widget, 0)
 
+        # Create a QTimer to check for new links every second
+        self.timer = QTimer(self)
+
     def load_homepage(self):
         self.browser.load(QUrl(HOME_PAGE))
 
@@ -80,4 +84,37 @@ class BrowserTab(QWidget):
         self.url_field.setText(url.toString())
 
     def toggle_scrape_widget(self):
+        # Get the page
+        page = self.browser.page()
+
+        # Toggle the visibility of the scrape widget
         self.scrape_widget.setVisible(not self.scrape_widget.isVisible())
+
+        # Disable links if the scrape widget is visible
+        if self.scrape_widget.isVisible():
+            self.timer.singleShot(100, self.disable_links)
+
+        # Enable links if the scrape widget is not visible
+        else:
+            self.timer.stop()
+            enable_links_js = """
+                var links = document.getElementsByTagName("a");
+                for (var i = 0; i < links.length; i++) {
+                    links[i].removeEventListener("click", disableLink);
+                }
+            """
+            page.runJavaScript(enable_links_js)
+
+    # Create a loop that continuously disables all links in the page
+    def disable_links(self):
+        disable_links_js = """
+                var links = document.getElementsByTagName("a");
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener("click", disableLink);
+                }
+
+                function disableLink(event) {
+                    event.preventDefault();
+                }
+            """
+        self.browser.page().runJavaScript(disable_links_js)

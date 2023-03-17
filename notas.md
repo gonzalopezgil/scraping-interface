@@ -18,4 +18,8 @@ Primero, instalar qt5 con: brew install qt5
 
 pip install PyQt5
 
+## Links
 
+Interceptar carga de recursos en QtWebEngine (PyQt5): https://recursospython.com/guias-y-manuales/interceptar-recursos-qt-webengine/
+Browser based in: https://www.chromium.org/chromium-projects/
+PyQt5 documentation: https://www.riverbankcomputing.com/static/Docs/PyQt5/index.html
