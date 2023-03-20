@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer
@@ -59,9 +59,25 @@ class BrowserTab(QWidget):
         self.scrape_button.clicked.connect(self.toggle_scrape_widget)
         self.navigation_bar_layout.addWidget(self.scrape_button, 0, Qt.AlignRight)
 
-        # Add a placeholder label to the scrape widget
-        self.scrape_label = QLabel("Scrape Widget", self.scrape_widget)
-        self.scrape_widget_layout.addWidget(self.scrape_label)
+        # Create a scroll area to hold the table widget
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scrape_widget_layout.addWidget(self.scroll_area)
+
+        # Create a table widget to show scraped data
+        self.table_widget = QTableWidget()
+        self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.table_widget.setColumnCount(10)
+        self.table_widget.setRowCount(10)
+        self.table_widget.horizontalHeader().setStretchLastSection(True)
+
+        # Set the table widget as the scroll area's widget
+        self.scroll_area.setWidget(self.table_widget)
+
+        # Allow users to edit column headers
+        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table_widget.horizontalHeader().setSectionsMovable(True)
+        self.table_widget.horizontalHeader().sectionDoubleClicked.connect(self.change_column_header) 
 
         # Add the scrape widget at the bottom of the browser
         self.browser_tab_layout.addWidget(self.scrape_widget, 0)
@@ -83,6 +99,7 @@ class BrowserTab(QWidget):
 
     def update_url_field(self, url):
         self.url_field.setText(url.toString())
+        self.scrape_widget.setVisible(False)
 
     def toggle_scrape_widget(self):
         # Get the page
@@ -93,8 +110,8 @@ class BrowserTab(QWidget):
 
         # Disable links if the scrape widget is visible
         if self.scrape_widget.isVisible():
+            self.table_widget.clear()
             self.timer.singleShot(100, self.disable_links)
-
         # Enable links if the scrape widget is not visible
         else:
             self.timer.stop()
@@ -103,3 +120,10 @@ class BrowserTab(QWidget):
     # Create a loop that continuously disables all links in the page
     def disable_links(self):
         self.browser.page().runJavaScript(jss.DISABLE_LINKS_JS)
+
+    def change_column_header(self, index):
+        current_header = self.table_widget.horizontalHeaderItem(index)
+        new_header_text, ok = QInputDialog.getText(self, "Edit Column Header", "Enter new column header text:", QLineEdit.Normal, current_header.text() if current_header else "")
+        if ok and new_header_text:
+            new_header = QTableWidgetItem(new_header_text)
+            self.table_widget.setHorizontalHeaderItem(index, new_header)
