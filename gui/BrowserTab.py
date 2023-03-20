@@ -100,6 +100,7 @@ class BrowserTab(QWidget):
     def update_url_field(self, url):
         self.url_field.setText(url.toString())
         self.scrape_widget.setVisible(False)
+        self.browser.page().runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
 
     def toggle_scrape_widget(self):
         # Get the page
@@ -112,10 +113,12 @@ class BrowserTab(QWidget):
         if self.scrape_widget.isVisible():
             self.table_widget.clear()
             self.timer.singleShot(100, self.disable_links)
+            page.runJavaScript(jss.HIGHLIGHT_TEXT_JS)
         # Enable links if the scrape widget is not visible
         else:
             self.timer.stop()
             page.runJavaScript(jss.ENABLE_LINKS_JS)
+            page.runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
 
     # Create a loop that continuously disables all links in the page
     def disable_links(self):
