@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushB
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer
+import gui.JavaScriptStrings as jss
 
 HOME_PAGE = "https://www.google.com"
 URL_SEARCH_ENGINE = "https://www.google.com/search?q="
@@ -97,24 +98,8 @@ class BrowserTab(QWidget):
         # Enable links if the scrape widget is not visible
         else:
             self.timer.stop()
-            enable_links_js = """
-                var links = document.getElementsByTagName("a");
-                for (var i = 0; i < links.length; i++) {
-                    links[i].removeEventListener("click", disableLink);
-                }
-            """
-            page.runJavaScript(enable_links_js)
+            page.runJavaScript(jss.ENABLE_LINKS_JS)
 
     # Create a loop that continuously disables all links in the page
     def disable_links(self):
-        disable_links_js = """
-                var links = document.getElementsByTagName("a");
-                for (var i = 0; i < links.length; i++) {
-                    links[i].addEventListener("click", disableLink);
-                }
-
-                function disableLink(event) {
-                    event.preventDefault();
-                }
-            """
-        self.browser.page().runJavaScript(disable_links_js)
+        self.browser.page().runJavaScript(jss.DISABLE_LINKS_JS)
