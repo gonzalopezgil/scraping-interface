@@ -1,18 +1,25 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, pyqtSignal
 import gui.JavaScriptStrings as jss
+import pyperclip
 
 HOME_PAGE = "https://www.google.com"
 URL_SEARCH_ENGINE = "https://www.google.com/search?q="
 PLACEHOLDER_TEXT = "Search with Google or enter a URL"
+COLUMN_COUNT = 10
 
 class BrowserTab(QWidget):
+
     def __init__(self, parent=None):
+
         super().__init__(parent)
         self.browser_tab_layout = QVBoxLayout(self)
         self.browser_tab_layout.addWidget(QWidget(self))
+
+        self.clicked_text = None
+        self.last_column = -1
 
         # Create a browser window
         self.browser = QWebEngineView(self)
@@ -67,8 +74,8 @@ class BrowserTab(QWidget):
         # Create a table widget to show scraped data
         self.table_widget = QTableWidget()
         self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.table_widget.setColumnCount(10)
-        self.table_widget.setRowCount(10)
+        self.table_widget.setColumnCount(COLUMN_COUNT)
+        self.table_widget.setRowCount(1)
         self.table_widget.horizontalHeader().setStretchLastSection(True)
 
         # Set the table widget as the scroll area's widget
@@ -84,6 +91,23 @@ class BrowserTab(QWidget):
 
         # Create a QTimer to check for new links every second
         self.timer = QTimer(self)
+
+        self.browser.page().selectionChanged.connect(self.on_clicked_text)
+
+    def on_clicked_text(self):
+        if not self.clicked_text:
+            self.clicked_text = " "
+            pyperclip.copy(" ")
+        else:
+            text = pyperclip.paste()
+            if self.clicked_text != text:
+                self.clicked_text = text
+                self.last_column += 1
+                #Add text to the row
+                if self.last_column >= COLUMN_COUNT:
+                    self.table_widget.insertColumn(self.last_column)
+                self.table_widget.setItem(0, self.last_column, QTableWidgetItem(text))
+
 
     def load_homepage(self):
         self.browser.load(QUrl(HOME_PAGE))
@@ -111,6 +135,8 @@ class BrowserTab(QWidget):
 
         # Disable links if the scrape widget is visible
         if self.scrape_widget.isVisible():
+            self.clicked_text = None
+            self.last_column = -1
             self.table_widget.clear()
             self.timer.singleShot(100, self.disable_links)
             page.runJavaScript(jss.HIGHLIGHT_TEXT_JS)
