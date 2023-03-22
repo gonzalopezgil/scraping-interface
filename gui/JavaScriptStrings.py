@@ -53,7 +53,37 @@ DISABLE_LINKS_JS = """
             square.style.height = rect.height + 'px';
             square.style.border = '2px solid red';
             document.body.appendChild(square);
+
+            // Get the XPath of the clicked element
+                var xpathResult = document.evaluate(
+                'ancestor-or-self::*',
+                event.target,
+                null,
+                XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+                null
+            );
+            var xpath = '';
+            for (var i = 0; i < xpathResult.snapshotLength; i++) {
+                var element = xpathResult.snapshotItem(i);
+                var tagName = element.tagName.toLowerCase();
+                var index = getElementIndex(element);
+                xpath += '/' + tagName + '[' + index + ']';
+            }
+            console.log(xpath);
         }
+    }
+
+    // Helper function to get the index of an element among its siblings
+    function getElementIndex(element) {
+        var index = 1;
+        var sibling = element.previousSibling;
+        while (sibling) {
+            if (sibling.nodeType == 1 && sibling.tagName == element.tagName) {
+                index++;
+            }
+            sibling = sibling.previousSibling;
+        }
+        return index;
     }
 """
 

@@ -4,6 +4,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSignal
 import gui.JavaScriptStrings as jss
 import pyperclip
+from gui.WebEnginePage import WebEnginePage
 
 HOME_PAGE = "https://www.google.com"
 URL_SEARCH_ENGINE = "https://www.google.com/search?q="
@@ -23,6 +24,8 @@ class BrowserTab(QWidget):
 
         # Create a browser window
         self.browser = QWebEngineView(self)
+        page = WebEnginePage(self.browser)
+        self.browser.setPage(page)
         # Connect the urlChanged signal to update the URL field
         self.browser.urlChanged.connect(self.update_url_field)
 
