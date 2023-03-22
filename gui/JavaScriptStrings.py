@@ -33,13 +33,29 @@ DISABLE_LINKS_JS = """
 
             var style = document.createElement('style');
             document.head.appendChild(style);
+
             var range = document.createRange();
             range.selectNodeContents(document.body);
             var selection = window.getSelection();
             selection.removeAllRanges();
             selection.addRange(range);
+
+            var rangeText = document.createRange();
+            rangeText.selectNodeContents(event.target);
+
+            // create a new element and position it around the selected text
+            var rect = rangeText.getBoundingClientRect();
+            var square = document.createElement('div');
+            square.style.position = 'absolute';
+            square.style.left = rect.left + 'px';
+            square.style.top = rect.top + 'px';
+            square.style.width = rect.width + 'px';
+            square.style.height = rect.height + 'px';
+            square.style.border = '2px solid red';
+            document.body.appendChild(square);
         }
     }
+
 """
 
 
