@@ -1,8 +1,14 @@
 ENABLE_LINKS_JS = """
-        var links = document.getElementsByTagName("a");
+    var links = document.getElementsByTagName("a");
     for (var i = 0; i < links.length; i++) {
         links[i].removeEventListener("click", disableLink);
     }
+
+    // Remove all the squares created
+    var squares = document.querySelectorAll('div[style*="2px solid red"]');
+    squares.forEach(function(square) {
+        square.parentNode.removeChild(square);
+    });
 """
 
 # The last part is from HIGHLIGHT_TEXT_JS
