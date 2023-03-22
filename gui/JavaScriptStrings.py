@@ -47,17 +47,15 @@ DISABLE_LINKS_JS = """
             var rect = rangeText.getBoundingClientRect();
             var square = document.createElement('div');
             square.style.position = 'absolute';
-            square.style.left = rect.left + 'px';
-            square.style.top = rect.top + 'px';
+            square.style.left = rect.left + window.pageXOffset + 'px'; // adjust for page scroll
+            square.style.top = rect.top + window.pageYOffset + 'px'; // adjust for page scroll
             square.style.width = rect.width + 'px';
             square.style.height = rect.height + 'px';
             square.style.border = '2px solid red';
             document.body.appendChild(square);
         }
     }
-
 """
-
 
 HIGHLIGHT_TEXT_JS = """
     var style = document.createElement('style');
