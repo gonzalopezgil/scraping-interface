@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QFileDialog
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer
+import csv
 import gui.JavaScriptStrings as jss
 import pyperclip
 from gui.WebEnginePage import WebEnginePage
@@ -49,6 +50,11 @@ class BrowserTab(QWidget):
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_widget.horizontalHeader().setSectionsMovable(True)
         self.table_widget.horizontalHeader().sectionDoubleClicked.connect(self.change_column_header) 
+
+        # Add a button to download the table contents as a CSV file
+        download_button = QPushButton("Download CSV", self.scrape_widget)
+        download_button.clicked.connect(self.download_csv)
+        self.scrape_widget_layout.addWidget(download_button)
 
         page = WebEnginePage(self.browser)
         page.table_widget = self.table_widget
@@ -99,6 +105,38 @@ class BrowserTab(QWidget):
 
         self.browser.page().selectionChanged.connect(self.on_clicked_text)
 
+    def download_csv(self):
+        """
+        Download the contents of the table as a CSV file.
+        """
+        filename, _ = QFileDialog.getSaveFileName(self, "Save CSV file", "", "CSV files (*.csv)")
+
+        if filename:
+            with open(filename, "w") as file:
+                writer = csv.writer(file)
+
+                # Write the column titles as the first row of the CSV file
+                column_titles = []
+                for col in range(self.table_widget.columnCount()):
+                    title = self.table_widget.horizontalHeaderItem(col)
+                    if title is not None:
+                        column_titles.append(title.text())
+                    else:
+                        column_titles.append(col+1)
+
+                # Write the data from the table to the CSV file
+                for row in range(self.table_widget.rowCount()):
+                    row_data = []
+                    col = 0
+                    item = self.table_widget.item(row,col)
+                    while item is not None and col < self.table_widget.columnCount():
+                        row_data.append(item.text())
+                        col += 1
+                        item = self.table_widget.item(row, col)
+                    if row == 0:
+                        writer.writerow(column_titles[:col])
+                    writer.writerow(row_data)
+
     def on_clicked_text(self):
         if not self.clicked_text:
             self.clicked_text = " "
@@ -130,6 +168,7 @@ class BrowserTab(QWidget):
         self.url_field.setText(url.toString())
         self.scrape_widget.setVisible(False)
         self.browser.page().runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
+        self.browser.page().reset_table()
 
     def toggle_scrape_widget(self):
         # Get the page
@@ -150,6 +189,7 @@ class BrowserTab(QWidget):
             self.timer.stop()
             page.runJavaScript(jss.ENABLE_LINKS_JS)
             page.runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
+            page.reset_table()
 
     # Create a loop that continuously disables all links in the page
     def disable_links(self):

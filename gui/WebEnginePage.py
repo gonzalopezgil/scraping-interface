@@ -6,6 +6,10 @@ class WebEnginePage(QWebEnginePage):
     last_column = -1
     clicked_text = None
 
+    def reset_table(self):
+        self.last_column = -1
+        self.clicked_text = None
+
     def javaScriptConsoleMessage(self, level, message, lineNumber, sourceID):
         print(f"JavaScript Message: {message}")
         if message.startswith("/html") and message != self.clicked_text:
