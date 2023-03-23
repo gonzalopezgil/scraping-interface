@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtCore import QTimer, pyqtSignal
+from PyQt5.QtCore import QTimer
 import gui.JavaScriptStrings as jss
 import pyperclip
 from gui.WebEnginePage import WebEnginePage
@@ -24,7 +24,34 @@ class BrowserTab(QWidget):
 
         # Create a browser window
         self.browser = QWebEngineView(self)
+
+        # Create a widget for scraping
+        self.scrape_widget = QWidget(self)
+        self.scrape_widget_layout = QVBoxLayout(self.scrape_widget)
+        self.scrape_widget.hide()
+
+        # Create a scroll area to hold the table widget
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scrape_widget_layout.addWidget(self.scroll_area)
+
+        # Create a table widget to show scraped data
+        self.table_widget = QTableWidget()
+        self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.table_widget.setColumnCount(COLUMN_COUNT)
+        self.table_widget.setRowCount(1)
+        self.table_widget.horizontalHeader().setStretchLastSection(True)
+
+        # Set the table widget as the scroll area's widget
+        self.scroll_area.setWidget(self.table_widget)
+
+        # Allow users to edit column headers
+        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table_widget.horizontalHeader().setSectionsMovable(True)
+        self.table_widget.horizontalHeader().sectionDoubleClicked.connect(self.change_column_header) 
+
         page = WebEnginePage(self.browser)
+        page.table_widget = self.table_widget
         self.browser.setPage(page)
         # Connect the urlChanged signal to update the URL field
         self.browser.urlChanged.connect(self.update_url_field)
@@ -59,35 +86,10 @@ class BrowserTab(QWidget):
         self.load_homepage()
         self.browser_tab_layout.addWidget(self.browser, 1)
 
-        # Create a widget for scraping
-        self.scrape_widget = QWidget(self)
-        self.scrape_widget_layout = QVBoxLayout(self.scrape_widget)
-        self.scrape_widget.hide()
-
         # Create a button to toggle the scrape widget
         self.scrape_button = QPushButton("Scrape", self.navigation_bar)
         self.scrape_button.clicked.connect(self.toggle_scrape_widget)
         self.navigation_bar_layout.addWidget(self.scrape_button, 0, Qt.AlignRight)
-
-        # Create a scroll area to hold the table widget
-        self.scroll_area = QScrollArea(self)
-        self.scroll_area.setWidgetResizable(True)
-        self.scrape_widget_layout.addWidget(self.scroll_area)
-
-        # Create a table widget to show scraped data
-        self.table_widget = QTableWidget()
-        self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.table_widget.setColumnCount(COLUMN_COUNT)
-        self.table_widget.setRowCount(1)
-        self.table_widget.horizontalHeader().setStretchLastSection(True)
-
-        # Set the table widget as the scroll area's widget
-        self.scroll_area.setWidget(self.table_widget)
-
-        # Allow users to edit column headers
-        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table_widget.horizontalHeader().setSectionsMovable(True)
-        self.table_widget.horizontalHeader().sectionDoubleClicked.connect(self.change_column_header) 
 
         # Add the scrape widget at the bottom of the browser
         self.browser_tab_layout.addWidget(self.scrape_widget, 0)
