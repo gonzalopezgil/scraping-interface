@@ -105,6 +105,19 @@ class BrowserTab(QWidget):
 
         self.browser.page().selectionChanged.connect(self.on_clicked_text)
 
+    def get_table_data(self):
+        table_data = []
+        column_titles = [self.table_widget.horizontalHeaderItem(col).text() 
+                        if self.table_widget.horizontalHeaderItem(col) else col+1
+                        for col in range(self.table_widget.columnCount())][:self.last_column+1]
+        table_data.append(column_titles)
+        for row in range(self.table_widget.rowCount()):
+            row_data = [self.table_widget.item(row, col).text()
+                        for col in range(self.table_widget.columnCount())
+                        if self.table_widget.item(row, col)]
+            table_data.append(row_data)
+        return table_data
+
     def download_csv(self):
         """
         Download the contents of the table as a CSV file.
@@ -114,20 +127,7 @@ class BrowserTab(QWidget):
         if filename:
             with open(filename, "w") as file:
                 writer = csv.writer(file)
-
-                # Write the column titles as the first row of the CSV file
-                column_titles = [self.table_widget.horizontalHeaderItem(col).text() 
-                                if self.table_widget.horizontalHeaderItem(col) else col+1
-                                for col in range(self.table_widget.columnCount())]
-
-                # Write the data from the table to the CSV file
-                for row in range(self.table_widget.rowCount()):
-                    row_data = [self.table_widget.item(row, col).text()
-                                for col in range(self.table_widget.columnCount())
-                                if self.table_widget.item(row, col)]
-                    if row == 0:
-                        writer.writerow(column_titles[:len(row_data)])
-                    writer.writerow(row_data)
+                writer.writerows(self.get_table_data())
 
     def on_clicked_text(self):
         if not self.clicked_text:
