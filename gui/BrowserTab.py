@@ -116,25 +116,17 @@ class BrowserTab(QWidget):
                 writer = csv.writer(file)
 
                 # Write the column titles as the first row of the CSV file
-                column_titles = []
-                for col in range(self.table_widget.columnCount()):
-                    title = self.table_widget.horizontalHeaderItem(col)
-                    if title is not None:
-                        column_titles.append(title.text())
-                    else:
-                        column_titles.append(col+1)
+                column_titles = [self.table_widget.horizontalHeaderItem(col).text() 
+                                if self.table_widget.horizontalHeaderItem(col) else col+1
+                                for col in range(self.table_widget.columnCount())]
 
                 # Write the data from the table to the CSV file
                 for row in range(self.table_widget.rowCount()):
-                    row_data = []
-                    col = 0
-                    item = self.table_widget.item(row,col)
-                    while item is not None and col < self.table_widget.columnCount():
-                        row_data.append(item.text())
-                        col += 1
-                        item = self.table_widget.item(row, col)
+                    row_data = [self.table_widget.item(row, col).text()
+                                for col in range(self.table_widget.columnCount())
+                                if self.table_widget.item(row, col)]
                     if row == 0:
-                        writer.writerow(column_titles[:col])
+                        writer.writerow(column_titles[:len(row_data)])
                     writer.writerow(row_data)
 
     def on_clicked_text(self):
