@@ -18,6 +18,8 @@ class MainWindow(QMainWindow):
         self.processes_tab = ProcessesTab(self)
         self.settings_tab = SettingsTab(self)
 
+        self.browser_tab.download_button.clicked.connect(lambda: self.processes_tab.add_row(self.browser_tab.browser.url().toString()))
+
         # Add the tabs to the tab widget
         self.tabs.addTab(self.browser_tab, "Browser")
         self.tabs.addTab(self.processes_tab, "Processes")

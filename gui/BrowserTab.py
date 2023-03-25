@@ -52,9 +52,9 @@ class BrowserTab(QWidget):
         self.table_widget.horizontalHeader().sectionDoubleClicked.connect(self.change_column_header) 
 
         # Add a button to download the table contents as a CSV file
-        download_button = QPushButton("Download CSV", self.scrape_widget)
-        download_button.clicked.connect(self.download_csv)
-        self.scrape_widget_layout.addWidget(download_button)
+        self.download_button = QPushButton("Download CSV", self.scrape_widget)
+        self.download_button.clicked.connect(self.download_csv)
+        self.scrape_widget_layout.addWidget(self.download_button)
 
         page = WebEnginePage(self.browser)
         page.table_widget = self.table_widget
