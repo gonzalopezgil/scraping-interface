@@ -23,7 +23,7 @@ class ProcessesTab(QWidget):
 
     def load_data(self):
         try:
-            with open('data.csv', newline='') as file:
+            with open('processes.csv', newline='') as file:
                 reader = csv.reader(file)
                 data = list(reader)
                 self.table.setRowCount(len(data))
@@ -47,7 +47,7 @@ class ProcessesTab(QWidget):
         self.table.setItem(row_count, 0, QTableWidgetItem(scraped_web))
         self.table.setItem(row_count, 1, QTableWidgetItem(date))
         self.table.setItem(row_count, 2, QTableWidgetItem(time))
-        with open('data.csv', 'a', newline='') as file:
+        with open('processes.csv', 'a', newline='') as file:
             writer = csv.writer(file)
             writer.writerow([scraped_web, date, time])
         self.table.show()

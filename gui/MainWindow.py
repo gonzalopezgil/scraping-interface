@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QMainWindow, QTabWidget
 from gui.BrowserTab import BrowserTab
 from gui.ProcessesTab import ProcessesTab
 from gui.SettingsTab import SettingsTab
+from gui.SeleniumScraper import SeleniumScraper
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -18,6 +19,8 @@ class MainWindow(QMainWindow):
         self.processes_tab = ProcessesTab(self)
         self.settings_tab = SettingsTab(self)
 
+        scraper = SeleniumScraper()
+        self.browser_tab.download_button.clicked.connect(lambda: scraper.scrape(self.browser_tab.browser.url().toString(), self.browser_tab.get_table_data()[0], self.browser_tab.get_table_data()[2]))
         self.browser_tab.download_button.clicked.connect(lambda: self.processes_tab.add_row(self.browser_tab.browser.url().toString()))
 
         # Add the tabs to the tab widget
