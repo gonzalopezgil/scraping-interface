@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, QTableWidgetItem
 from gui.BrowserTab import BrowserTab
 from gui.ProcessesTab import ProcessesTab
 from gui.SettingsTab import SettingsTab
@@ -25,25 +25,38 @@ class MainWindow(QMainWindow):
         self.foo.fooSignal.connect(self.processes_tab.update_status)
 
         self.thread = None
+        self.file_name = None
+        self.file_entered = threading.Event()
 
-        self.browser_tab.download_button.clicked.connect(lambda: self.processes_tab.add_row(self.browser_tab.browser.url().toString()))
-        self.browser_tab.download_button.clicked.connect(lambda: self.start_thread(self.browser_tab.browser.url().toString(), self.browser_tab.get_table_data(), self.foo, self.processes_tab.table.rowCount()-1))
+        self.browser_tab.download_button.clicked.connect(lambda: self.start_thread(self.browser_tab.browser.url().toString(), self.browser_tab.get_table_data(), self.foo))
 
         # Add the tabs to the tab widget
         self.tabs.addTab(self.browser_tab, "Browser")
         self.tabs.addTab(self.processes_tab, "Processes")
         self.tabs.addTab(self.settings_tab, "Settings")
 
-    def start_thread(self, url, data, foo, row):
+    def enter_file_name(self):
+        filename, _ = QFileDialog.getSaveFileName(self, "Save CSV file", "", "CSV files (*.csv)")
+        return filename
+
+    def start_thread(self, url, data, foo):
+        self.processes_tab.add_row(self.browser_tab.browser.url().toString(), "", self.browser_tab.get_table_data()[0])
+        row = self.processes_tab.table.rowCount()-1
         self.thread = threading.Thread(target=self.thread_function, args=(url, data, foo, row), daemon=True)
         self.thread.start()
+        self.file_name = self.enter_file_name()
+        self.file_entered.set()
+        self.processes_tab.table.setItem(row, 1, QTableWidgetItem(self.file_name))
 
-    def thread_function(self, url, table_data, obj, row):
+    def thread_function(self, url, data, obj, row):
         self.tabs.setCurrentIndex(1)
         scraper = SeleniumScraper()
-        scraper.scrape(url, table_data[0], table_data[2])
+        df = scraper.scrape(url, data[0], data[2])
+        print(self.file_name)
+        if self.file_entered is None:
+            self.file_entered.wait()
+        df.to_csv(self.file_name)
         obj.fooSignal.emit(row, "Finished")
-        self.processes_tab.save_data()
 
     def closeEvent(self, event):
         if self.thread and self.thread.is_alive():
@@ -62,6 +75,7 @@ class MainWindow(QMainWindow):
             event.accept()
 
     def stop_thread(self):
-        # Implement a method that stops the thread
-        self.foo.fooSignal.emit(self.processes_tab.table.rowCount()-1, "Stopped")
-        self.processes_tab.save_data()
+        if self.thread.is_alive():
+            # Implement a method that stops the thread
+            self.foo.fooSignal.emit(self.processes_tab.table.rowCount()-1, "Stopped")
+            self.processes_tab.save_data()

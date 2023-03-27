@@ -107,7 +107,7 @@ class BrowserTab(QWidget):
     def get_table_data(self):
         table_data = []
         column_titles = [self.table_widget.horizontalHeaderItem(col).text() 
-                        if self.table_widget.horizontalHeaderItem(col) else col+1
+                        if self.table_widget.horizontalHeaderItem(col) else str(col+1)
                         for col in range(self.table_widget.columnCount())][:self.last_column+1]
         table_data.append(column_titles)
         for row in range(self.table_widget.rowCount()):
@@ -116,17 +116,6 @@ class BrowserTab(QWidget):
                         if self.table_widget.item(row, col)]
             table_data.append(row_data)
         return table_data
-
-    def download_csv(self):
-        """
-        Download the contents of the table as a CSV file.
-        """
-        filename, _ = QFileDialog.getSaveFileName(self, "Save CSV file", "", "CSV files (*.csv)")
-
-        if filename:
-            with open(filename, "w") as file:
-                writer = csv.writer(file)
-                writer.writerows(self.get_table_data())
 
     def on_clicked_text(self):
         if not self.clicked_text:

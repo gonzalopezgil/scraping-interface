@@ -43,5 +43,7 @@ class SeleniumScraper():
         
         df = pd.DataFrame(my_dict)
         df.index += 1
-        df.to_csv(f'data_{datetime.now()}.csv')
+        
         driver.quit()
+        
+        return df
