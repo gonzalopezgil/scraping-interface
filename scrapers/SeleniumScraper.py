@@ -4,9 +4,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 import pandas as pd
-from datetime import datetime
+from . Scraper import Scraper
 
-class SeleniumScraper():
+class SeleniumScraper(Scraper):
 
     def init_driver(self):
         options = Options()
@@ -16,20 +16,6 @@ class SeleniumScraper():
 
     def get_elements(self, xpath, driver):
         return driver.find_elements(By.XPATH, xpath)
-
-    def generalise_xpath(self, xpath):
-        final_xpath = ""
-        elements = str(xpath).split("/")
-        ending = elements[-1]
-        for elem in elements:
-            if elem:
-                if elem == ending:
-                    final_xpath+="//"+ending
-                elif "[" in elem:
-                    final_xpath+="//"+elem.split("[")[0]
-                else:
-                    final_xpath+="/"+elem
-        return final_xpath
     
     def scrape(self, url, labels, xpaths):
         driver = self.init_driver()
