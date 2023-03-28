@@ -14,8 +14,8 @@ class SeleniumScraper(Scraper):
         options.add_argument("--window-size=1920,1200")
         return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-    def get_elements(self, xpath, driver):
-        return driver.find_elements(By.XPATH, xpath)
+    def get_elements(self, xpath, obj):
+        return obj.find_elements(By.XPATH, xpath)
     
     def scrape(self, url, labels, xpaths):
         driver = self.init_driver()
@@ -27,9 +27,6 @@ class SeleniumScraper(Scraper):
             # print(list(map(lambda x: x.text, elements)))
             my_dict[label] = list(map(lambda x: x.text, elements))
         
-        df = pd.DataFrame(my_dict)
-        df.index += 1
-        
         driver.quit()
         
-        return df
+        return self.dict_to_df(my_dict)

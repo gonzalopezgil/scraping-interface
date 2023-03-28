@@ -1,9 +1,14 @@
 from abc import ABC, abstractmethod
+import pandas as pd
 
 class Scraper(ABC):
 
     @abstractmethod
     def scrape(self, url, labels, xpaths):
+        pass
+
+    @abstractmethod
+    def get_elements(self, xpath, obj):
         pass
 
     def generalise_xpath(self, xpath):
@@ -19,3 +24,9 @@ class Scraper(ABC):
                 else:
                     final_xpath+="/"+elem
         return final_xpath
+    
+    def dict_to_df(self, my_dict):
+        df = pd.DataFrame(my_dict)
+        df.index += 1
+
+        return df
