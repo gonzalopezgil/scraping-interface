@@ -1,11 +1,10 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QFileDialog
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer
-import csv
 import gui.JavaScriptStrings as jss
 import pyperclip
-from gui.WebEnginePage import WebEnginePage
+from utils.WebEnginePage import WebEnginePage
 
 HOME_PAGE = "https://www.google.com"
 URL_SEARCH_ENGINE = "https://www.google.com/search?q="

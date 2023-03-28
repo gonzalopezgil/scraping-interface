@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QPushButton, QFileDialog
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QPushButton
 from PyQt5.QtCore import Qt, QVariant, pyqtSlot
 import csv
 from datetime import datetime
@@ -96,5 +96,4 @@ class ProcessesTab(QWidget):
         if status == "Finished":
             self.table.setCellWidget(row, 6, self.create_open_file_button(self.table.item(row, 1).text()))
         self.table.setItem(row, 3, QTableWidgetItem(status))
-        print(self.get_table_data())
         self.save_data()
