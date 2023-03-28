@@ -9,8 +9,8 @@ class ProcessesTab(QWidget):
         super().__init__(parent)
         self.processes_tab_layout = QVBoxLayout(self)
         self.table = QTableWidget(self)
-        self.table.setColumnCount(6)
-        self.table.setHorizontalHeaderLabels(['Scraped Web', 'File Name', 'Scraped Items', 'Status', 'Date', 'Time'])
+        self.table.setColumnCount(7)
+        self.table.setHorizontalHeaderLabels(['Scraped Web', 'File Name', 'Scraped Items', 'Status', 'Date', 'Time', 'File'])
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch) # Set stretch factor for 'Scraped Web' column
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
@@ -18,14 +18,18 @@ class ProcessesTab(QWidget):
         header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(5, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(6, QHeaderView.ResizeToContents)
         header.setStretchLastSection(False) # Disable stretching of last section
         self.processes_tab_layout.addWidget(self.table)
         self.no_data_label = QLabel(self) # Create label
         self.no_data_label.setAlignment(Qt.AlignCenter) # Center label
         self.processes_tab_layout.addWidget(self.no_data_label) # Add label to layout
         self.load_data()
-        #self.open_file_button = QPushButton('Open file')
-        #self.open_file_button.clicked.connect(self.open_file)
+
+    def create_open_file_button(self, file_name):
+        open_file_button = QPushButton('Open')
+        open_file_button.clicked.connect(lambda: self.open_file(file_name))
+        return open_file_button
         
     def load_data(self):
         try:
@@ -40,6 +44,8 @@ class ProcessesTab(QWidget):
                     self.table.setItem(row, 3, QTableWidgetItem(item[3]))
                     self.table.setItem(row, 4, QTableWidgetItem(item[4]))
                     self.table.setItem(row, 5, QTableWidgetItem(item[5]))
+                    if item[3] == "Finished":
+                        self.table.setCellWidget(row, 6, self.create_open_file_button(item[1]))
                 self.no_data_label.hide() # Hide label if data is found
                 self.table.show() # Show table if data is found
         except FileNotFoundError:
@@ -77,13 +83,18 @@ class ProcessesTab(QWidget):
             writer.writerows(self.get_table_data())
 
     def open_file(self, file_name):
-        os.system(f"open '{file_name}'")
+        if os.name == 'nt':
+            os.system(f'start {file_name}')
+        elif os.name == 'posix':
+            os.system(f"open '{file_name}'")
+        else:
+            print('Error: File is not opening due to unknown operating system')
+        
 
     @pyqtSlot(int, QVariant)
     def update_status(self, row, status):
-        #if status == "Finished":
-            #self.table.setCellWidget(row, 1, self.open_file_button)
-        print(row)
+        if status == "Finished":
+            self.table.setCellWidget(row, 6, self.create_open_file_button(self.table.item(row, 1).text()))
         self.table.setItem(row, 3, QTableWidgetItem(status))
         print(self.get_table_data())
         self.save_data()
