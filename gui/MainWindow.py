@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.settings_tab, "Settings")
 
     def enter_file_name(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "Save CSV file", "", "CSV files (*.csv)")
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Excel file", "", "Excel files (*.xlsx)")
         return filename
 
     def start_thread(self, url, data, foo):
@@ -55,8 +55,11 @@ class MainWindow(QMainWindow):
         print(self.file_name)
         if self.file_entered is None:
             self.file_entered.wait()
-        df.to_csv(self.file_name)
+        self.save_file(df, self.file_name)
         obj.fooSignal.emit(row, "Finished")
+
+    def save_file(self, dataframe, file_name):
+        dataframe.to_excel(file_name)
 
     def closeEvent(self, event):
         if self.thread and self.thread.is_alive():
