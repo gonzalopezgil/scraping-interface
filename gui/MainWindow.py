@@ -46,16 +46,19 @@ class MainWindow(QMainWindow):
         self.thread.start()
         self.file_name = self.enter_file_name()
         self.file_entered.set()
-        self.processes_tab.table.setItem(row, 1, QTableWidgetItem(self.file_name))
 
     def thread_function(self, url, data, obj, row):
         self.tabs.setCurrentIndex(1)
         scraper = RequestsScraper()
         df = scraper.scrape(url, data[0], data[2])
-        if self.file_name is None:
-            self.file_entered.wait()
-        self.save_file(df, self.file_name)
-        obj.fooSignal.emit(row, "Finished")
+        if df is None:
+            obj.fooSignal.emit(row, "Error", "")
+        else:
+            if self.file_name is None:
+                self.file_entered.wait()
+            self.save_file(df, self.file_name)
+            obj.fooSignal.emit(row, "Finished", self.file_name)
+        self.file_name = None
 
     def save_file(self, dataframe, file_name):
         dataframe.to_excel(file_name)
@@ -79,5 +82,5 @@ class MainWindow(QMainWindow):
     def stop_thread(self):
         if self.thread.is_alive():
             # Implement a method that stops the thread
-            self.foo.fooSignal.emit(self.processes_tab.table.rowCount()-1, "Stopped")
+            self.foo.fooSignal.emit(self.processes_tab.table.rowCount()-1, "Stopped", "")
             self.processes_tab.save_data()

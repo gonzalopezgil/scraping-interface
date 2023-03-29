@@ -26,7 +26,10 @@ class Scraper(ABC):
         return final_xpath
     
     def dict_to_df(self, my_dict):
-        df = pd.DataFrame(my_dict)
-        df.index += 1
-
-        return df
+        try:
+            df = pd.DataFrame(my_dict)
+            df.index += 1
+            return df
+        except ValueError as e:
+            print(f"Error creating dataframe: {e}")
+            return None

@@ -91,9 +91,10 @@ class ProcessesTab(QWidget):
             print('Error: File is not opening due to unknown operating system')
         
 
-    @pyqtSlot(int, QVariant)
-    def update_status(self, row, status):
+    @pyqtSlot(int, QVariant, QVariant)
+    def update_status(self, row, status, file_name):
         if status == "Finished":
-            self.table.setCellWidget(row, 6, self.create_open_file_button(self.table.item(row, 1).text()))
+            self.table.setCellWidget(row, 6, self.create_open_file_button(file_name))
+        self.table.setItem(row, 1, QTableWidgetItem(file_name))
         self.table.setItem(row, 3, QTableWidgetItem(status))
         self.save_data()
