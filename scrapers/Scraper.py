@@ -18,7 +18,7 @@ class Scraper(ABC):
         for elem in elements:
             if elem:
                 if elem == ending:
-                    final_xpath+="//"+ending
+                    final_xpath+="//"+ending+"//text()"
                 elif "[" in elem:
                     final_xpath+="//"+elem.split("[")[0]
                 else:
@@ -33,3 +33,21 @@ class Scraper(ABC):
         except ValueError as e:
             print(f"Error creating dataframe: {e}")
             return None
+        
+    def __get_pattern(self, index, elem, elements, selected_text):
+        if elem == selected_text:
+            return index
+        else:
+            if selected_text.startswith(elem):
+                return self.__get_pattern(index+1, elem + elements[index+1], elements, selected_text)
+            else:
+                return None
+            
+    def get_pattern(self, elements, selected_text):
+        index = self.__get_pattern(0, elements[0], elements, selected_text)
+        new_elements = []
+        while len(elements) > 0:
+            pattern = ''.join(elements[:index+1])
+            new_elements.append(pattern)
+            elements = elements[index+1:]
+        return new_elements

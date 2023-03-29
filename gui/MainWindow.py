@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
     def thread_function(self, url, data, obj, row):
         self.tabs.setCurrentIndex(1)
         scraper = RequestsScraper()
-        df = scraper.scrape(url, data[0], data[2])
+        df = scraper.scrape(url, data[0], data[1], data[2])
         if df is None:
             obj.fooSignal.emit(row, "Error", "")
         else:
