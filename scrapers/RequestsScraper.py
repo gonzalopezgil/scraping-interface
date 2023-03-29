@@ -9,7 +9,7 @@ class RequestsScraper(Scraper):
 
     def scrape(self, url, labels, xpaths):
         response = requests.get(url)
-        tree = html.fromstring(response.text) 
+        tree = html.fromstring(response.content)
 
         my_dict = {}
         for xpath,label in zip(xpaths,labels):
