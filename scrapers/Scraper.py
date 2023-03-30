@@ -43,11 +43,20 @@ class Scraper(ABC):
             else:
                 return None
             
-    def get_pattern(self, elements, selected_text):
-        index = self.__get_pattern(0, elements[0], elements, selected_text)
+    def get_pattern(self, elements, selected_text, first_index):
+        last_index = self.__get_pattern(first_index, elements[first_index], elements, selected_text)
+        index = last_index - first_index
         new_elements = []
         while len(elements) > 0:
             pattern = ''.join(elements[:index+1])
             new_elements.append(pattern)
             elements = elements[index+1:]
         return new_elements
+    
+    def check_pattern(self, elements, selected_text):
+        i = 0
+        while i < len(elements):
+            if selected_text.startswith(elements[i]):
+                return i
+            i+=1
+        return -1

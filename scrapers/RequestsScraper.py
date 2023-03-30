@@ -14,8 +14,12 @@ class RequestsScraper(Scraper):
         my_dict = {}
         for xpath,label,text in zip(xpaths,labels,selected_text):
             elements = self.get_elements(self.generalise_xpath(xpath), tree)
-            if text != elements[0]:
-                elements = self.get_pattern(elements, text)
+            if text not in elements:
+                index = self.check_pattern(elements, text)
+                if index != -1:
+                    elements = self.get_pattern(elements, text, index)
+                else:
+                    return None
             my_dict[label] = elements
 
         return self.dict_to_df(my_dict)
