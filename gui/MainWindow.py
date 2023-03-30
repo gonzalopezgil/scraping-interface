@@ -43,6 +43,7 @@ class MainWindow(QMainWindow):
         self.processes_tab.add_row(self.browser_tab.browser.url().toString(), "", self.browser_tab.get_table_data()[0])
         row = self.processes_tab.table.rowCount()-1
         self.thread = threading.Thread(target=self.thread_function, args=(url, data, foo, row), daemon=True)
+        self.file_entered.clear()
         self.thread.start()
         self.file_name = self.enter_file_name()
         self.file_entered.set()
