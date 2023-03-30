@@ -37,7 +37,22 @@ class MainWindow(QMainWindow):
 
     def enter_file_name(self):
         filename, _ = QFileDialog.getSaveFileName(self, "Save Excel file", "", "Excel files (*.xlsx)")
-        return filename
+        if filename:
+            # Check if the file already exists
+            i = 0
+            coincidence = False
+            while not coincidence and i < len(self.processes_tab.get_table_data()):
+                row = self.processes_tab.get_table_data()[i]
+                if filename == row[1]:
+                    self.processes_tab.table.setItem(i, 1, QTableWidgetItem(""))
+                    self.processes_tab.table.setItem(i, 3, QTableWidgetItem("Removed"))
+                    self.processes_tab.table.removeCellWidget(i, 6)
+                    coincidence = True
+                i += 1
+            return filename
+        else:
+            print("Error: no file name entered")
+            return None
 
     def start_thread(self, url, data, foo):
         self.processes_tab.add_row(self.browser_tab.browser.url().toString(), "", self.browser_tab.get_table_data()[0])
@@ -55,11 +70,16 @@ class MainWindow(QMainWindow):
         if df is None:
             obj.fooSignal.emit(row, "Error", "")
         else:
+            # Wait until the user enters a file name
             if self.file_name is None:
                 self.file_entered.wait()
-            self.save_file(df, self.file_name)
-            obj.fooSignal.emit(row, "Finished", self.file_name)
-        self.file_name = None
+            # Check again in case the user did not enter a file name
+            if self.file_name is not None:
+                self.save_file(df, self.file_name)
+                obj.fooSignal.emit(row, "Finished", self.file_name)
+                self.file_name = None
+            else:
+                obj.fooSignal.emit(row, "Stopped", "")
 
     def save_file(self, dataframe, file_name):
         dataframe.to_excel(file_name)
