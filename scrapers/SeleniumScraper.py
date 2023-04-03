@@ -3,30 +3,20 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-import pandas as pd
 from . Scraper import Scraper
 
 class SeleniumScraper(Scraper):
 
-    def init_driver(self):
+    def get_webpage(self, url, _):
         options = Options()
         options.headless = True
         options.add_argument("--window-size=1920,1200")
-        return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        driver.get(url)
+        return driver
+    
     def get_elements(self, xpath, obj):
         return obj.find_elements(By.XPATH, xpath)
     
-    def scrape(self, url, labels, xpaths):
-        driver = self.init_driver()
-        driver.get(url)
-
-        my_dict = {}
-        for xpath,label in zip(xpaths,labels):
-            elements = self.get_elements(self.generalise_xpath(xpath),driver)
-            # print(list(map(lambda x: x.text, elements)))
-            my_dict[label] = list(map(lambda x: x.text, elements))
-        
-        driver.quit()
-        
-        return self.dict_to_df(my_dict)
+    def close_webpage(self, obj):
+        obj.quit()

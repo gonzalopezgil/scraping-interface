@@ -4,20 +4,60 @@ import pandas as pd
 class Scraper(ABC):
 
     @abstractmethod
-    def scrape(self, url, labels, xpaths):
+    def get_webpage(self, url):
         pass
 
     @abstractmethod
     def get_elements(self, xpath, obj):
         pass
 
+    @abstractmethod
+    def close_webpage(self, obj):
+        pass
+
+    def scrape(self, url, labels, selected_text, xpaths, default_encoding=True):
+        obj = self.get_webpage(url, default_encoding)
+
+        my_dict = {}
+        for xpath,label,text in zip(xpaths,labels,selected_text):
+            elements = self.get_elements(self.generalise_xpath(xpath), obj)
+            elements = self.clean_list(elements)
+            print(self.generalise_xpath(xpath))
+            print(elements)
+            text = self.clean_text(text)
+            if text not in elements:
+                index = self.check_pattern(elements, text)
+                if index != -1:
+                    elements = self.get_pattern(elements, text, index)
+                else:
+                    # Check with other encoding
+                    if default_encoding:
+                        return self.scrape(url, labels, selected_text, xpaths, False)
+                    else:
+                        print("Error: Text selected by the user not found in elements")
+                        return None
+            my_dict[label] = elements
+
+        self.close_webpage(obj)
+
+        return self.dict_to_df(my_dict)
+    
+    # Unused
+    def check_encoding(self, obj, text):
+        xpath = f"//*[text()='{text}']"
+        if self.get_elements(xpath, obj):
+            print("Encoding is correct")
+        else:
+            print("Encoding is not correct")
+
     def generalise_xpath(self, xpath):
         final_xpath = ""
         elements = str(xpath).split("/")
         ending = elements[-1]
-        for elem in elements:
+        for i in range(len(elements)):
+            elem = elements[i]
             if elem:
-                if elem == ending:
+                if i == len(elements)-1:
                     final_xpath+="//"+ending+"//text()"
                 elif "[" in elem:
                     final_xpath+="//"+elem.split("[")[0]
@@ -60,3 +100,13 @@ class Scraper(ABC):
                 return i
             i+=1
         return -1
+
+    def clean_text(self, text):
+        text = text.replace("\r","").replace("\t","").replace("\n","").replace("  "," ")
+        if text == " ":
+            return text
+        else:
+            return text.strip()
+    
+    def clean_list(self, elements):
+        return [self.clean_text(elem) for elem in elements]
