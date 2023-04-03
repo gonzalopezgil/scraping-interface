@@ -22,7 +22,7 @@ DISABLE_LINKS_JS = """
         event.preventDefault();
     }
 
-    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th');
+    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
     for (var i = 0; i < textElements.length; i++) {
         textElements[i].addEventListener("click", copyToClipboard);
     }
@@ -61,7 +61,7 @@ DISABLE_LINKS_JS = """
             document.body.appendChild(square);
 
             // Get the XPath of the clicked element
-                var xpathResult = document.evaluate(
+            var xpathResult = document.evaluate(
                 'ancestor-or-self::*',
                 event.target,
                 null,
@@ -73,7 +73,9 @@ DISABLE_LINKS_JS = """
                 var element = xpathResult.snapshotItem(i);
                 var tagName = element.tagName.toLowerCase();
                 var index = getElementIndex(element);
-                xpath += '/' + tagName + '[' + index + ']';
+                var id = element.id ? '[@id="' + element.id + '"]' : '';
+                var classes = element.className ? '[@class="' + element.className + '"]' : '';
+                xpath += '/' + tagName + '[' + index + ']' + id + classes;
             }
             console.log(xpath);
         }
