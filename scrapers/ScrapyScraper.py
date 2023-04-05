@@ -5,7 +5,6 @@ from scrapy.loader import ItemLoader
 from . Scraper import Scraper
 from scrapy.crawler import CrawlerProcess
 import scrapy
-import os
 
 class ScrapyScraper(Scraper, Spider):
     name = "ScrapyScraper"
@@ -27,6 +26,10 @@ class ScrapyScraper(Scraper, Spider):
         prefix = self.get_common_xpath(general_xpaths)
         elements = self.get_elements(prefix, obj)
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
+
+        print(f"Prefix: {prefix}")
+        print(f"Suffixes: {xpath_suffixes}")
+        print(f"Elements: {len(elements)}")
 
         for elem in elements:
             item = ItemLoader(self.create_class(self.labels)(), elem)
@@ -55,11 +58,27 @@ class ScrapyScraper(Scraper, Spider):
         spider.crawler.signals.connect(collect_items, signal=scrapy.signals.item_scraped)
         process.start()
         process.join()
-        
-        df = self.dict_to_df(self.merge_dicts(results))
 
-        if df is not None and file_name is not None:
-            self.save_file(df, file_name)
+        dict_results = self.merge_dicts(results)
+
+        if len(dict_results) > 0:
+            for label,text in zip(labels, selected_text):
+                elements = dict_results[label]
+                elements = self.clean_list(elements)
+                text = self.clean_text(text)
+                if text not in elements:
+                    index = self.check_pattern(elements, text)
+                    if index != -1:
+                        elements = self.get_pattern(elements, text, index)
+                    else:
+                        print("Error: Text selected by the user not found in elements")
+                        return None
+                dict_results[label] = elements
+            
+            df = self.dict_to_df(dict_results)
+
+            if df is not None and file_name is not None:
+                self.save_file(df, file_name)
 
     def save_file(self, dataframe, file_name):
         dataframe.to_excel(file_name)
@@ -76,4 +95,3 @@ class ScrapyScraper(Scraper, Spider):
                 else:
                     result[k] = v
         return result
-        
