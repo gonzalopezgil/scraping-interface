@@ -81,10 +81,18 @@ class Scraper(ABC):
             return xpaths[0][:-8]
 
         prefix = commonprefix(xpaths)
+
         if prefix.endswith("//"):
             prefix = prefix[:-2]
         elif prefix.endswith("["):
             prefix = prefix[:prefix.rfind("//")]
+
+        suffixes = self.get_suffixes(prefix, xpaths)
+        for suffix in suffixes:
+            if suffix.startswith("["):
+                prefix = prefix[:prefix.rfind("//")]
+                break
+
         return prefix
     
     def dict_to_df(self, my_dict):
