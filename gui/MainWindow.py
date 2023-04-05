@@ -2,9 +2,14 @@ from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, Q
 from gui.BrowserTab import BrowserTab
 from gui.ProcessesTab import ProcessesTab
 from gui.SettingsTab import SettingsTab
-from scrapers.RequestsScraper import RequestsScraper
+from scrapers.ScrapyScraper import ScrapyScraper
 import threading
+from scrapy.crawler import CrawlerProcess
 from utils.SignalManager import SignalManager
+import scrapy.crawler as crawler
+from multiprocessing import Process, Queue
+from twisted.internet import reactor
+import os
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -57,29 +62,42 @@ class MainWindow(QMainWindow):
     def start_thread(self, url, data, foo):
         self.processes_tab.add_row(self.browser_tab.browser.url().toString(), "", self.browser_tab.get_table_data()[0])
         row = self.processes_tab.table.rowCount()-1
-        self.thread = threading.Thread(target=self.thread_function, args=(url, data, foo, row), daemon=True)
-        self.file_entered.clear()
-        self.thread.start()
+        #self.thread = threading.Thread(target=self.thread_function, args=(url, data, foo, row), daemon=True)
+        #self.file_entered.clear()
+        #self.thread.start()
         self.file_name = self.enter_file_name()
-        self.file_entered.set()
+        #self.file_entered.set()
+        self.thread_function(url, data, foo, row)
 
     def thread_function(self, url, data, obj, row):
         self.tabs.setCurrentIndex(1)
-        scraper = RequestsScraper()
-        df = scraper.scrape(url, data[0], data[1], data[2])
-        if df is None:
-            obj.fooSignal.emit(row, "Error", "")
+
+        scraper = ScrapyScraper()
+        pid = os.fork()
+        if pid == 0:
+            scraper.scrape(url, data[0], data[1], data[2], self.file_name)
+            os._exit(0)
         else:
-            # Wait until the user enters a file name
-            if self.file_name is None:
-                self.file_entered.wait()
-            # Check again in case the user did not enter a file name
-            if self.file_name is not None:
-                self.save_file(df, self.file_name)
+            os.waitpid(pid, 0)
+            if os.path.isfile(self.file_name):
                 obj.fooSignal.emit(row, "Finished", self.file_name)
-                self.file_name = None
             else:
-                obj.fooSignal.emit(row, "Stopped", "")
+                obj.fooSignal.emit(row, "Error", "")
+
+        #if df is None:
+        #    obj.fooSignal.emit(row, "Error", "")
+        #else:
+        #    # Wait until the user enters a file name
+        #    #if self.file_name is None:
+        #    #    self.file_entered.wait()
+        #    # Check again in case the user did not enter a file name
+        #    if self.file_name is not None:
+        #        self.save_file(df, self.file_name)
+        #        obj.fooSignal.emit(row, "Finished", self.file_name)
+        #        print("GUARDADO")
+        #        self.file_name = None
+        #    else:
+        #        obj.fooSignal.emit(row, "Stopped", "")
 
     def save_file(self, dataframe, file_name):
         dataframe.to_excel(file_name)

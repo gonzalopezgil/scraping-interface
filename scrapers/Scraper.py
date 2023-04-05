@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 import pandas as pd
+from os.path import commonprefix
 
 class Scraper(ABC):
 
     @abstractmethod
-    def get_webpage(self, url):
+    def get_webpage(self, url, default_encoding):
         pass
 
     @abstractmethod
@@ -23,7 +24,6 @@ class Scraper(ABC):
             elements = self.get_elements(self.generalise_xpath(xpath), obj)
             elements = self.clean_list(elements)
             print(self.generalise_xpath(xpath))
-            print(elements)
             text = self.clean_text(text)
             if text not in elements:
                 index = self.check_pattern(elements, text)
@@ -64,6 +64,28 @@ class Scraper(ABC):
                 else:
                     final_xpath+="/"+elem
         return final_xpath
+    
+    def get_suffixes(self, prefix, strings):
+        if not strings:
+            return []
+        else:
+            first_string = strings[0]
+            if first_string.startswith(prefix):
+                suffix = first_string[len(prefix):]
+                return [suffix] + self.get_suffixes(prefix, strings[1:])
+            else:
+                return self.get_suffixes(prefix, strings[1:])
+    
+    def get_common_xpath(self, xpaths):
+        if len(xpaths) == 1 and xpaths[0].endswith("//text()"):
+            return xpaths[0][:-8]
+
+        prefix = commonprefix(xpaths)
+        if prefix.endswith("//"):
+            prefix = prefix[:-2]
+        elif prefix.endswith("["):
+            prefix = prefix[:prefix.rfind("//")]
+        return prefix
     
     def dict_to_df(self, my_dict):
         try:
