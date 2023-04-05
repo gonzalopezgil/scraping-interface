@@ -90,7 +90,7 @@ class Scraper(ABC):
         suffixes = self.get_suffixes(prefix, xpaths)
         
         for suffix in suffixes:
-            if not suffix.startswith("//") or suffix.startswith("["):
+            if not suffix.startswith("//") or suffix.startswith("[") or "[" in suffix.split("//")[1]:
                 prefix = prefix[:prefix.rfind("//")]
                 break
 
