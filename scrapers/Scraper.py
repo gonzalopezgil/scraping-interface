@@ -22,7 +22,7 @@ class Scraper(ABC):
         pass
 
     @abstractmethod
-    def get_elements(self, xpath, obj, text):
+    def get_elements(self, xpath, obj, text=None):
         pass
 
     @abstractmethod
@@ -52,10 +52,12 @@ class Scraper(ABC):
 
         self.close_webpage(obj)
 
-        if len(my_dict) > 0 and file_name is not None:
+        if len(my_dict) > 0:
             df = self.dict_to_df(my_dict)
-            if df is not None:
+            if df is not None and file_name is not None:
                 self.save_file(df, file_name)
+        else:
+            print("Error: No data found")
 
     def find_text_in_data(self, elements, text):
         if text not in elements:
