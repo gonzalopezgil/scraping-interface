@@ -40,18 +40,11 @@ class Scraper(ABC):
                 elements = self.clean_list(elements)
                 print(self.generalise_xpath(xpath))
                 print(f"Elements: {elements}")
-                if text not in elements:
-                    if len(elements) > 1:
-                        index = self.check_pattern(elements, text)
-                        if index != -1:
-                            elements = self.get_pattern(elements, text, index)
-                        else:
-                            # Check with other encoding
-                            if default_encoding:
-                                return self.scrape(url, labels, selected_text, xpaths, False)
-                            else:
-                                print("Error: Text selected by the user not found in elements")
-                                return None
+                elements = self.find_text_in_data(elements, text)
+                if elements is None:
+                    if default_encoding:
+                        # Check with other encoding
+                        return self.scrape(url, labels, selected_text, xpaths, False)
                     else:
                         print("Error: Text selected by the user not found in elements")
                         return None
@@ -63,6 +56,19 @@ class Scraper(ABC):
             df = self.dict_to_df(my_dict)
             if df is not None:
                 self.save_file(df, file_name)
+
+    def find_text_in_data(self, elements, text):
+        if text not in elements:
+            if len(elements) > 1:
+                index = self.check_pattern(elements, text)
+                if index != -1:
+                    elements = self.get_pattern(elements, text, index)
+                else:
+                    return None
+            else:
+                return None
+        else:
+            return elements
 
     def save_file(self, dataframe, file_name):
         dataframe.to_excel(file_name)
