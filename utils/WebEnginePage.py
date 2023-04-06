@@ -13,9 +13,11 @@ class WebEnginePage(QWebEnginePage):
         self.clicked_xpath = None
 
     def javaScriptConsoleMessage(self, level, message, lineNumber, sourceID):
-        print(f"JavaScript Message: {message}")
+        if not message.startswith("/html"):
+            print(f"JavaScript Message: {message}")
         text = pyperclip.paste()
         if message.startswith("/html") and message != self.clicked_xpath and text != self.clicked_text:
+            print(f"JavaScript Message: {message}")
             if self.table_widget.rowCount() == 1:
                 self.table_widget.insertRow(1)
             self.last_column += 1
