@@ -6,7 +6,7 @@ from . Scraper import Scraper
 class BeautifulSoupScraper(Scraper):
 
     def get_webpage(self, url, default_encoding):
-        response = requests.get(url)
+        response = requests.get(url, headers=self.choose_random_header())
         soup = BeautifulSoup(response.content, "html.parser")
         dom = etree.HTML(str(soup))
         return dom

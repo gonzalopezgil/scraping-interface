@@ -5,7 +5,7 @@ from . Scraper import Scraper
 class RequestsScraper(Scraper):
 
     def get_webpage(self, url, default_encoding):
-        response = requests.get(url)
+        response = requests.get(url, headers=self.choose_random_header())
         if default_encoding:
             content = response.content
         else:
