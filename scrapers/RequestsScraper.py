@@ -13,7 +13,7 @@ class RequestsScraper(Scraper):
         tree = html.fromstring(content)
         return tree
 
-    def get_elements(self, xpath, obj, _):
+    def get_elements(self, xpath, obj, _=None):
         return obj.xpath(xpath)
     
     def close_webpage(self, _):
