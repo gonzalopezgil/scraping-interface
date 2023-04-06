@@ -2,13 +2,9 @@ from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, Q
 from gui.BrowserTab import BrowserTab
 from gui.ProcessesTab import ProcessesTab
 from gui.SettingsTab import SettingsTab
-from scrapers.ScrapyScraper import ScrapyScraper
+from scrapers.BeautifulSoupScraper import BeautifulSoupScraper
 import threading
-from scrapy.crawler import CrawlerProcess
 from utils.SignalManager import SignalManager
-import scrapy.crawler as crawler
-from multiprocessing import Process, Queue
-from twisted.internet import reactor
 import os
 
 class MainWindow(QMainWindow):
@@ -72,7 +68,7 @@ class MainWindow(QMainWindow):
     def thread_function(self, url, data, obj, row):
         self.tabs.setCurrentIndex(1)
 
-        scraper = ScrapyScraper()
+        scraper = BeautifulSoupScraper()
         pid = os.fork()
         if pid == 0:
             scraper.scrape(url, data[0], data[1], data[2], self.file_name)

@@ -83,9 +83,6 @@ class ScrapyScraper(Scraper, Spider):
 
             if df is not None and file_name is not None:
                 self.save_file(df, file_name)
-
-    def save_file(self, dataframe, file_name):
-        dataframe.to_excel(file_name)
     
     def merge_dicts(self, dict_list):
         result = {}

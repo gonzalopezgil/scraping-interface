@@ -16,7 +16,7 @@ class Scraper(ABC):
     def close_webpage(self, obj):
         pass
 
-    def scrape(self, url, labels, selected_text, xpaths, default_encoding=True):
+    def scrape(self, url, labels, selected_text, xpaths, file_name, default_encoding=True):
         obj = self.get_webpage(url, default_encoding)
 
         my_dict = {}
@@ -40,8 +40,14 @@ class Scraper(ABC):
 
         self.close_webpage(obj)
 
-        return self.dict_to_df(my_dict)
-    
+        df = self.dict_to_df(my_dict)
+
+        if df is not None and file_name is not None:
+            self.save_file(df, file_name)
+
+    def save_file(self, dataframe, file_name):
+        dataframe.to_excel(file_name)
+
     # Unused
     def check_encoding(self, obj, text):
         xpath = f"//*[text()='{text}']"
