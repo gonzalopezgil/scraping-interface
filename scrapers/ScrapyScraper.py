@@ -16,7 +16,7 @@ class ScrapyScraper(Scraper, Spider):
     def get_webpage(self, response, _):
         return Selector(response)
 
-    def get_elements(self, xpath, obj):
+    def get_elements(self, xpath, obj, _):
         return obj.xpath(xpath)
 
     def close_webpage(self, _):

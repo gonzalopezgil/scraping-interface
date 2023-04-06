@@ -11,7 +11,7 @@ class BeautifulSoupScraper(Scraper):
         dom = etree.HTML(str(soup))
         return dom
 
-    def get_elements(self, xpath, obj):
+    def get_elements(self, xpath, obj, _):
         return obj.xpath(xpath)
 
     def close_webpage(self, obj):

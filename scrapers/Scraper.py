@@ -22,7 +22,7 @@ class Scraper(ABC):
         pass
 
     @abstractmethod
-    def get_elements(self, xpath, obj):
+    def get_elements(self, xpath, obj, text):
         pass
 
     @abstractmethod
@@ -34,29 +34,35 @@ class Scraper(ABC):
 
         my_dict = {}
         for xpath,label,text in zip(xpaths,labels,selected_text):
-            elements = self.get_elements(self.generalise_xpath(xpath), obj)
-            elements = self.clean_list(elements)
-            print(self.generalise_xpath(xpath))
             text = self.clean_text(text)
-            if text not in elements:
-                index = self.check_pattern(elements, text)
-                if index != -1:
-                    elements = self.get_pattern(elements, text, index)
-                else:
-                    # Check with other encoding
-                    if default_encoding:
-                        return self.scrape(url, labels, selected_text, xpaths, False)
+            elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
+            if elements is not None and len(elements) > 0:
+                elements = self.clean_list(elements)
+                print(self.generalise_xpath(xpath))
+                print(f"Elements: {elements}")
+                if text not in elements:
+                    if len(elements) > 1:
+                        index = self.check_pattern(elements, text)
+                        if index != -1:
+                            elements = self.get_pattern(elements, text, index)
+                        else:
+                            # Check with other encoding
+                            if default_encoding:
+                                return self.scrape(url, labels, selected_text, xpaths, False)
+                            else:
+                                print("Error: Text selected by the user not found in elements")
+                                return None
                     else:
                         print("Error: Text selected by the user not found in elements")
                         return None
-            my_dict[label] = elements
+                my_dict[label] = elements
 
         self.close_webpage(obj)
 
-        df = self.dict_to_df(my_dict)
-
-        if df is not None and file_name is not None:
-            self.save_file(df, file_name)
+        if len(my_dict) > 0 and file_name is not None:
+            df = self.dict_to_df(my_dict)
+            if df is not None:
+                self.save_file(df, file_name)
 
     def save_file(self, dataframe, file_name):
         dataframe.to_excel(file_name)
@@ -155,7 +161,7 @@ class Scraper(ABC):
         return -1
 
     def clean_text(self, text):
-        text = text.replace("\r","").replace("\t","").replace("\n","").replace("  "," ")
+        text = text.replace("\r","").replace("\t","").replace("\n","").replace("  "," ").replace(chr(160), chr(32))
         if text == " ":
             return text
         else:
