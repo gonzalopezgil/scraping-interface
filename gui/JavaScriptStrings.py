@@ -4,6 +4,12 @@ ENABLE_LINKS_JS = """
         links[i].removeEventListener("click", disableLink);
     }
 
+    // Remove red background from previously painted elements
+    for (var i = 0; i < redElements.length; i++) {
+        redElements[i].style.backgroundColor = '';
+    }
+    redElements = [];
+
     // Remove all the squares created
     var squares = document.querySelectorAll('div[style*="2px solid red"]');
     squares.forEach(function(square) {
@@ -13,6 +19,8 @@ ENABLE_LINKS_JS = """
 
 # The last part is from HIGHLIGHT_TEXT_JS
 DISABLE_LINKS_JS = """
+    var redElements = [];
+
     var links = document.getElementsByTagName("a");
     for (var i = 0; i < links.length; i++) {
         links[i].addEventListener("click", disableLink);
@@ -81,6 +89,14 @@ DISABLE_LINKS_JS = """
                 }
             }
             console.log(xpath);
+
+            var elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);  // Find all elements that match the XPath
+            var element = elements.iterateNext();
+            while (element) {
+                element.style.backgroundColor = 'red';  // Paint the element with a red background color
+                redElements.push(element);
+                element = elements.iterateNext();
+            }
         }
     }
 
