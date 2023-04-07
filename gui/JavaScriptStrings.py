@@ -83,7 +83,7 @@ DISABLE_LINKS_JS = """
                 if (i == xpathResult.snapshotLength - 1) {
                     var index = getElementIndex(element);
                     var classes = element.className ? '[@class="' + element.className + '"]' : '';
-                    xpath += '//' + tagName + (classes ? classes : '[' + index + ']');
+                    xpath += '//' + tagName + '[' + index + ']' + classes;
                 } else {
                     xpath += '//' + tagName;
                 }
@@ -91,12 +91,15 @@ DISABLE_LINKS_JS = """
             console.log(xpath);
 
             var elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);  // Find all elements that match the XPath
+            var count = 0;
             var element = elements.iterateNext();
             while (element) {
+                count++;
                 element.style.backgroundColor = 'red';  // Paint the element with a red background color
                 redElements.push(element);
                 element = elements.iterateNext();
             }
+            console.log(count);
         }
     }
 

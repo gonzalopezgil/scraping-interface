@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, Q
 from gui.BrowserTab import BrowserTab
 from gui.ProcessesTab import ProcessesTab
 from gui.SettingsTab import SettingsTab
-from scrapers.SeleniumScraper import SeleniumScraper
+from scrapers.ScrapySeleniumScraper import ScrapySeleniumScraper
 import threading
 from utils.SignalManager import SignalManager
 import os
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
     def thread_function(self, url, data, obj, row):
         self.tabs.setCurrentIndex(1)
 
-        scraper = SeleniumScraper()
+        scraper = ScrapySeleniumScraper()
         pid = os.fork()
         if pid == 0:
             scraper.scrape(url, data[0], data[1], data[2], self.file_name)
