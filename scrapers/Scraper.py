@@ -39,7 +39,9 @@ class Scraper(ABC):
             if elements is not None and len(elements) > 0:
                 elements = self.clean_list(elements)
                 print(self.generalise_xpath(xpath))
-                print(f"Elements: {elements}")
+                print(f"Elements ({len(elements)})")
+                for elem in elements:
+                    print(elem)
                 elements = self.find_text_in_data(elements, text)
                 if elements is None:
                     if default_encoding:
@@ -95,10 +97,8 @@ class Scraper(ABC):
             if elem:
                 if i == len(elements)-1:
                     final_xpath+="//"+ending+"//text()"
-                elif "[" in elem:
-                    final_xpath+="//"+elem.split("[")[0]
                 else:
-                    final_xpath+="/"+elem
+                    final_xpath+="//"+elem
         return final_xpath
     
     def get_suffixes(self, prefix, strings):

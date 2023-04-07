@@ -75,9 +75,9 @@ DISABLE_LINKS_JS = """
                 if (i == xpathResult.snapshotLength - 1) {
                     var index = getElementIndex(element);
                     var classes = element.className ? '[@class="' + element.className + '"]' : '';
-                    xpath += '/' + tagName + (classes ? classes : '[' + index + ']');
+                    xpath += '//' + tagName + (classes ? classes : '[' + index + ']');
                 } else {
-                    xpath += '/' + tagName;
+                    xpath += '//' + tagName;
                 }
             }
             console.log(xpath);
