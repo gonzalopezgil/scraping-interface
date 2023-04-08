@@ -29,79 +29,88 @@ DISABLE_LINKS_JS = """
         event.preventDefault();
     }
 
+    var lastMessage = "";
     var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
     for (var i = 0; i < textElements.length; i++) {
         textElements[i].addEventListener("click", scrapeData);
     }
 
     function scrapeData(event) {
-        var selectedText = event.target.innerText.trim();
-        if (selectedText) {
-            console.log("selectedText: " + selectedText)
+        var message = event.target.innerText.trim();
+        if (message && message !== lastMessage) {
+            lastMessage = message;
+            scrapeDataLogic(message);
+        }
+    }
 
-            // Get the XPath of the clicked element
-            var xpathResult = document.evaluate(
-                'ancestor-or-self::*',
-                event.target,
-                null,
-                XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-                null
-            );
-            var xpath = '';
-            var divCount = 0;
-            var i = xpathResult.snapshotLength - 1;
-            while (divCount < 3 && i >= 0) {
-                var element = xpathResult.snapshotItem(i);
-                var tagName = element.tagName.toLowerCase();
-                if (tagName === 'html' || tagName === 'body') {
-                    xpath = '//' + tagName + xpath;
-                } else {
-                    var classes = '';
-                    if (tagName === 'div') {
-                        if (element.className) {
-                            classes = '[contains(@class, "';
-                            var classList = element.className.split(' ');
-                            var j = 0;
-                            while (j < classList.length && !/\d/.test(classList[j]) && classList[j] !== 'selected') {
-                                if (j > 0) {
-                                    classes += ' ';
-                                }
-                                classes += classList[j];
-                                j++;
+    function scrapeDataLogic(message) {
+        var consoleMessage = "To Python>"
+
+        // Get the XPath of the clicked element
+        var xpathResult = document.evaluate(
+            'ancestor-or-self::*',
+            event.target,
+            null,
+            XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+            null
+        );
+        var xpath = '';
+        var divCount = 0;
+        var i = xpathResult.snapshotLength - 1;
+        while (divCount < 3 && i >= 0) {
+            var element = xpathResult.snapshotItem(i);
+            var tagName = element.tagName.toLowerCase();
+            if (tagName === 'html' || tagName === 'body') {
+                xpath = '//' + tagName + xpath;
+            } else {
+                var classes = '';
+                if (tagName === 'div') {
+                    if (element.className) {
+                        classes = '[contains(@class, "';
+                        var classList = element.className.split(' ');
+                        var j = 0;
+                        while (j < classList.length && !/\d/.test(classList[j]) && classList[j] !== 'selected') {
+                            if (j > 0) {
+                                classes += ' ';
                             }
-                            if (j === 0) {
-                                classes = '';
-                            } else {
-                                classes += '")]';
-                            }
+                            classes += classList[j];
+                            j++;
                         }
-                        divCount++;
-                        xpath = '//' + tagName + classes + xpath;
-                    } else {
-                        divCount = 0;
-                        if (i == xpathResult.snapshotLength - 1) {
-                            var index = getElementIndex(element);
-                            xpath = '//' + tagName + '[' + index + ']' + xpath;
+                        if (j === 0) {
+                            classes = '';
                         } else {
-                            xpath = '//' + tagName + xpath;
+                            classes += '")]';
                         }
                     }
+                    divCount++;
+                    xpath = '//' + tagName + classes + xpath;
+                } else {
+                    divCount = 0;
+                    if (i == xpathResult.snapshotLength - 1) {
+                        var index = getElementIndex(element);
+                        xpath = '//' + tagName + '[' + index + ']' + xpath;
+                    } else {
+                        xpath = '//' + tagName + xpath;
+                    }
                 }
-                i--;
             }
-            console.log(xpath);
-
-            var elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);  // Find all elements that match the XPath
-            var count = 0;
-            var element = elements.iterateNext();
-            while (element) {
-                count++;
-                element.style.backgroundColor = 'red';  // Paint the element with a red background color
-                redElements.push(element);
-                element = elements.iterateNext();
-            }
-            console.log(count);
+            i--;
         }
+        console.log(consoleMessage + "xpath>" + xpath);
+
+        var elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);  // Find all elements that match the XPath
+        var count = 0;
+        var element = elements.iterateNext();
+        while (element) {
+            count++;
+            if (count <= 100) {
+                console.log(consoleMessage + "selectedText>" + element.innerText.trim() + ">" + count);
+            }
+            element.style.backgroundColor = 'red';  // Paint the element with a red background color
+            redElements.push(element);
+            element = elements.iterateNext();
+        }
+        console.log(consoleMessage + "count>" + count);
     }
 
     // Helper function to get the index of an element among its siblings

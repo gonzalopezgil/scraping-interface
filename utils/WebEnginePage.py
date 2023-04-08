@@ -1,27 +1,27 @@
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QTableWidgetItem
-import pyperclip
 
 class WebEnginePage(QWebEnginePage):
     table_widget = None
     last_column = -1
-    clicked_xpath = None
-    clicked_text = ""
 
     def reset_table(self):
         self.last_column = -1
-        self.clicked_xpath = None
 
     def javaScriptConsoleMessage(self, level, message, lineNumber, sourceID):
-        if not message.startswith("//"):
+        if not message.startswith("To Python>"):
             print(f"JavaScript Message: {message}")
-        text = pyperclip.paste()
-        if message.startswith("//") and message != self.clicked_xpath and text != self.clicked_text:
-            print(f"JavaScript Message: {message}")
-            if self.table_widget.rowCount() == 1:
-                self.table_widget.insertRow(1)
-            self.last_column += 1
-            self.table_widget.setItem(1, self.last_column, QTableWidgetItem(message))
-            self.clicked_xpath = message
-            self.clicked_text = text
-        
+        else:
+            text = message.split(">")
+            message_type = text[1]
+            value = text[2]
+            if message_type == "selectedText":
+                row = int(text[3])
+                print(message_type,value,row)
+                if self.table_widget.rowCount() < row:
+                    self.table_widget.setRowCount(row)
+                self.table_widget.setItem(row-1, self.last_column, QTableWidgetItem(value))
+            elif message_type == "xpath":
+                print(f"XPath: {value}")
+                self.last_column += 1
+    

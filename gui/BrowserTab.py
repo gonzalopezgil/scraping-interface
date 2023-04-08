@@ -3,7 +3,6 @@ from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer
 import gui.JavaScriptStrings as jss
-import pyperclip
 from utils.WebEnginePage import WebEnginePage
 
 HOME_PAGE = "https://www.google.com"
@@ -19,7 +18,6 @@ class BrowserTab(QWidget):
         self.browser_tab_layout = QVBoxLayout(self)
         self.browser_tab_layout.addWidget(QWidget(self))
 
-        self.clicked_text = None
         self.last_column = -1
 
         # Create a browser window
@@ -40,7 +38,7 @@ class BrowserTab(QWidget):
         self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.table_widget.setColumnCount(COLUMN_COUNT)
         self.table_widget.horizontalHeader().setStretchLastSection(True)
-        self.table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        #self.table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         # Set the table widget as the scroll area's widget
         self.scroll_area.setWidget(self.table_widget)
@@ -101,8 +99,6 @@ class BrowserTab(QWidget):
         # Create a QTimer to check for new links every second
         self.timer = QTimer(self)
 
-        self.browser.page().selectionChanged.connect(self.on_clicked_text)
-
     def get_table_data(self):
         table_data = []
         column_titles = [self.table_widget.horizontalHeaderItem(col).text() 
@@ -115,23 +111,6 @@ class BrowserTab(QWidget):
                         if self.table_widget.item(row, col)]
             table_data.append(row_data)
         return table_data
-
-    def on_clicked_text(self):
-        if not self.clicked_text:
-            self.clicked_text = " "
-            pyperclip.copy(" ")
-        else:
-            text = pyperclip.paste()
-            if self.clicked_text != text:
-                self.clicked_text = text
-                self.last_column += 1
-                #Add text to the row
-                if self.table_widget.rowCount() == 0:
-                    self.table_widget.setRowCount(1)
-                if self.last_column >= COLUMN_COUNT:
-                    self.table_widget.insertColumn(self.last_column)
-                self.table_widget.setItem(0, self.last_column, QTableWidgetItem(text))
-
 
     def load_homepage(self):
         self.browser.load(QUrl(HOME_PAGE))
@@ -160,7 +139,6 @@ class BrowserTab(QWidget):
 
         # Disable links if the scrape widget is visible
         if self.scrape_widget.isVisible():
-            self.clicked_text = None
             self.last_column = -1
             self.table_widget.clear()
             self.table_widget.setRowCount(0)
