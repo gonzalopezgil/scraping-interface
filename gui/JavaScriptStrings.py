@@ -17,7 +17,6 @@ ENABLE_LINKS_JS = """
     });
 """
 
-# The last part is from HIGHLIGHT_TEXT_JS
 DISABLE_LINKS_JS = """
     var redElements = [];
 
@@ -32,41 +31,13 @@ DISABLE_LINKS_JS = """
 
     var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
     for (var i = 0; i < textElements.length; i++) {
-        textElements[i].addEventListener("click", copyToClipboard);
+        textElements[i].addEventListener("click", scrapeData);
     }
 
-    function copyToClipboard(event) {
+    function scrapeData(event) {
         var selectedText = event.target.innerText.trim();
         if (selectedText) {
-            var textarea = document.createElement("textarea");
-            document.body.appendChild(textarea);
-            textarea.value = selectedText;
-            textarea.select();
-            document.execCommand("copy");
-            document.body.removeChild(textarea);
-
-            var style = document.createElement('style');
-            document.head.appendChild(style);
-
-            var range = document.createRange();
-            range.selectNodeContents(document.body);
-            var selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-
-            var rangeText = document.createRange();
-            rangeText.selectNodeContents(event.target);
-
-            // create a new element and position it around the selected text
-            // var rect = rangeText.getBoundingClientRect();
-            // var square = document.createElement('div');
-            // square.style.position = 'absolute';
-            // square.style.left = rect.left + window.pageXOffset + 'px'; // adjust for page scroll
-            // square.style.top = rect.top + window.pageYOffset + 'px'; // adjust for page scroll
-            // square.style.width = rect.width + 'px';
-            // square.style.height = rect.height + 'px';
-            // square.style.border = '2px solid red';
-            // document.body.appendChild(square);
+            console.log("selectedText: " + selectedText)
 
             // Get the XPath of the clicked element
             var xpathResult = document.evaluate(
@@ -167,23 +138,4 @@ UNHIGHLIGHT_TEXT_JS = """
     var selection = window.getSelection();
     selection.removeAllRanges();
     document.removeEventListener('mousedown', preventMousedown);
-"""
-
-# Unused
-FULL_DIV_JS = """
-    var overlay = document.createElement('div');
-    overlay.style.position = 'fixed';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.width = '100%';
-    overlay.style.height = '100%';
-    overlay.style.backgroundColor = 'rgba(255, 255, 255, 0)';
-    document.body.appendChild(overlay);
-"""
-
-# Unused
-COLOR_TEXT_JS = """
-    var style = document.createElement('style');
-    style.innerHTML = '* { color: yellow !important; }';
-    document.head.appendChild(style);
 """
