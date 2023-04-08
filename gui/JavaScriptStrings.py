@@ -58,15 +58,15 @@ DISABLE_LINKS_JS = """
             rangeText.selectNodeContents(event.target);
 
             // create a new element and position it around the selected text
-            var rect = rangeText.getBoundingClientRect();
-            var square = document.createElement('div');
-            square.style.position = 'absolute';
-            square.style.left = rect.left + window.pageXOffset + 'px'; // adjust for page scroll
-            square.style.top = rect.top + window.pageYOffset + 'px'; // adjust for page scroll
-            square.style.width = rect.width + 'px';
-            square.style.height = rect.height + 'px';
-            square.style.border = '2px solid red';
-            document.body.appendChild(square);
+            // var rect = rangeText.getBoundingClientRect();
+            // var square = document.createElement('div');
+            // square.style.position = 'absolute';
+            // square.style.left = rect.left + window.pageXOffset + 'px'; // adjust for page scroll
+            // square.style.top = rect.top + window.pageYOffset + 'px'; // adjust for page scroll
+            // square.style.width = rect.width + 'px';
+            // square.style.height = rect.height + 'px';
+            // square.style.border = '2px solid red';
+            // document.body.appendChild(square);
 
             // Get the XPath of the clicked element
             var xpathResult = document.evaluate(
@@ -77,16 +77,42 @@ DISABLE_LINKS_JS = """
                 null
             );
             var xpath = '';
-            for (var i = 0; i < xpathResult.snapshotLength; i++) {
+            var divCount = 0;
+            var i = xpathResult.snapshotLength - 1;
+            while (divCount < 3 && i >= 0) {
                 var element = xpathResult.snapshotItem(i);
                 var tagName = element.tagName.toLowerCase();
-                if (i == xpathResult.snapshotLength - 1) {
-                    var index = getElementIndex(element);
-                    var classes = element.className ? '[@class="' + element.className + '"]' : '';
-                    xpath += '//' + tagName + '[' + index + ']' + classes;
+                if (tagName === 'html' || tagName === 'body') {
+                    xpath = '//' + tagName + xpath;
                 } else {
-                    xpath += '//' + tagName;
+                    var classes = '';
+                    if (tagName === 'div') {
+                        if (element.className) {
+                            classes = '[contains(@class, "';
+                            var classList = element.className.split(' ');
+                            var j = 0;
+                            while (j < classList.length && !/\d/.test(classList[j]) && classList[j] !== 'selected') {
+                                if (j > 0) {
+                                    classes += ' ';
+                                }
+                                classes += classList[j];
+                                j++;
+                            }
+                            classes += '")]';
+                        }
+                        divCount++;
+                        xpath = '//' + tagName + classes + xpath;
+                    } else {
+                        divCount = 0;
+                        if (i == xpathResult.snapshotLength - 1) {
+                            var index = getElementIndex(element);
+                            xpath = '//' + tagName + '[' + index + ']' + xpath;
+                        } else {
+                            xpath = '//' + tagName + xpath;
+                        }
+                    }
                 }
+                i--;
             }
             console.log(xpath);
 

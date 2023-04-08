@@ -50,11 +50,13 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         
         general_xpaths = [self.generalise_xpath(xpath) for xpath in self.xpaths]
         prefix = self.get_common_xpath(general_xpaths)
-        elements = self.get_elements(prefix, obj)
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
 
         print(f"Prefix: {prefix}")
         print(f"Suffixes: {xpath_suffixes}")
+        
+        elements = self.get_elements(prefix, obj)
+
         print(f"Elements: {len(elements)}")
 
         for xpath,label,text in zip(self.xpaths,self.labels,self.selected_text):
@@ -127,13 +129,14 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         result = {}
         for d in dict_list:
             for k, v in d.items():
+                item = [', '.join(v)]
                 if k in result:
                     if isinstance(result[k], list):
-                        result[k].extend(v)
+                        result[k].extend(item)
                     else:
-                        result[k] = [result[k]] + v
+                        result[k] = [result[k]] + item
                 else:
-                    result[k] = v
+                    result[k] = item
         return result
     
     def remove_text_from_xpath(self, xpath):

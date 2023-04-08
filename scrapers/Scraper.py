@@ -130,6 +130,9 @@ class Scraper(ABC):
                 prefix = prefix[:prefix.rfind("//")]
                 break
 
+        if len(xpaths) > 1 and prefix == "":
+            return "//html//body"
+
         return prefix
     
     def dict_to_df(self, my_dict):
@@ -138,6 +141,7 @@ class Scraper(ABC):
             df.index += 1
             return df
         except ValueError as e:
+            print(f"My dict: {my_dict}")
             print(f"Error creating dataframe: {e}")
             return None
         
