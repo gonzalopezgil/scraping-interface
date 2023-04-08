@@ -18,8 +18,6 @@ class BrowserTab(QWidget):
         self.browser_tab_layout = QVBoxLayout(self)
         self.browser_tab_layout.addWidget(QWidget(self))
 
-        self.last_column = -1
-
         # Create a browser window
         self.browser = QWebEngineView(self)
 
@@ -98,18 +96,11 @@ class BrowserTab(QWidget):
         # Create a QTimer to check for new links every second
         self.timer = QTimer(self)
 
-    def get_table_data(self):
-        table_data = []
+    def get_column_titles(self):
         column_titles = [self.table_widget.horizontalHeaderItem(col).text() 
                         if self.table_widget.horizontalHeaderItem(col) else str(col+1)
-                        for col in range(self.table_widget.columnCount())][:self.last_column+1]
-        table_data.append(column_titles)
-        for row in range(self.table_widget.rowCount()):
-            row_data = [self.table_widget.item(row, col).text()
-                        for col in range(self.table_widget.columnCount())
-                        if self.table_widget.item(row, col)]
-            table_data.append(row_data)
-        return table_data
+                        for col in range(self.table_widget.columnCount())][:self.column_manager.get_column_count()]
+        return column_titles
 
     def load_homepage(self):
         self.browser.load(QUrl(HOME_PAGE))
@@ -127,7 +118,7 @@ class BrowserTab(QWidget):
         self.url_field.setText(url.toString())
         self.scrape_widget.setVisible(False)
         self.browser.page().runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
-        self.browser.page().reset_table()
+        self.column_manager.clear_columns()
 
     def toggle_scrape_widget(self):
         # Get the page
@@ -138,7 +129,6 @@ class BrowserTab(QWidget):
 
         # Disable links if the scrape widget is visible
         if self.scrape_widget.isVisible():
-            self.last_column = -1
             self.table_widget.clear()
             self.table_widget.setRowCount(0)
             self.timer.singleShot(100, self.disable_links)
@@ -148,7 +138,7 @@ class BrowserTab(QWidget):
             self.timer.stop()
             page.runJavaScript(jss.ENABLE_LINKS_JS)
             page.runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
-            page.reset_table()
+            self.column_manager.clear_columns()
 
     # Create a loop that continuously disables all links in the page
     def disable_links(self):

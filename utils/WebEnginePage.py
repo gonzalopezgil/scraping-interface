@@ -8,9 +8,6 @@ class WebEnginePage(QWebEnginePage):
         self.table_widget = table_widget
         self.column_manager = column_manager
 
-    def reset_table(self):
-        self.column_manager.clear_columns()
-
     def javaScriptConsoleMessage(self, level, message, lineNumber, sourceID):
         if not message.startswith("To Python>"):
             print(f"JavaScript Message: {message}")
@@ -20,10 +17,12 @@ class WebEnginePage(QWebEnginePage):
             value = text[2]
             if message_type == "selectedText":
                 row = int(text[3])
+                col = self.column_manager.get_column_count() - 1
+                if row == 1:
+                    self.column_manager.set_first_text(col, value)
                 if self.table_widget.rowCount() < row:
                     self.table_widget.setRowCount(row)
-                self.table_widget.setItem(row-1, self.column_manager.get_column_count()- 1, QTableWidgetItem(value))
+                self.table_widget.setItem(row-1, col, QTableWidgetItem(value))
             elif message_type == "xpath":
-                print(f"XPath: {value}")
                 self.column_manager.create_column(value)
     

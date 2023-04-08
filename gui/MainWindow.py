@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
         self.file_name = None
         self.file_entered = threading.Event()
 
-        self.browser_tab.download_button.clicked.connect(lambda: self.start_thread(self.browser_tab.browser.url().toString(), self.browser_tab.get_table_data(), self.foo))
+        self.browser_tab.download_button.clicked.connect(lambda: self.start_thread(self.browser_tab.browser.url().toString(), self.browser_tab.get_column_titles(), self.foo))
 
         # Add the tabs to the tab widget
         self.tabs.addTab(self.browser_tab, "Browser")
@@ -58,23 +58,23 @@ class MainWindow(QMainWindow):
             print("Error: no file name entered")
             return None
 
-    def start_thread(self, url, data, foo):
-        self.processes_tab.add_row(self.browser_tab.browser.url().toString(), "", self.browser_tab.get_table_data()[0])
+    def start_thread(self, url, column_titles, foo):
+        self.processes_tab.add_row(self.browser_tab.browser.url().toString(), "", self.browser_tab.get_column_titles())
         row = self.processes_tab.table.rowCount()-1
         #self.thread = threading.Thread(target=self.thread_function, args=(url, data, foo, row), daemon=True)
         #self.file_entered.clear()
         #self.thread.start()
         self.file_name = self.enter_file_name()
         #self.file_entered.set()
-        self.thread_function(url, data, foo, row)
+        self.thread_function(url, column_titles, foo, row)
 
-    def thread_function(self, url, data, obj, row):
+    def thread_function(self, url, column_titles, obj, row):
         self.tabs.setCurrentIndex(1)
 
         scraper = ScrapySeleniumScraper()
         pid = os.fork()
         if pid == 0:
-            scraper.scrape(url, data[0], data[1], data[2], self.file_name)
+            scraper.scrape(url, column_titles, self.column_manager.get_all_first_texts(), self.column_manager.get_all_xpaths(), self.file_name)
             os._exit(0)
         else:
             os.waitpid(pid, 0)
