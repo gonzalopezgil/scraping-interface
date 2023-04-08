@@ -98,7 +98,11 @@ DISABLE_LINKS_JS = """
                                 classes += classList[j];
                                 j++;
                             }
-                            classes += '")]';
+                            if (j === 0) {
+                                classes = '';
+                            } else {
+                                classes += '")]';
+                            }
                         }
                         divCount++;
                         xpath = '//' + tagName + classes + xpath;
