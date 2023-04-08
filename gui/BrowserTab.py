@@ -39,7 +39,6 @@ class BrowserTab(QWidget):
         self.table_widget = QTableWidget()
         self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.table_widget.setColumnCount(COLUMN_COUNT)
-        self.table_widget.setRowCount(1)
         self.table_widget.horizontalHeader().setStretchLastSection(True)
 
         # Set the table widget as the scroll area's widget
@@ -126,6 +125,8 @@ class BrowserTab(QWidget):
                 self.clicked_text = text
                 self.last_column += 1
                 #Add text to the row
+                if self.table_widget.rowCount() == 0:
+                    self.table_widget.setRowCount(1)
                 if self.last_column >= COLUMN_COUNT:
                     self.table_widget.insertColumn(self.last_column)
                 self.table_widget.setItem(0, self.last_column, QTableWidgetItem(text))
@@ -161,6 +162,7 @@ class BrowserTab(QWidget):
             self.clicked_text = None
             self.last_column = -1
             self.table_widget.clear()
+            self.table_widget.setRowCount(0)
             self.timer.singleShot(100, self.disable_links)
             page.runJavaScript(jss.HIGHLIGHT_TEXT_JS)
         # Enable links if the scrape widget is not visible
