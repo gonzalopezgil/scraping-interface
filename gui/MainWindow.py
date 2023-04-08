@@ -5,6 +5,7 @@ from gui.SettingsTab import SettingsTab
 from scrapers.ScrapySeleniumScraper import ScrapySeleniumScraper
 import threading
 from utils.SignalManager import SignalManager
+from utils.ColumnManager import ColumnManager
 import os
 
 class MainWindow(QMainWindow):
@@ -16,9 +17,11 @@ class MainWindow(QMainWindow):
         # Create a QTabWidget to hold the tabs
         self.tabs = QTabWidget(self)
         self.setCentralWidget(self.tabs)
+
+        self.column_manager = ColumnManager()
         
         # Create the tabs
-        self.browser_tab = BrowserTab(self)
+        self.browser_tab = BrowserTab(self, self.column_manager)
         self.processes_tab = ProcessesTab(self)
         self.settings_tab = SettingsTab(self)
 

@@ -2,11 +2,14 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QTableWidgetItem
 
 class WebEnginePage(QWebEnginePage):
-    table_widget = None
-    last_column = -1
+    
+    def __init__(self, parent=None, table_widget=None, column_manager=None):
+        super().__init__(parent)
+        self.table_widget = table_widget
+        self.column_manager = column_manager
 
     def reset_table(self):
-        self.last_column = -1
+        self.column_manager.clear_columns()
 
     def javaScriptConsoleMessage(self, level, message, lineNumber, sourceID):
         if not message.startswith("To Python>"):
@@ -17,11 +20,10 @@ class WebEnginePage(QWebEnginePage):
             value = text[2]
             if message_type == "selectedText":
                 row = int(text[3])
-                print(message_type,value,row)
                 if self.table_widget.rowCount() < row:
                     self.table_widget.setRowCount(row)
-                self.table_widget.setItem(row-1, self.last_column, QTableWidgetItem(value))
+                self.table_widget.setItem(row-1, self.column_manager.get_column_count()- 1, QTableWidgetItem(value))
             elif message_type == "xpath":
                 print(f"XPath: {value}")
-                self.last_column += 1
+                self.column_manager.create_column(value)
     

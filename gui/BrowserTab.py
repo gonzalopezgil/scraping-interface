@@ -12,9 +12,9 @@ COLUMN_COUNT = 10
 
 class BrowserTab(QWidget):
 
-    def __init__(self, parent=None):
-
+    def __init__(self, parent=None, column_manager=None):
         super().__init__(parent)
+        self.column_manager = column_manager
         self.browser_tab_layout = QVBoxLayout(self)
         self.browser_tab_layout.addWidget(QWidget(self))
 
@@ -52,8 +52,7 @@ class BrowserTab(QWidget):
         self.download_button = QPushButton("Download Excel", self.scrape_widget)
         self.scrape_widget_layout.addWidget(self.download_button)
 
-        page = WebEnginePage(self.browser)
-        page.table_widget = self.table_widget
+        page = WebEnginePage(self.browser, self.table_widget, self.column_manager)
         self.browser.setPage(page)
         # Connect the urlChanged signal to update the URL field
         self.browser.urlChanged.connect(self.update_url_field)
