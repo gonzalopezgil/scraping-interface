@@ -52,20 +52,11 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         prefix = self.get_common_xpath(general_xpaths)
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
 
-        print(f"Prefix: {prefix}")
-        print(f"Suffixes: {xpath_suffixes}")
-        
-        elements = self.get_elements(prefix, obj)
-
-        print(f"Elements: {len(elements)}")
-
         for xpath,label,text in zip(self.xpaths,self.labels,self.selected_text):
             text = self.clean_text(text)
             elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
             if elements is not None and len(elements) > 0:
                 elements = self.clean_list(elements)
-                print(self.generalise_xpath(xpath))
-                print(f"Elements ({len(elements)})")
                 elements = self.find_text_in_data(elements, text)
                 if elements is None:
                     print("Error: Text selected by the user not found in elements")
@@ -105,6 +96,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         process.join()
 
         dict_results = self.merge_dicts(results)
+        print(dict_results)
 
         if len(dict_results) > 0:
             for label,text in zip(labels, selected_text):

@@ -93,7 +93,6 @@ class MainWindow(QMainWindow):
         #    if self.file_name is not None:
         #        self.save_file(df, self.file_name)
         #        obj.fooSignal.emit(row, "Finished", self.file_name)
-        #        print("GUARDADO")
         #        self.file_name = None
         #    else:
         #        obj.fooSignal.emit(row, "Stopped", "")

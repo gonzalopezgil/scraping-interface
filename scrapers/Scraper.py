@@ -38,10 +38,6 @@ class Scraper(ABC):
             elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
             if elements is not None and len(elements) > 0:
                 elements = self.clean_list(elements)
-                print(self.generalise_xpath(xpath))
-                print(f"Elements ({len(elements)})")
-                for elem in elements:
-                    print(elem)
                 elements = self.find_text_in_data(elements, text)
                 if elements is None:
                     if default_encoding:
@@ -141,7 +137,6 @@ class Scraper(ABC):
             df.index += 1
             return df
         except ValueError as e:
-            print(f"My dict: {my_dict}")
             print(f"Error creating dataframe: {e}")
             return None
         

@@ -31,10 +31,6 @@ class ScrapyScraper(Scraper, Spider):
         elements = self.get_elements(prefix, obj)
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
 
-        print(f"Prefix: {prefix}")
-        print(f"Suffixes: {xpath_suffixes}")
-        print(f"Elements: {len(elements)}")
-
         for elem in elements:
             item = ItemLoader(self.create_class(self.labels)(), elem)
             for label,xpath in zip(self.labels, xpath_suffixes):

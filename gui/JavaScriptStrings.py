@@ -103,7 +103,7 @@ DISABLE_LINKS_JS = """
         var element = elements.iterateNext();
         while (element) {
             count++;
-            if (count <= 100) {
+            if (count <= 5) {
                 console.log(consoleMessage + "selectedText>" + element.innerText.trim() + ">" + count);
             }
             element.style.backgroundColor = 'red';  // Paint the element with a red background color
