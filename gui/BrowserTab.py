@@ -44,11 +44,21 @@ class BrowserTab(QWidget):
         # Allow users to edit column headers
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_widget.horizontalHeader().setSectionsMovable(True)
-        self.table_widget.horizontalHeader().sectionDoubleClicked.connect(self.change_column_header) 
+        self.table_widget.horizontalHeader().sectionDoubleClicked.connect(self.change_column_header)
 
+        # Create a Scraping bar with buttons
+        self.scrape_bar = QWidget(self)
+        self.scrape_bar_layout = QHBoxLayout(self.scrape_bar)
+
+        # Add a button to show a preview of the scrape
+        self.preview_button = QPushButton("Preview", self.scrape_widget)
+        self.scrape_bar_layout.addWidget(self.preview_button)
+        
         # Add a button to download the table contents as an Excel file
         self.download_button = QPushButton("Download Excel", self.scrape_widget)
-        self.scrape_widget_layout.addWidget(self.download_button)
+        self.scrape_bar_layout.addWidget(self.download_button)
+
+        self.scrape_widget_layout.addWidget(self.scrape_bar)
 
         page = WebEnginePage(self.browser, self.table_widget, self.column_manager)
         self.browser.setPage(page)

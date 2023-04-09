@@ -33,6 +33,7 @@ class MainWindow(QMainWindow):
         self.file_entered = threading.Event()
 
         self.browser_tab.download_button.clicked.connect(lambda: self.start_thread(self.browser_tab.browser.url().toString(), self.browser_tab.get_column_titles(), self.foo))
+        self.browser_tab.preview_button.clicked.connect(lambda: self.preview_scrape(self.browser_tab.browser.url().toString(), self.browser_tab.get_column_titles()))
 
         # Add the tabs to the tab widget
         self.tabs.addTab(self.browser_tab, "Browser")
@@ -96,6 +97,18 @@ class MainWindow(QMainWindow):
         #        self.file_name = None
         #    else:
         #        obj.fooSignal.emit(row, "Stopped", "")
+
+    def preview_scrape(self, url, column_titles):
+        scraper = ScrapySeleniumScraper()
+        items = scraper.preview_scrape(url, column_titles, self.column_manager.get_all_first_texts(), self.column_manager.get_all_xpaths())
+        if items is None or len(items) == 0:
+            print("Error")
+        else:
+            for i, key in enumerate(items.keys()):
+                for j, item in enumerate(items[key]):
+                    if self.browser_tab.table_widget.rowCount() < j+1:
+                        self.browser_tab.table_widget.setRowCount(j+1)
+                    self.browser_tab.table_widget.setItem(j, i, QTableWidgetItem(item))
 
     def save_file(self, dataframe, file_name):
         dataframe.to_excel(file_name)

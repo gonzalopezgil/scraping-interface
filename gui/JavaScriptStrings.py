@@ -97,14 +97,15 @@ DISABLE_LINKS_JS = """
             i--;
         }
         console.log(consoleMessage + "xpath>" + xpath);
+        console.log(consoleMessage + "selectedText>" + message + ">" + 1);
 
         var elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);  // Find all elements that match the XPath
         var count = 0;
         var element = elements.iterateNext();
         while (element) {
             count++;
-            if (count <= 5) {
-                console.log(consoleMessage + "selectedText>" + element.innerText.trim() + ">" + count);
+            if (count <= 1) {
+                // console.log(consoleMessage + "selectedText>" + element.innerText.trim() + ">" + count);
             }
             element.style.backgroundColor = 'red';  // Paint the element with a red background color
             redElements.push(element);
