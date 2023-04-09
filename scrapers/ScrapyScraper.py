@@ -63,7 +63,7 @@ class ScrapyScraper(Scraper, Spider):
         new_class = type("Element", (Item,), my_dict)
         return new_class
     
-    def f(self, q, url, labels, selected_text, xpaths, default_encoding=True):
+    def run_scraper(self, q, url, labels, selected_text, xpaths, default_encoding=True):
         try:
             runner = CrawlerRunner()
             deferred = runner.crawl(ScrapyScraper, start_urls=[url], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, default_encoding=default_encoding, preview=True)
@@ -85,7 +85,7 @@ class ScrapyScraper(Scraper, Spider):
 
     def preview_scrape(self, url, labels, selected_text, xpaths, default_encoding=True):
         q = Queue()
-        p = Process(target=self.f, args=(q,url,labels,selected_text,xpaths,default_encoding,))
+        p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,default_encoding,))
 
         p.start()
         result = q.get()

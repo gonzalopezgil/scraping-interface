@@ -7,7 +7,6 @@ from scrapers.ScrapySeleniumScraper import ScrapySeleniumScraper
 import threading
 from utils.SignalManager import SignalManager
 from utils.ColumnManager import ColumnManager
-import os
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -63,41 +62,23 @@ class MainWindow(QMainWindow):
     def start_thread(self, url, column_titles, foo):
         self.processes_tab.add_row(self.browser_tab.browser.url().toString(), "", self.browser_tab.get_column_titles())
         row = self.processes_tab.table.rowCount()-1
-        #self.thread = threading.Thread(target=self.thread_function, args=(url, data, foo, row), daemon=True)
-        #self.file_entered.clear()
-        #self.thread.start()
-        self.file_name = self.enter_file_name()
-        #self.file_entered.set()
-        self.thread_function(url, column_titles, foo, row)
+        file_name = self.enter_file_name()
+        if file_name:
+            self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, foo, row, file_name), daemon=True)
+            self.thread.start()
+        else:
+            foo.fooSignal.emit(row, "Stopped", "")
 
-    def thread_function(self, url, column_titles, obj, row):
+    def thread_function(self, url, column_titles, obj, row, file_name):
         self.tabs.setCurrentIndex(1)
 
         scraper = ScrapySeleniumScraper()
-        pid = os.fork()
-        if pid == 0:
-            scraper.scrape(url, column_titles, self.column_manager.get_all_first_texts(), self.column_manager.get_all_xpaths(), self.file_name)
-            os._exit(0)
-        else:
-            os.waitpid(pid, 0)
-            if os.path.isfile(self.file_name):
-                obj.fooSignal.emit(row, "Finished", self.file_name)
-            else:
-                obj.fooSignal.emit(row, "Error", "")
+        df = scraper.scrape(url, column_titles, self.column_manager.get_all_first_texts(), self.column_manager.get_all_xpaths(), file_name)
 
-        #if df is None:
-        #    obj.fooSignal.emit(row, "Error", "")
-        #else:
-        #    # Wait until the user enters a file name
-        #    #if self.file_name is None:
-        #    #    self.file_entered.wait()
-        #    # Check again in case the user did not enter a file name
-        #    if self.file_name is not None:
-        #        self.save_file(df, self.file_name)
-        #        obj.fooSignal.emit(row, "Finished", self.file_name)
-        #        self.file_name = None
-        #    else:
-        #        obj.fooSignal.emit(row, "Stopped", "")
+        if df is None:
+            obj.fooSignal.emit(row, "Error", "")
+        else:
+            obj.fooSignal.emit(row, "Finished", file_name)
 
     def preview_scrape(self, url, column_titles):
         scraper = ScrapyScraper()

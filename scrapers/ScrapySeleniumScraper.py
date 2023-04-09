@@ -9,8 +9,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from scrapy.loader import ItemLoader
 from scrapy.item import Item, Field
-from scrapy.crawler import CrawlerProcess
+from scrapy.crawler import CrawlerRunner
 from scrapy.selector import Selector
+from twisted.internet import reactor
+from multiprocessing import Process, Queue
+from scrapy.exceptions import CloseSpider
 
 class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     name = "ScrapySeleniumScraper"
@@ -60,7 +63,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
                 elements = self.find_text_in_data(elements, text)
                 if elements is None:
                     print("Error: Text selected by the user not found in elements")
-                    return None
+                    return
         
         sel = Selector(text=obj.page_source)
         elements = sel.xpath(prefix)
@@ -82,40 +85,59 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         new_class = type("Element", (Item,), my_dict)
         return new_class
     
+    def run_scraper(self, q, url, labels, selected_text, xpaths, file_name, default_encoding=True):
+        try:
+            runner = CrawlerRunner(self.choose_random_header())
+            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://quotes.toscrape.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, default_encoding=default_encoding)
+            deferred.addBoth(lambda _: reactor.stop())
+
+            spider = next(iter(runner.crawlers)).spider
+            results = []
+
+            def collect_items(item):
+                results.append(item)
+
+            spider.crawler.signals.connect(collect_items, signal=scrapy.signals.item_scraped)
+
+            reactor.run()
+            dict_results = self.merge_dicts(results)
+
+            if len(dict_results) > 0:
+                for label,text in zip(labels, selected_text):
+                    elements = dict_results[label]
+                    elements = self.clean_list(elements)
+                    text = self.clean_text(text)
+                    #if text not in elements:
+                    #    index = self.check_pattern(elements, text)
+                    #    if index != -1:
+                    #        elements = self.get_pattern(elements, text, index)
+                    #    else:
+                    #        print("Error: Text selected by the user not found in elements")
+                    #        return None
+                    dict_results[label] = elements
+                
+                df = self.dict_to_df(dict_results)
+
+                if df is not None and file_name is not None:
+                    self.save_file(df, file_name)
+                    q.put(df)
+            else:
+                print("Error: No elements found")
+                q.put(None)
+
+        except Exception as e:
+            print(f"Error: {e}")
+            q.put(None)
+    
     def scrape(self, url, labels, selected_text, xpaths, file_name, default_encoding=True):
-        process = CrawlerProcess(self.choose_random_header())
-        process.crawl(ScrapySeleniumScraper, start_urls=["http://quotes.toscrape.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, default_encoding=default_encoding)
-        spider = next(iter(process.crawlers)).spider
-        results = []
+        q = Queue()
+        p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,file_name,default_encoding))
 
-        def collect_items(item):
-            results.append(item)
+        p.start()
+        result = q.get()
+        p.join()
 
-        spider.crawler.signals.connect(collect_items, signal=scrapy.signals.item_scraped)
-        process.start()
-        process.join()
-
-        dict_results = self.merge_dicts(results)
-        print(dict_results)
-
-        if len(dict_results) > 0:
-            for label,text in zip(labels, selected_text):
-                elements = dict_results[label]
-                elements = self.clean_list(elements)
-                text = self.clean_text(text)
-                #if text not in elements:
-                #    index = self.check_pattern(elements, text)
-                #    if index != -1:
-                #        elements = self.get_pattern(elements, text, index)
-                #    else:
-                #        print("Error: Text selected by the user not found in elements")
-                #        return None
-                dict_results[label] = elements
-            
-            df = self.dict_to_df(dict_results)
-
-            if df is not None and file_name is not None:
-                self.save_file(df, file_name)
+        return(result)
     
     def remove_text_from_xpath(self, xpath):
         if xpath.endswith("//text()"):
