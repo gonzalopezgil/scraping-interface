@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, Q
 from gui.BrowserTab import BrowserTab
 from gui.ProcessesTab import ProcessesTab
 from gui.SettingsTab import SettingsTab
+from scrapers.ScrapyScraper import ScrapyScraper
 from scrapers.ScrapySeleniumScraper import ScrapySeleniumScraper
 import threading
 from utils.SignalManager import SignalManager
@@ -99,16 +100,15 @@ class MainWindow(QMainWindow):
         #        obj.fooSignal.emit(row, "Stopped", "")
 
     def preview_scrape(self, url, column_titles):
-        scraper = ScrapySeleniumScraper()
+        scraper = ScrapyScraper()
         items = scraper.preview_scrape(url, column_titles, self.column_manager.get_all_first_texts(), self.column_manager.get_all_xpaths())
         if items is None or len(items) == 0:
-            print("Error")
+            self.show_no_preview_results()
         else:
-            for i, key in enumerate(items.keys()):
-                for j, item in enumerate(items[key]):
-                    if self.browser_tab.table_widget.rowCount() < j+1:
-                        self.browser_tab.table_widget.setRowCount(j+1)
-                    self.browser_tab.table_widget.setItem(j, i, QTableWidgetItem(item))
+            self.browser_tab.set_table_data(items)
+
+    def show_no_preview_results(self):
+        QMessageBox.warning(self, "Warning", "No preview results to show", QMessageBox.Ok)
 
     def save_file(self, dataframe, file_name):
         dataframe.to_excel(file_name)

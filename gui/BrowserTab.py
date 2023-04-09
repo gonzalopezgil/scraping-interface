@@ -160,3 +160,10 @@ class BrowserTab(QWidget):
         if ok and new_header_text:
             new_header = QTableWidgetItem(new_header_text)
             self.table_widget.setHorizontalHeaderItem(index, new_header)
+
+    def set_table_data(self, items):
+        for i, key in enumerate(items.keys()):
+            for j, item in enumerate(items[key]):
+                if self.table_widget.rowCount() < j+1:
+                    self.table_widget.setRowCount(j+1)
+                self.table_widget.setItem(j, i, QTableWidgetItem(item))
