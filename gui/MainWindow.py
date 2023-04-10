@@ -64,21 +64,16 @@ class MainWindow(QMainWindow):
         row = self.processes_tab.table.rowCount()-1
         file_name = self.enter_file_name()
         if file_name:
-            self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, foo, row, file_name), daemon=True)
+            self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, foo, row), daemon=True)
             self.thread.start()
         else:
             foo.fooSignal.emit(row, "Stopped", "")
 
-    def thread_function(self, url, column_titles, obj, row, file_name):
+    def thread_function(self, url, column_titles, file_name, foo, row):
         self.tabs.setCurrentIndex(1)
 
         scraper = ScrapySeleniumScraper()
-        df = scraper.scrape(url, column_titles, self.column_manager.get_all_first_texts(), self.column_manager.get_all_xpaths(), file_name)
-
-        if df is None:
-            obj.fooSignal.emit(row, "Error", "")
-        else:
-            obj.fooSignal.emit(row, "Finished", file_name)
+        scraper.scrape(url, column_titles, self.column_manager.get_all_first_texts(), self.column_manager.get_all_xpaths(), file_name, foo, row)
 
     def preview_scrape(self, url, column_titles):
         scraper = ScrapyScraper()

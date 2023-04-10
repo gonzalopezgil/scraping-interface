@@ -42,7 +42,7 @@ class Scraper(ABC):
                 if elements is None:
                     if default_encoding:
                         # Check with other encoding
-                        return self.scrape(url, labels, selected_text, xpaths, False)
+                        return self.scrape(url, labels, selected_text, xpaths, file_name, False)
                     else:
                         print("Error: Text selected by the user not found in elements")
                         return None

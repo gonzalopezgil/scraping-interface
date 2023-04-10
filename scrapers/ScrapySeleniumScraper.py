@@ -13,7 +13,6 @@ from scrapy.crawler import CrawlerRunner
 from scrapy.selector import Selector
 from twisted.internet import reactor
 from multiprocessing import Process, Queue
-from scrapy.exceptions import CloseSpider
 
 class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     name = "ScrapySeleniumScraper"
@@ -49,11 +48,14 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
+        self.q.put("1%")
         obj = self.get_webpage(self.url, self.default_encoding)
+        self.q.put("10%")
         
         general_xpaths = [self.generalise_xpath(xpath) for xpath in self.xpaths]
         prefix = self.get_common_xpath(general_xpaths)
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
+        self.q.put("20%")
 
         for xpath,label,text in zip(self.xpaths,self.labels,self.selected_text):
             text = self.clean_text(text)
@@ -64,6 +66,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
                 if elements is None:
                     print("Error: Text selected by the user not found in elements")
                     return
+        self.q.put("50%")
         
         sel = Selector(text=obj.page_source)
         elements = sel.xpath(prefix)
@@ -77,6 +80,8 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
 
             if item.load_item():
                 yield item.load_item()
+
+        self.q.put("90%")
         
         self.close_webpage(obj)
 
@@ -88,7 +93,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     def run_scraper(self, q, url, labels, selected_text, xpaths, file_name, default_encoding=True):
         try:
             runner = CrawlerRunner(self.choose_random_header())
-            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://quotes.toscrape.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, default_encoding=default_encoding)
+            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://quotes.toscrape.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, q=q, default_encoding=default_encoding)
             deferred.addBoth(lambda _: reactor.stop())
 
             spider = next(iter(runner.crawlers)).spider
@@ -120,7 +125,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
 
                 if df is not None and file_name is not None:
                     self.save_file(df, file_name)
-                    q.put(df)
+                    q.put("Finished")
             else:
                 print("Error: No elements found")
                 q.put(None)
@@ -129,15 +134,23 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
             print(f"Error: {e}")
             q.put(None)
     
-    def scrape(self, url, labels, selected_text, xpaths, file_name, default_encoding=True):
+    def scrape(self, url, labels, selected_text, xpaths, file_name, foo, row, default_encoding=True):
         q = Queue()
         p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,file_name,default_encoding))
 
         p.start()
-        result = q.get()
-        p.join()
+        while True:
+            data = q.get()
+            if data is None:
+                foo.fooSignal.emit(row, "Error", "")
+                break
+            elif data == "Finished":
+                foo.fooSignal.emit(row, data, file_name)
+                break
+            else:
+                foo.fooSignal.emit(row, data, "")
 
-        return(result)
+        p.join()
     
     def remove_text_from_xpath(self, xpath):
         if xpath.endswith("//text()"):
