@@ -100,6 +100,8 @@ class Scraper(ABC):
     def get_suffixes(self, prefix, strings):
         if not strings:
             return []
+        elif prefix == "/html/body":
+            return strings
         else:
             first_string = strings[0]
             if first_string.startswith(prefix):
@@ -127,7 +129,7 @@ class Scraper(ABC):
                 break
 
         if len(xpaths) > 1 and prefix == "":
-            return "//html//body"
+            return "/html/body"
 
         return prefix
     

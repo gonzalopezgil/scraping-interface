@@ -79,6 +79,21 @@ class ScrapyScraper(Scraper, Spider):
 
             reactor.run()
             dict_results = self.merge_dicts(results)
+
+            if len(dict_results) > 0:
+                for label,text in zip(labels, selected_text):
+                    elements = dict_results[label]
+                    elements = self.clean_list(elements)
+                    text = self.clean_text(text)
+                    #if text not in elements:
+                    #    index = self.check_pattern(elements, text)
+                    #    if index != -1:
+                    #        elements = self.get_pattern(elements, text, index)
+                    #    else:
+                    #        print("Error: Text selected by the user not found in elements")
+                    #        return None
+                    dict_results[label] = elements
+            
             q.put(dict_results)
         except Exception as e:
             q.put(e)

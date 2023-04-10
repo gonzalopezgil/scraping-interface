@@ -55,9 +55,7 @@ DISABLE_LINKS_JS = """
             null
         );
         var xpath = '';
-        var divCount = 0;
-        var i = xpathResult.snapshotLength - 1;
-        while (divCount < 3 && i >= 0) {
+        for (var i = xpathResult.snapshotLength - 1; i >= 0; i--) {
             var element = xpathResult.snapshotItem(i);
             var tagName = element.tagName.toLowerCase();
             if (tagName === 'html' || tagName === 'body') {
@@ -82,10 +80,8 @@ DISABLE_LINKS_JS = """
                             classes += '")]';
                         }
                     }
-                    divCount++;
                     xpath = '//' + tagName + classes + xpath;
                 } else {
-                    divCount = 0;
                     if (i == xpathResult.snapshotLength - 1) {
                         var index = getElementIndex(element);
                         xpath = '//' + tagName + '[' + index + ']' + xpath;
@@ -94,7 +90,6 @@ DISABLE_LINKS_JS = """
                     }
                 }
             }
-            i--;
         }
         console.log(consoleMessage + "xpath>" + xpath);
         console.log(consoleMessage + "selectedText>" + message + ">" + 1);
