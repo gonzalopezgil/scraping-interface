@@ -4,9 +4,10 @@ class Column:
         self.first_text = None
         self.num_elements = None
 
-class ColumnManager:
+class ProcessManager:
     def __init__(self):
         self.columns = []
+        self.pagination_xpath = None
 
     def create_column(self, xpath):
         column = Column(xpath)

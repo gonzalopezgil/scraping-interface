@@ -123,6 +123,34 @@ DISABLE_LINKS_JS = """
     }
 """
 
+SELECT_PAGINATION_JS = """
+    var greenElements = [];
+
+    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
+    for (var i = 0; i < textElements.length; i++) {
+        textElements[i].addEventListener("click", paintElementGreen);
+    }
+
+    function paintElementGreen(event) {
+        // Remove the green background color from the previously clicked element(s)
+        while (greenElements.length > 0) {
+            var previousElement = greenElements.pop();
+            previousElement.style.backgroundColor = '';
+        }
+
+        var clickedElement = event.target;
+        clickedElement.style.backgroundColor = 'green';
+        greenElements.push(clickedElement);
+    }
+"""
+
+DISABLE_PAGINATION_JS = """
+    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
+    for (var i = 0; i < textElements.length; i++) {
+        textElements[i].removeEventListener("click", paintElementGreen);
+    }
+"""
+
 HIGHLIGHT_TEXT_JS = """
     var style = document.createElement('style');
     document.head.appendChild(style);

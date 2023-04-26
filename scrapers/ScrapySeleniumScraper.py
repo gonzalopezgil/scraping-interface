@@ -134,7 +134,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
             print(f"Error: {e}")
             q.put(None)
     
-    def scrape(self, url, labels, selected_text, xpaths, file_name, foo, row, default_encoding=True):
+    def scrape(self, url, labels, selected_text, xpaths, file_name, signal_manager, row, default_encoding=True):
         q = Queue()
         p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,file_name,default_encoding))
 
@@ -142,13 +142,13 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         while True:
             data = q.get()
             if data is None:
-                foo.fooSignal.emit(row, "Error", "")
+                signal_manager.process_signal.emit(row, "Error", "")
                 break
             elif data == "Finished":
-                foo.fooSignal.emit(row, data, file_name)
+                signal_manager.process_signal.emit(row, data, file_name)
                 break
             else:
-                foo.fooSignal.emit(row, data, "")
+                signal_manager.process_signal.emit(row, data, "")
 
         p.join()
     

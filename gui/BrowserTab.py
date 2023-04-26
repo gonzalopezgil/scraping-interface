@@ -12,9 +12,9 @@ COLUMN_COUNT = 10
 
 class BrowserTab(QWidget):
 
-    def __init__(self, parent=None, column_manager=None):
+    def __init__(self, parent=None, process_manager=None):
         super().__init__(parent)
-        self.column_manager = column_manager
+        self.process_manager = process_manager
         self.browser_tab_layout = QVBoxLayout(self)
         self.browser_tab_layout.addWidget(QWidget(self))
 
@@ -50,6 +50,13 @@ class BrowserTab(QWidget):
         self.scrape_bar = QWidget(self)
         self.scrape_bar_layout = QHBoxLayout(self.scrape_bar)
 
+        # Add a button to select the pagination element
+        self.pagination_button = QPushButton("Pagination", self.scrape_widget)
+        self.pagination_button.clicked.connect(self.select_pagination)
+        self.scrape_bar_layout.addWidget(self.pagination_button)
+
+        self.pagination_clicked = False
+
         # Add a button to show a preview of the scrape
         self.preview_button = QPushButton("Preview", self.scrape_widget)
         self.scrape_bar_layout.addWidget(self.preview_button)
@@ -60,7 +67,7 @@ class BrowserTab(QWidget):
 
         self.scrape_widget_layout.addWidget(self.scrape_bar)
 
-        page = WebEnginePage(self.browser, self.table_widget, self.column_manager)
+        page = WebEnginePage(self.browser, self.table_widget, self.process_manager)
         self.browser.setPage(page)
         # Connect the urlChanged signal to update the URL field
         self.browser.urlChanged.connect(self.update_url_field)
@@ -109,7 +116,7 @@ class BrowserTab(QWidget):
     def get_column_titles(self):
         column_titles = [self.table_widget.horizontalHeaderItem(col).text() 
                         if self.table_widget.horizontalHeaderItem(col) else str(col+1)
-                        for col in range(self.table_widget.columnCount())][:self.column_manager.get_column_count()]
+                        for col in range(self.table_widget.columnCount())][:self.process_manager.get_column_count()]
         return column_titles
 
     def load_homepage(self):
@@ -128,7 +135,7 @@ class BrowserTab(QWidget):
         self.url_field.setText(url.toString())
         self.scrape_widget.setVisible(False)
         self.browser.page().runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
-        self.column_manager.clear_columns()
+        self.process_manager.clear_columns()
 
     def toggle_scrape_widget(self):
         # Get the page
@@ -148,11 +155,19 @@ class BrowserTab(QWidget):
             self.timer.stop()
             page.runJavaScript(jss.ENABLE_LINKS_JS)
             page.runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
-            self.column_manager.clear_columns()
+            self.process_manager.clear_columns()
 
     # Create a loop that continuously disables all links in the page
     def disable_links(self):
         self.browser.page().runJavaScript(jss.DISABLE_LINKS_JS)
+
+    def select_pagination(self):
+        self.pagination_clicked = not self.pagination_clicked
+        page = self.browser.page()
+        if self.pagination_clicked:
+            page.runJavaScript(jss.SELECT_PAGINATION_JS)
+        else:
+            page.runJavaScript(jss.DISABLE_PAGINATION_JS)
 
     def change_column_header(self, index):
         current_header = self.table_widget.horizontalHeaderItem(index)
