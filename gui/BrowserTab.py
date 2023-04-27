@@ -136,6 +136,7 @@ class BrowserTab(QWidget):
         self.scrape_widget.setVisible(False)
         self.browser.page().runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
         self.process_manager.clear_columns()
+        self.pagination_clicked = False
 
     def toggle_scrape_widget(self):
         # Get the page
@@ -156,6 +157,8 @@ class BrowserTab(QWidget):
             page.runJavaScript(jss.ENABLE_LINKS_JS)
             page.runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
             self.process_manager.clear_columns()
+            self.pagination_clicked = False
+            page.runJavaScript(jss.DISABLE_PAGINATION_JS)
 
     # Create a loop that continuously disables all links in the page
     def disable_links(self):
