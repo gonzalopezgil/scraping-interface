@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
         self.file_name = None
         self.file_entered = threading.Event()
 
-        self.browser_tab.download_button.clicked.connect(lambda: self.start_thread(self.browser_tab.browser.url().toString(), self.browser_tab.get_column_titles(), self.signal_manager))
+        self.browser_tab.download_button.clicked.connect(lambda: self.start_thread(self.browser_tab.browser.url().toString(), self.browser_tab.get_column_titles(), self.process_manager))
         self.browser_tab.preview_button.clicked.connect(lambda: self.preview_scrape(self.browser_tab.browser.url().toString(), self.browser_tab.get_column_titles()))
         self.browser_tab.pagination_button.clicked.connect(self.on_pagination_button_clicked)
 
@@ -64,21 +64,21 @@ class MainWindow(QMainWindow):
             print("Error: no file name entered")
             return None
 
-    def start_thread(self, url, column_titles, signal_manager):
-        self.processes_tab.add_row(self.browser_tab.browser.url().toString(), "", self.browser_tab.get_column_titles())
+    def start_thread(self, url, column_titles, process_manager):
+        self.processes_tab.add_row(url, "", column_titles)
         row = self.processes_tab.table.rowCount()-1
         file_name = self.enter_file_name()
         if file_name:
-            self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, signal_manager, row), daemon=True)
+            self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager), daemon=True)
             self.thread.start()
         else:
-            signal_manager.process_signal.emit(row, "Stopped", "")
+            self.signal_manager.process_signal.emit(row, "Stopped", "")
 
-    def thread_function(self, url, column_titles, file_name, signal_manager, row):
+    def thread_function(self, url, column_titles, file_name, row, process_manager):
         self.tabs.setCurrentIndex(1)
 
         scraper = ScrapySeleniumScraper()
-        scraper.scrape(url, column_titles, self.process_manager.get_all_first_texts(), self.process_manager.get_all_xpaths(), file_name, signal_manager, row)
+        scraper.scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), process_manager.pagination_xpath, file_name, self.signal_manager, row)
 
     def preview_scrape(self, url, column_titles):
         scraper = ScrapyScraper()

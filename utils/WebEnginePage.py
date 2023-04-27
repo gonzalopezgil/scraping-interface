@@ -25,12 +25,10 @@ class WebEnginePage(QWebEnginePage):
                 if self.table_widget.rowCount() < row:
                     self.table_widget.setRowCount(row)
                 self.table_widget.setItem(row-1, col, QTableWidgetItem(value))
-            elif message_type == "xpath":
-                if self.pagination_clicked:
-                    print(f"Xpath: {value}")
-                    self.process_manager.pagination_xpath = value
-                else:
-                    self.process_manager.create_column(value)
+            elif message_type == "xpath" and not self.pagination_clicked:
+                self.process_manager.create_column(value)
+            elif message_type == "xpathRel" and self.pagination_clicked:
+                self.process_manager.pagination_xpath = value
 
     @pyqtSlot()
     def on_pagination_button_clicked(self):

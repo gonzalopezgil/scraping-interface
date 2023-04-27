@@ -58,6 +58,28 @@ DISABLE_LINKS_JS = """
         for (var i = xpathResult.snapshotLength - 1; i >= 0; i--) {
             var element = xpathResult.snapshotItem(i);
             var tagName = element.tagName.toLowerCase();
+            if (i == xpathResult.snapshotLength - 1) {
+                if (element.className) {
+                    classes = '[contains(@class, "';
+                    var classList = element.className.split(' ');
+                    var j = 0;
+                    while (j < classList.length && !/\d/.test(classList[j]) && classList[j] !== 'selected') {
+                        if (j > 0) {
+                            classes += ' ';
+                        }
+                        classes += classList[j];
+                        j++;
+                    }
+                    if (j === 0) {
+                        classes = '';
+                    } else {
+                        classes += '")]';
+                    }
+                }
+                var xpathRel = '//' + tagName + classes;
+                console.log(consoleMessage + "xpathRel>" + xpathRel);
+            }
+
             if (tagName === 'html' || tagName === 'body') {
                 xpath = '//' + tagName + xpath;
             } else {
