@@ -1,3 +1,4 @@
+from parsel import SelectorList
 from . Scraper import Scraper
 import scrapy
 from selenium import webdriver
@@ -14,13 +15,14 @@ from scrapy.selector import Selector
 from twisted.internet import reactor
 from multiprocessing import Process, Queue
 from selenium.webdriver.support import expected_conditions as EC
+import time
 
 class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     name = "ScrapySeleniumScraper"
 
     def get_webpage(self, url, _):
         options = Options()
-        options.headless = True
+        #options.headless = True
         options.add_argument("--window-size=1920,1200")
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.get(url)
@@ -67,8 +69,6 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         obj = self.get_webpage(self.url, self.default_encoding)
         self.q.put("10%")
 
-        self.infinite_scroll(obj)
-
         general_xpaths = [self.generalise_xpath(xpath) for xpath in self.xpaths]
         prefix = self.get_common_xpath(general_xpaths)
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
@@ -84,11 +84,31 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
                     print("Error: Text selected by the user not found in elements")
                     return
         self.q.put("50%")
-        
-        sel = Selector(text=obj.page_source)
-        elements = sel.xpath(prefix)
 
-        for elem in elements:
+        combined_elements = []
+        pages = 0
+        max_pages = 4
+        next_page = True
+        while next_page and pages < max_pages:
+            self.infinite_scroll(obj)
+            # Wait for the document to be complete (fully loaded)
+            time.sleep(2)
+            sel = Selector(text=obj.page_source)
+            elements = sel.xpath(prefix)
+            combined_elements.extend(elements)
+            if self.pagination_xpath:
+                try:
+                    WebDriverWait(obj, 10).until(EC.presence_of_element_located((By.XPATH, self.pagination_xpath)))
+                    next_button = obj.find_element(By.XPATH, self.pagination_xpath)
+                    next_button.click()
+                except Exception:
+                    print("Error: Pagination button not found")
+                    next_page = False
+            else:
+                next_page = False
+            pages+=1
+
+        for elem in combined_elements:
             item = ItemLoader(self.create_class(self.labels)(), elem)
             for label,xpath in zip(self.labels, xpath_suffixes):
                 item.add_xpath(label, '.'+xpath)
@@ -98,16 +118,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
             if item.load_item():
                 yield item.load_item()
 
-        self.q.put("90%")
-
-        if self.pagination_xpath:
-            print(f"Pagination xpath: {self.pagination_xpath}")
-            try:
-                WebDriverWait(obj, 10).until(EC.presence_of_element_located((By.XPATH, self.pagination_xpath)))
-                next_button = obj.find_element(By.XPATH, self.pagination_xpath)
-                next_button.click()
-            except Exception:
-                print("Error: Pagination button not found")    
+        self.q.put("90%")   
         
         self.close_webpage(obj)
 
