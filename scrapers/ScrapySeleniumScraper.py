@@ -22,7 +22,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
 
     def get_webpage(self, url, _):
         options = Options()
-        #options.headless = True
+        options.headless = True
         options.add_argument("--window-size=1920,1200")
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.get(url)

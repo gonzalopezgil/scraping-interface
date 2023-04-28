@@ -8,7 +8,7 @@ from utils.WebEnginePage import WebEnginePage
 HOME_PAGE = "https://www.google.com"
 URL_SEARCH_ENGINE = "https://www.google.com/search?q="
 PLACEHOLDER_TEXT = "Search with Google or enter a URL"
-COLUMN_COUNT = 10
+COLUMN_COUNT = 5
 
 class BrowserTab(QWidget):
 
@@ -149,6 +149,7 @@ class BrowserTab(QWidget):
         if self.scrape_widget.isVisible():
             self.table_widget.clear()
             self.table_widget.setRowCount(0)
+            self.table_widget.setColumnCount(COLUMN_COUNT)
             self.timer.singleShot(100, self.disable_links)
             page.runJavaScript(jss.HIGHLIGHT_TEXT_JS)
         # Enable links if the scrape widget is not visible

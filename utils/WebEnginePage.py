@@ -27,6 +27,8 @@ class WebEnginePage(QWebEnginePage):
                 self.table_widget.setItem(row-1, col, QTableWidgetItem(value))
             elif message_type == "xpath" and not self.pagination_clicked:
                 self.process_manager.create_column(value)
+                if self.table_widget.columnCount() < self.process_manager.get_column_count():
+                    self.table_widget.setColumnCount(self.process_manager.get_column_count())
             elif message_type == "xpathRel" and self.pagination_clicked:
                 self.process_manager.pagination_xpath = value
 
