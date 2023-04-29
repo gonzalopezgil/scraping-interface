@@ -4,9 +4,10 @@ from PyQt5.QtCore import pyqtSlot
 
 class WebEnginePage(QWebEnginePage):
     
-    def __init__(self, parent=None, table_widget=None, process_manager=None):
+    def __init__(self, parent=None, table_widget=None, table_xpath=None, process_manager=None):
         super().__init__(parent)
         self.table_widget = table_widget
+        self.table_xpath = table_xpath
         self.process_manager = process_manager
         self.pagination_clicked = False
 
@@ -27,8 +28,14 @@ class WebEnginePage(QWebEnginePage):
                 self.table_widget.setItem(row-1, col, QTableWidgetItem(value))
             elif message_type == "xpath" and not self.pagination_clicked:
                 self.process_manager.create_column(value)
-                if self.table_widget.columnCount() < self.process_manager.get_column_count():
-                    self.table_widget.setColumnCount(self.process_manager.get_column_count())
+                if self.table_xpath.rowCount() < 1:
+                    self.table_xpath.setRowCount(1)
+                count = self.process_manager.get_column_count()
+                if self.table_widget.columnCount() < count:
+                    self.table_widget.setColumnCount(count)
+                    self.table_xpath.setColumnCount(count)
+                col = count - 1
+                self.table_xpath.setItem(0, col, QTableWidgetItem(value))
             elif message_type == "xpathRel" and self.pagination_clicked:
                 self.process_manager.pagination_xpath = value
 

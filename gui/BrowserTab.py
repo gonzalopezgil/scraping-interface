@@ -36,6 +36,7 @@ class BrowserTab(QWidget):
         self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.table_widget.setColumnCount(COLUMN_COUNT)
         self.table_widget.horizontalHeader().setStretchLastSection(True)
+        self.table_widget.verticalHeader().setVisible(False)
         #self.table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         # Set the table widget as the scroll area's widget
@@ -45,6 +46,15 @@ class BrowserTab(QWidget):
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_widget.horizontalHeader().setSectionsMovable(True)
         self.table_widget.horizontalHeader().sectionDoubleClicked.connect(self.change_column_header)
+
+        # Create a second table to edit the xpath of each column
+        self.table_xpath = QTableWidget(0, COLUMN_COUNT)
+        self.table_xpath.verticalHeader().setVisible(False)
+        self.table_xpath.horizontalHeader().setVisible(False)
+        self.table_xpath.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table_xpath.setMaximumHeight(30)
+
+        self.scrape_widget_layout.addWidget(self.table_xpath)
 
         # Create a Scraping bar with buttons
         self.scrape_bar = QWidget(self)
@@ -67,7 +77,7 @@ class BrowserTab(QWidget):
 
         self.scrape_widget_layout.addWidget(self.scrape_bar)
 
-        page = WebEnginePage(self.browser, self.table_widget, self.process_manager)
+        page = WebEnginePage(self.browser, self.table_widget, self.table_xpath, self.process_manager)
         self.browser.setPage(page)
         # Connect the urlChanged signal to update the URL field
         self.browser.urlChanged.connect(self.update_url_field)
@@ -148,8 +158,11 @@ class BrowserTab(QWidget):
         # Disable links if the scrape widget is visible
         if self.scrape_widget.isVisible():
             self.table_widget.clear()
+            self.table_xpath.clear()
             self.table_widget.setRowCount(0)
+            self.table_xpath.setRowCount(0)
             self.table_widget.setColumnCount(COLUMN_COUNT)
+            self.table_xpath.setColumnCount(COLUMN_COUNT)
             self.timer.singleShot(100, self.disable_links)
             page.runJavaScript(jss.HIGHLIGHT_TEXT_JS)
         # Enable links if the scrape widget is not visible
