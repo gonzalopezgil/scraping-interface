@@ -13,8 +13,6 @@ SEARCH_ENGINES = {
 
 SETTINGS_FILE = "settings.json"
 
-placeholder_format = "Search with {search_engine} or enter a URL"
-
 default_engine = next(iter(SEARCH_ENGINES.keys()))
 default_settings = {
     "search_engine": SEARCH_ENGINES[default_engine][0], 
@@ -22,8 +20,10 @@ default_settings = {
 }
 
 class SettingsTab(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, settings=None):
         super().__init__(parent)
+
+        self.settings = settings
 
         # Create the UI elements
         self.search_engine_radio = QRadioButton("Search Engine Home Page")
@@ -33,8 +33,6 @@ class SettingsTab(QWidget):
         self.home_page_edit = QLineEdit(self)
         self.custom_home_page_radio.toggled.connect(self.home_page_edit.setEnabled)
         self.search_engine_radio.clicked.connect(self.save_settings)
-
-        self.settings = {}
 
         try:
             with open(SETTINGS_FILE, "r") as f:
