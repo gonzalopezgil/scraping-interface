@@ -63,10 +63,10 @@ class ScrapyScraper(Scraper, Spider):
         new_class = type("Element", (Item,), my_dict)
         return new_class
     
-    def run_scraper(self, q, url, labels, selected_text, xpaths, default_encoding=True):
+    def run_scraper(self, q, url, labels, xpaths, default_encoding=True):
         try:
             runner = CrawlerRunner()
-            deferred = runner.crawl(ScrapyScraper, start_urls=[url], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, default_encoding=default_encoding, preview=True)
+            deferred = runner.crawl(ScrapyScraper, start_urls=[url], url=url, labels=labels, xpaths=xpaths, default_encoding=default_encoding, preview=True)
             deferred.addBoth(lambda _: reactor.stop())
 
             spider = next(iter(runner.crawlers)).spider
@@ -81,26 +81,18 @@ class ScrapyScraper(Scraper, Spider):
             dict_results = self.merge_dicts(results)
 
             if len(dict_results) > 0:
-                for label,text in zip(labels, selected_text):
+                for label in labels:
                     elements = dict_results[label]
                     elements = self.clean_list(elements)
-                    text = self.clean_text(text)
-                    #if text not in elements:
-                    #    index = self.check_pattern(elements, text)
-                    #    if index != -1:
-                    #        elements = self.get_pattern(elements, text, index)
-                    #    else:
-                    #        print("Error: Text selected by the user not found in elements")
-                    #        return None
                     dict_results[label] = elements
             
             q.put(dict_results)
         except Exception as e:
             q.put(e)
 
-    def preview_scrape(self, url, labels, selected_text, xpaths, default_encoding=True):
+    def preview_scrape(self, url, labels, xpaths, default_encoding=True):
         q = Queue()
-        p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,default_encoding,))
+        p = Process(target=self.run_scraper, args=(q,url,labels,xpaths,default_encoding,))
 
         p.start()
         result = q.get()

@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, Q
 from gui.BrowserTab import BrowserTab
 from gui.ProcessesTab import ProcessesTab
 from gui.SettingsTab import SettingsTab
-from scrapers.ScrapyScraper import ScrapyScraper
 from scrapers.ScrapySeleniumScraper import ScrapySeleniumScraper
 import threading
 from utils.SignalManager import SignalManager
@@ -19,13 +18,13 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tabs)
 
         self.process_manager = ProcessManager()
-        
+        self.signal_manager = SignalManager()
+
         # Create the tabs
-        self.browser_tab = BrowserTab(self, self.process_manager)
+        self.browser_tab = BrowserTab(self, self.process_manager, self.signal_manager)
         self.processes_tab = ProcessesTab(self)
         self.settings_tab = SettingsTab(self)
 
-        self.signal_manager = SignalManager()
         self.signal_manager.process_signal.connect(self.processes_tab.update_status)
         self.signal_manager.pagination_signal.connect(self.browser_tab.browser.page().on_pagination_button_clicked)
 
@@ -79,14 +78,6 @@ class MainWindow(QMainWindow):
 
         scraper = ScrapySeleniumScraper()
         scraper.scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), process_manager.pagination_xpath, file_name, self.signal_manager, row)
-
-    def preview_scrape(self, url, column_titles):
-        scraper = ScrapyScraper()
-        items = scraper.preview_scrape(url, column_titles, self.process_manager.get_all_first_texts(), self.process_manager.get_all_xpaths())
-        if items is None or len(items) == 0:
-            self.show_no_preview_results()
-        else:
-            self.browser_tab.set_table_data(items)
 
     def show_no_preview_results(self):
         QMessageBox.warning(self, "Warning", "No preview results to show", QMessageBox.Ok)

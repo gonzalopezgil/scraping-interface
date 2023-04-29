@@ -1,9 +1,11 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QAbstractItemView
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, pyqtSlot
 import gui.JavaScriptStrings as jss
 from utils.WebEnginePage import WebEnginePage
+from scrapers.ScrapyScraper import ScrapyScraper
+import threading
 
 HOME_PAGE = "https://www.google.com"
 URL_SEARCH_ENGINE = "https://www.google.com/search?q="
@@ -12,9 +14,10 @@ COLUMN_COUNT = 5
 
 class BrowserTab(QWidget):
 
-    def __init__(self, parent=None, process_manager=None):
+    def __init__(self, parent=None, process_manager=None, signal_manager=None):
         super().__init__(parent)
         self.process_manager = process_manager
+        self.signal_manager = signal_manager
         self.browser_tab_layout = QVBoxLayout(self)
         self.browser_tab_layout.addWidget(QWidget(self))
 
@@ -38,6 +41,9 @@ class BrowserTab(QWidget):
         self.table_widget.horizontalHeader().setStretchLastSection(True)
         self.table_widget.verticalHeader().setVisible(False)
         #self.table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        
+        # Signal to update the table widget
+        self.signal_manager.table_items_signal.connect(self.set_table_data)
 
         # Set the table widget as the scroll area's widget
         self.scroll_area.setWidget(self.table_widget)
@@ -194,6 +200,7 @@ class BrowserTab(QWidget):
             new_header = QTableWidgetItem(new_header_text)
             self.table_widget.setHorizontalHeaderItem(index, new_header)
 
+    @pyqtSlot(dict)
     def set_table_data(self, items):
         for i, key in enumerate(items.keys()):
             for j, item in enumerate(items[key]):
@@ -201,5 +208,16 @@ class BrowserTab(QWidget):
                     self.table_widget.setRowCount(j+1)
                 self.table_widget.setItem(j, i, QTableWidgetItem(item))
 
+    def preview_scrape(self, url, column_titles, xpaths):
+        thread = threading.Thread(target=self.thread_preview_scrape, args=(url, column_titles, xpaths), daemon=True)
+        thread.start()
+
+    def thread_preview_scrape(self, url, column_titles, xpaths):
+        scraper = ScrapyScraper()
+        items = scraper.preview_scrape(url, column_titles, xpaths)
+        if items is not None and len(items) > 0:
+            self.signal_manager.table_items_signal.emit(items)
+
     def handle_cell_changed(self, row, column):
         self.process_manager.get_column(column).set_xpath(self.table_xpath.item(row, column).text())
+        self.preview_scrape(self.browser.url().toString(), self.get_column_titles(), self.process_manager.get_all_xpaths())
