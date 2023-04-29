@@ -53,6 +53,7 @@ class BrowserTab(QWidget):
         self.table_xpath.horizontalHeader().setVisible(False)
         self.table_xpath.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_xpath.setMaximumHeight(30)
+        self.table_xpath.cellChanged.connect(self.handle_cell_changed)
 
         self.scrape_widget_layout.addWidget(self.table_xpath)
 
@@ -199,3 +200,6 @@ class BrowserTab(QWidget):
                 if self.table_widget.rowCount() < j+1:
                     self.table_widget.setRowCount(j+1)
                 self.table_widget.setItem(j, i, QTableWidgetItem(item))
+
+    def handle_cell_changed(self, row, column):
+        self.process_manager.get_column(column).set_xpath(self.table_xpath.item(row, column).text())

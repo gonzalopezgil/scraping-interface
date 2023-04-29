@@ -11,7 +11,7 @@ class WebEnginePage(QWebEnginePage):
         self.process_manager = process_manager
         self.pagination_clicked = False
 
-    def javaScriptConsoleMessage(self, level, message, lineNumber, sourceID):
+    def javaScriptConsoleMessage(self, level, message, line_number, source_id):
         if not message.startswith("To Python>"):
             print(f"JavaScript Message: {message}")
         else:
@@ -22,7 +22,7 @@ class WebEnginePage(QWebEnginePage):
                 row = int(text[3])
                 col = self.process_manager.get_column_count() - 1
                 if row == 1:
-                    self.process_manager.set_first_text(col, value)
+                    self.process_manager.get_column(col).set_first_text(value)
                 if self.table_widget.rowCount() < row:
                     self.table_widget.setRowCount(row)
                 self.table_widget.setItem(row-1, col, QTableWidgetItem(value))

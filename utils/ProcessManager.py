@@ -4,6 +4,24 @@ class Column:
         self.first_text = None
         self.num_elements = None
 
+    def get_xpath(self):
+        return self.xpath
+    
+    def set_xpath(self, xpath):
+        self.xpath = xpath
+    
+    def get_first_text(self):
+        return self.first_text
+    
+    def set_first_text(self, first_text):
+        self.first_text = first_text
+    
+    def get_num_elements(self):
+        return self.num_elements
+    
+    def set_num_elements(self, num_elements):
+        self.num_elements = num_elements
+
 class ProcessManager:
     def __init__(self):
         self.columns = []
