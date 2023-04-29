@@ -47,7 +47,6 @@ class SettingsTab(QWidget):
                     self.check_values()
                     self.save_json()
         except FileNotFoundError:
-            self.settings = default_settings
             self.check_values()
             self.save_json()
 
@@ -141,17 +140,10 @@ class SettingsTab(QWidget):
         self.check_values()
         self.save_json()
 
-        # Update the global variables
-        global HOME_PAGE, URL_SEARCH_ENGINE
-        if self.custom_home_page_radio.isChecked():
-            HOME_PAGE = self.home_page_edit.text()
-            URL_SEARCH_ENGINE = ""  # set it to empty string instead of None
-        else:
+        if not self.custom_home_page_radio.isChecked():
             search_engine = self.get_search_engine_name()
-            HOME_PAGE = SEARCH_ENGINES[search_engine][1]
-            URL_SEARCH_ENGINE = SEARCH_ENGINES[search_engine][0]
-            self.settings["search_engine"] = URL_SEARCH_ENGINE
-            self.settings["home_page"] = HOME_PAGE
+            self.settings["search_engine"] = SEARCH_ENGINES[search_engine][0]
+            self.settings["home_page"] = SEARCH_ENGINES[search_engine][1]
 
         self.home_page_edit.clearFocus()
 
@@ -159,7 +151,7 @@ class SettingsTab(QWidget):
         for engine, urls in SEARCH_ENGINES.items():
             if self.search_engine_radio.isChecked() and self.settings["search_engine"].startswith(urls[0]):
                 return urls[1]
-        return HOME_PAGE
+        return self.settings["home_page"]
 
     # Unused
     def reset_settings(self):

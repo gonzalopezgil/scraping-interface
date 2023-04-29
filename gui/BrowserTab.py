@@ -9,8 +9,6 @@ import threading
 
 PLACEHOLDER_TEXT = "Search or enter a URL"
 COLUMN_COUNT = 5
-DEFAULT_HOME_PAGE = "https://www.google.com"
-DEFAULT_SEARCH_ENGINE = "https://www.google.com/search?q="
 
 class BrowserTab(QWidget):
 
@@ -138,13 +136,13 @@ class BrowserTab(QWidget):
         return column_titles
 
     def load_homepage(self):
-        self.browser.load(QUrl(self.settings["home_page"] if self.settings and self.settings["home_page"] else DEFAULT_HOME_PAGE))
+        self.browser.load(QUrl(self.settings["home_page"]))
 
     def load_url(self):
         url = self.url_field.text()
         if " " in url or "." not in url:
             # If the URL contains spaces or doesn't contain a dot, search for it
-            url = (self.settings["search_engine"] if self.settings and self.settings["search_engine"] else DEFAULT_SEARCH_ENGINE) + url.replace(" ", "+")
+            url = self.settings["search_engine"] + url.replace(" ", "+")
         elif not url.startswith("http://") and not url.startswith("https://"):
             url = "https://" + url
         self.browser.load(QUrl(url))

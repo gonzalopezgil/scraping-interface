@@ -20,7 +20,10 @@ class MainWindow(QMainWindow):
         self.process_manager = ProcessManager()
         self.signal_manager = SignalManager()
 
-        self.settings = {}
+        self.settings = {
+            "search_engine": "https://www.google.com/search?q=",
+            "home_page": "https://www.google.com"
+        }
 
         # Create the tabs
         self.settings_tab = SettingsTab(self, self.settings)
