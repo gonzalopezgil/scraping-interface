@@ -1,4 +1,3 @@
-from parsel import SelectorList
 from . Scraper import Scraper
 import scrapy
 from selenium import webdriver

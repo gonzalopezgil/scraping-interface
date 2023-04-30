@@ -34,6 +34,9 @@ class ScrapyScraper(Scraper, Spider):
         pass
 
     def parse(self, response):
+        if response.status != 200:
+            print("Error: Status code not 200")
+
         obj = self.get_webpage(response, self.default_encoding)
         
         general_xpaths = [self.generalise_xpath(xpath) for xpath in self.xpaths]
@@ -41,13 +44,41 @@ class ScrapyScraper(Scraper, Spider):
         elements = self.get_elements(prefix, obj)
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
 
+        if elements is None or len(elements) == 0:
+            print("Error: No elements found")
+
         count = 0
+        node = {label: "" for label in self.labels}
         for elem in elements:
             item = ItemLoader(self.create_class(self.labels)(), elem)
             for label,xpath in zip(self.labels, xpath_suffixes):
+
                 item.add_xpath(label, '.'+xpath)
                 if item.load_item() and label not in item.load_item():
                     item.add_value(label, "")
+
+                if count == 0 and item.load_item():
+                    if xpath.endswith('//text()'):
+                        new_xpath = xpath[:-8]
+
+                    parent_html = elem.xpath('.' + new_xpath).get()
+                    target_html = elem.xpath('.' + new_xpath + '/node()').get()
+                    if parent_html and target_html:
+                        outer_html = parent_html.replace(target_html, "")
+                        node[label] = outer_html
+
+                if count > 0 and not item.load_item():
+                    if xpath.endswith('//text()'):
+                        new_xpath = xpath[:-8]
+
+                    parent_html = elem.xpath('.' + new_xpath).get()
+                    target_html = elem.xpath('.' + new_xpath + '/node()').get()
+                    if not target_html:
+                        target_html = ""
+                    if parent_html:
+                        outer_html = parent_html.replace(target_html, "")
+                        if outer_html == node[label]:
+                            item.add_value(label, "")
 
             if item.load_item():
                 count+=1
