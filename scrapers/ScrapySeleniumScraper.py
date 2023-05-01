@@ -60,12 +60,13 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
 
     def start_requests(self):
         # Using a dummy website to start scrapy request
-        url = "http://quotes.toscrape.com"
-        yield scrapy.Request(url=url, callback=self.parse)
+        url = "http://example.com"
+        yield scrapy.Request(url=url, callback=self.parse, dont_filter=True)
 
     def parse(self, response):
         self.q.put("1%")
-        obj = self.get_webpage(self.url, self.default_encoding)
+        if self.pagination_xpath:
+            obj = self.get_webpage(self.url, self.default_encoding)
         self.q.put("10%")
 
         general_xpaths = [self.generalise_xpath(xpath) for xpath in self.xpaths]
@@ -73,15 +74,15 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
         self.q.put("20%")
 
-        for xpath,label,text in zip(self.xpaths,self.labels,self.selected_text):
-            text = self.clean_text(text)
-            elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
-            if elements is not None and len(elements) > 0:
-                elements = self.clean_list(elements)
-                elements = self.find_text_in_data(elements, text)
-                if elements is None:
-                    print("Error: Text selected by the user not found in elements")
-                    return
+        #for xpath,label,text in zip(self.xpaths,self.labels,self.selected_text):
+        #    text = self.clean_text(text)
+        #    elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
+        #    if elements is not None and len(elements) > 0:
+        #        elements = self.clean_list(elements)
+        #        elements = self.find_text_in_data(elements, text)
+        #        if elements is None:
+        #            print("Error: Text selected by the user not found in elements")
+        #            return
         self.q.put("50%")
 
         combined_elements = []
@@ -89,10 +90,15 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         max_pages = 4
         next_page = True
         while next_page and pages < max_pages:
-            self.infinite_scroll(obj)
-            # Wait for the document to be complete (fully loaded)
-            time.sleep(2)
-            sel = Selector(text=obj.page_source)
+            html = ""
+            if not self.pagination_xpath:
+                html = self.html
+            else:
+                self.infinite_scroll(obj)
+                # Wait for the document to be complete (fully loaded)
+                time.sleep(2)
+                html = obj.page_source
+            sel = Selector(text=html)
             elements = sel.xpath(prefix)
             combined_elements.extend(elements)
             if self.pagination_xpath:
@@ -119,17 +125,18 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
 
         self.q.put("90%")   
         
-        self.close_webpage(obj)
+        if self.pagination_xpath:
+            self.close_webpage(obj)
 
     def create_class(self, fields):
         my_dict = {field: Field() for field in fields}
         new_class = type("Element", (Item,), my_dict)
         return new_class
     
-    def run_scraper(self, q, url, labels, selected_text, xpaths, pagination_xpath, file_name, default_encoding=True):
+    def run_scraper(self, q, url, labels, selected_text, xpaths, pagination_xpath, file_name, html, default_encoding=True):
         try:
             runner = CrawlerRunner(self.choose_random_header())
-            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://quotes.toscrape.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, pagination_xpath=pagination_xpath, q=q, default_encoding=default_encoding)
+            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://example.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, pagination_xpath=pagination_xpath, q=q, html=html, default_encoding=default_encoding)
             deferred.addBoth(lambda _: reactor.stop())
 
             spider = next(iter(runner.crawlers)).spider
@@ -170,9 +177,9 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
             print(f"Error: {e}")
             q.put(None)
     
-    def scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, default_encoding=True):
+    def scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, default_encoding=True):
         q = Queue()
-        p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,pagination_xpath,file_name,default_encoding))
+        p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,pagination_xpath,file_name,html,default_encoding))
 
         p.start()
         while True:
