@@ -1,6 +1,7 @@
 class Column:
-    def __init__(self, xpath):
+    def __init__(self, xpath, visual_index):
         self.xpath = xpath
+        self.visual_index = visual_index
         self.first_text = None
         self.num_elements = None
 
@@ -9,6 +10,12 @@ class Column:
     
     def set_xpath(self, xpath):
         self.xpath = xpath
+
+    def get_visual_index(self):
+        return self.visual_index
+    
+    def set_visual_index(self, visual_index):
+        self.visual_index = visual_index
     
     def get_first_text(self):
         return self.first_text
@@ -28,12 +35,21 @@ class ProcessManager:
         self.pagination_xpath = None
 
     def create_column(self, xpath):
-        column = Column(xpath)
+        visual_index = len(self.columns) + 1
+        column = Column(xpath, visual_index)
         self.columns.append(column)
 
     def remove_column(self, index):
         if index >= 0 and index < len(self.columns):
             self.columns.pop(index)
+
+    def move_column(self, from_index, to_index):
+        if from_index >= 0 and from_index < len(self.columns) and to_index >= 0 and to_index < len(self.columns):
+            column = self.columns.pop(from_index)
+            self.columns.insert(to_index, column)    
+
+        for col in self.columns:
+            print(col.first_text)
 
     def get_column(self, index):
         if index >= 0 and index < len(self.columns):

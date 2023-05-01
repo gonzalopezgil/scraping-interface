@@ -9,7 +9,7 @@ import threading
 from bs4 import BeautifulSoup
 
 PLACEHOLDER_TEXT = "Search or enter a URL"
-COLUMN_COUNT = 5
+COLUMN_COUNT = 0
 
 class BrowserTab(QWidget):
 
@@ -56,7 +56,7 @@ class BrowserTab(QWidget):
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_widget.horizontalHeader().setSectionsMovable(True)
         self.table_widget.horizontalHeader().sectionDoubleClicked.connect(self.change_column_header)
-        self.table_widget.horizontalHeader().sectionMoved.connect(self.move_table_xpath_column)
+        self.table_widget.horizontalHeader().sectionMoved.connect(self.move_column)
 
         # Create a second table to edit the xpath of each column
         self.table_xpath = QTableWidget(0, COLUMN_COUNT)
@@ -140,7 +140,7 @@ class BrowserTab(QWidget):
 
     def get_column_titles(self):
         column_titles = [self.table_widget.horizontalHeaderItem(col).text() 
-                        if self.table_widget.horizontalHeaderItem(col) else str(col+1)
+                        if self.table_widget.horizontalHeaderItem(col) else str(self.process_manager.get_column(col).get_visual_index())
                         for col in range(self.table_widget.columnCount())][:self.process_manager.get_column_count()]
         return column_titles
 
@@ -306,7 +306,9 @@ class BrowserTab(QWidget):
             menu.addAction(remove_action)
             menu.exec_(table.viewport().mapToGlobal(pos))
 
-    def move_table_xpath_column(self, logical_index, old_visual_index, new_visual_index):
+    def move_column(self, logical_index, old_visual_index, new_visual_index):
+        self.process_manager.move_column(old_visual_index, new_visual_index)
+
         self.table_xpath.horizontalHeader().blockSignals(True)  # Temporarily block signals to avoid infinite loop
         self.table_xpath.horizontalHeader().moveSection(old_visual_index, new_visual_index)
         self.table_xpath.horizontalHeader().blockSignals(False)  # Re-enable signals
