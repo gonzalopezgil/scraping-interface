@@ -31,6 +31,10 @@ class ProcessManager:
         column = Column(xpath)
         self.columns.append(column)
 
+    def remove_column(self, index):
+        if index >= 0 and index < len(self.columns):
+            self.columns.pop(index)
+
     def get_column(self, index):
         if index >= 0 and index < len(self.columns):
             return self.columns[index]

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QAbstractItemView
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSlot
@@ -39,6 +39,8 @@ class BrowserTab(QWidget):
         self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.table_widget.setColumnCount(COLUMN_COUNT)
         self.table_widget.horizontalHeader().setStretchLastSection(True)
+        self.table_widget.horizontalHeader().customContextMenuRequested.connect(self.create_horizontal_header_context_menu)
+        self.table_widget.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
         self.table_widget.verticalHeader().setVisible(False)
         #self.table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         
@@ -267,3 +269,15 @@ class BrowserTab(QWidget):
             input_tag.decompose()
 
         return str(soup)
+    
+    def remove_column(self, column):
+        self.table_widget.removeColumn(column)
+        self.table_xpath.removeColumn(column)
+        self.process_manager.remove_column(column)
+
+    def create_horizontal_header_context_menu(self, pos):
+        column = self.table_widget.horizontalHeader().logicalIndexAt(pos)
+        menu = QMenu(self)
+        remove_action = menu.addAction("Remove Column")
+        remove_action.triggered.connect(lambda: self.remove_column(column))
+        menu.exec_(self.table_widget.mapToGlobal(pos))
