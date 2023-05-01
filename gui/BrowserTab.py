@@ -6,6 +6,7 @@ import gui.JavaScriptStrings as jss
 from utils.WebEnginePage import WebEnginePage
 from scrapers.ScrapyScraper import ScrapyScraper
 import threading
+from bs4 import BeautifulSoup
 
 PLACEHOLDER_TEXT = "Search or enter a URL"
 COLUMN_COUNT = 5
@@ -207,16 +208,59 @@ class BrowserTab(QWidget):
                     self.table_widget.setRowCount(j+1)
                 self.table_widget.setItem(j, i, QTableWidgetItem(item))
 
-    def preview_scrape(self, url, column_titles, xpaths):
-        thread = threading.Thread(target=self.thread_preview_scrape, args=(url, column_titles, xpaths), daemon=True)
+    def clean_html(self, html):
+        soup = BeautifulSoup(html, 'html.parser')
+
+        # Remove the head tag
+        if soup.head:
+            soup.head.decompose()
+
+        # Remove script tags (JavaScript)
+        for script_tag in soup.find_all('script'):
+            script_tag.decompose()
+
+        # Remove style tags (CSS)
+        for style_tag in soup.find_all('style'):
+            style_tag.decompose()
+
+        # Remove link tags (external CSS)
+        for link_tag in soup.find_all('link', rel='stylesheet'):
+            link_tag.decompose()
+
+        # Remove iframe tags
+        for iframe_tag in soup.find_all('iframe'):
+            iframe_tag.decompose()
+
+        # Remove img tags (images)
+        for img_tag in soup.find_all('img'):
+            img_tag.decompose()
+
+        # Remove video tags
+        for video_tag in soup.find_all('video'):
+            video_tag.decompose()
+
+        # Remove audio tags
+        for audio_tag in soup.find_all('audio'):
+            audio_tag.decompose()
+
+        # Remove input tags (form elements)
+        for input_tag in soup.find_all('input'):
+            input_tag.decompose()
+
+        return str(soup)
+    
+    def preview_scrape(self, html):
+        html = self.clean_html(html)
+    
+        thread = threading.Thread(target=self.thread_preview_scrape, args=(self.browser.url().toString(), self.get_column_titles(), self.process_manager.get_all_xpaths(), html), daemon=True)
         thread.start()
 
-    def thread_preview_scrape(self, url, column_titles, xpaths):
+    def thread_preview_scrape(self, url, column_titles, xpaths, html):
         scraper = ScrapyScraper()
-        items = scraper.preview_scrape(url, column_titles, xpaths)
+        items = scraper.preview_scrape(url, column_titles, xpaths, html)
         if items is not None and len(items) > 0:
             self.signal_manager.table_items_signal.emit(items)
 
     def handle_cell_changed(self, row, column):
         self.process_manager.get_column(column).set_xpath(self.table_xpath.item(row, column).text())
-        self.preview_scrape(self.browser.url().toString(), self.get_column_titles(), self.process_manager.get_all_xpaths())
+        self.browser.page().toHtml(self.preview_scrape)

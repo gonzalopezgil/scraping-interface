@@ -33,11 +33,16 @@ class ScrapyScraper(Scraper, Spider):
         # No need to close webpage with scrapy
         pass
 
+    def start_requests(self):
+        # Using a dummy website to start scrapy request
+        url = "http://example.com"
+        yield scrapy.Request(url=url, callback=self.parse, dont_filter=True)
+
     def parse(self, response):
         if response.status != 200:
             print("Error: Status code not 200")
 
-        obj = self.get_webpage(response, self.default_encoding)
+        obj = Selector(text=self.html)
         
         general_xpaths = [self.generalise_xpath(xpath) for xpath in self.xpaths]
         prefix = self.get_common_xpath(general_xpaths)
@@ -94,10 +99,10 @@ class ScrapyScraper(Scraper, Spider):
         new_class = type("Element", (Item,), my_dict)
         return new_class
     
-    def run_scraper(self, q, url, labels, xpaths, default_encoding=True):
+    def run_scraper(self, q, url, labels, xpaths, html, default_encoding=True):
         try:
             runner = CrawlerRunner()
-            deferred = runner.crawl(ScrapyScraper, start_urls=[url], url=url, labels=labels, xpaths=xpaths, default_encoding=default_encoding, preview=True)
+            deferred = runner.crawl(ScrapyScraper, start_urls=[url], url=url, labels=labels, xpaths=xpaths, html=html, default_encoding=default_encoding, preview=True)
             deferred.addBoth(lambda _: reactor.stop())
 
             spider = next(iter(runner.crawlers)).spider
@@ -121,9 +126,9 @@ class ScrapyScraper(Scraper, Spider):
         except Exception as e:
             q.put(e)
 
-    def preview_scrape(self, url, labels, xpaths, default_encoding=True):
+    def preview_scrape(self, url, labels, xpaths, html, default_encoding=True):
         q = Queue()
-        p = Process(target=self.run_scraper, args=(q,url,labels,xpaths,default_encoding,))
+        p = Process(target=self.run_scraper, args=(q,url,labels,xpaths,html,default_encoding,))
 
         p.start()
         result = q.get()
