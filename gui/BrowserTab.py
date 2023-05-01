@@ -56,6 +56,7 @@ class BrowserTab(QWidget):
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_widget.horizontalHeader().setSectionsMovable(True)
         self.table_widget.horizontalHeader().sectionDoubleClicked.connect(self.change_column_header)
+        self.table_widget.horizontalHeader().sectionMoved.connect(self.move_table_xpath_column)
 
         # Create a second table to edit the xpath of each column
         self.table_xpath = QTableWidget(0, COLUMN_COUNT)
@@ -298,3 +299,8 @@ class BrowserTab(QWidget):
             remove_action.triggered.connect(lambda: self.remove_column(column))
             menu.addAction(remove_action)
             menu.exec_(table.viewport().mapToGlobal(pos))
+
+    def move_table_xpath_column(self, logical_index, old_visual_index, new_visual_index):
+        self.table_xpath.horizontalHeader().blockSignals(True)  # Temporarily block signals to avoid infinite loop
+        self.table_xpath.horizontalHeader().moveSection(old_visual_index, new_visual_index)
+        self.table_xpath.horizontalHeader().blockSignals(False)  # Re-enable signals
