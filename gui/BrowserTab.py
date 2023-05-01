@@ -86,6 +86,7 @@ class BrowserTab(QWidget):
 
         page = WebEnginePage(self.browser, self.table_widget, self.table_xpath, self.process_manager)
         self.browser.setPage(page)
+        page.runJavaScript(jss.START_JS)
         # Connect the urlChanged signal to update the URL field
         self.browser.urlChanged.connect(self.update_url_field)
 
@@ -151,6 +152,7 @@ class BrowserTab(QWidget):
     def update_url_field(self, url):
         self.url_field.setText(url.toString())
         self.scrape_widget.setVisible(False)
+        self.browser.page().runJavaScript(jss.START_JS)
         self.browser.page().runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
         self.process_manager.clear_columns()
         self.pagination_clicked = False
@@ -175,6 +177,7 @@ class BrowserTab(QWidget):
         # Enable links if the scrape widget is not visible
         else:
             self.timer.stop()
+            page.runJavaScript(jss.START_JS)
             page.runJavaScript(jss.ENABLE_LINKS_JS)
             page.runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
             self.process_manager.clear_columns()
