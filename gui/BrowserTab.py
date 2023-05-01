@@ -275,10 +275,16 @@ class BrowserTab(QWidget):
 
         return str(soup)
     
+    def remove_red_background(self, xpath):
+        js_code = f"var xpath = '{xpath}'; {jss.REMOVE_RED_BACKGROUND_JS}"
+        self.browser.page().runJavaScript(js_code)
+    
     def remove_column(self, column):
+        xpath = self.table_xpath.item(0, column).text()
         self.table_widget.removeColumn(column)
         self.table_xpath.removeColumn(column)
         self.process_manager.remove_column(column)
+        self.remove_red_background(xpath)
 
     def create_horizontal_header_context_menu(self, pos):
         column = self.table_widget.horizontalHeader().logicalIndexAt(pos)

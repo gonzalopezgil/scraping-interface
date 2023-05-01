@@ -196,3 +196,18 @@ UNHIGHLIGHT_TEXT_JS = """
     selection.removeAllRanges();
     document.removeEventListener('mousedown', preventMousedown);
 """
+
+# xpath variable must be defined before calling this function
+REMOVE_RED_BACKGROUND_JS = """
+    var lastMessage = "";
+
+    function removeRedBackground(xpath) {
+        var elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
+        var element = elements.iterateNext();
+        while (element) {
+            element.style.backgroundColor = '';
+            element = elements.iterateNext();
+        }
+    }
+    removeRedBackground(xpath);
+"""
