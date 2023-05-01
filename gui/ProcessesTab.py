@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt, QVariant, pyqtSlot
 import csv
 from datetime import datetime
 import os
+from multiprocessing import Value
 
 class ProcessesTab(QWidget):
     def __init__(self, parent=None):
@@ -10,7 +11,7 @@ class ProcessesTab(QWidget):
         self.processes_tab_layout = QVBoxLayout(self)
         self.table = QTableWidget(self)
         self.table.setColumnCount(7)
-        self.table.setHorizontalHeaderLabels(['Scraped Web', 'File Name', 'Scraped Items', 'Status', 'Date', 'Time', 'File'])
+        self.table.setHorizontalHeaderLabels(['Scraped Web', 'File Name', 'Scraped Items', 'Status', 'Date', 'Time', 'Action'])
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch) # Set stretch factor for 'Scraped Web' column
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
@@ -26,10 +27,17 @@ class ProcessesTab(QWidget):
         self.processes_tab_layout.addWidget(self.no_data_label) # Add label to layout
         self.load_data()
 
+        self.stop_variables = {}
+
     def create_open_file_button(self, file_name):
         open_file_button = QPushButton('Open')
         open_file_button.clicked.connect(lambda: self.open_file(file_name))
         return open_file_button
+    
+    def create_stop_button(self, row):
+        stop_button = QPushButton('Stop')
+        stop_button.clicked.connect(lambda: self.stop_process(row))
+        return stop_button
         
     def load_data(self):
         try:
@@ -65,8 +73,12 @@ class ProcessesTab(QWidget):
         self.table.setItem(row_count, 3, QTableWidgetItem("Running"))
         self.table.setItem(row_count, 4, QTableWidgetItem(date))
         self.table.setItem(row_count, 5, QTableWidgetItem(time))
+        self.table.setCellWidget(row_count, 6, self.create_stop_button(row_count))
         self.table.show()
         self.no_data_label.hide()
+        stop = Value('b', False)
+        self.stop_variables[row_count] = stop
+        return stop
 
     def get_table_data(self):
         table_data = []
@@ -95,6 +107,11 @@ class ProcessesTab(QWidget):
     def update_status(self, row, status, file_name):
         if status == "Finished":
             self.table.setCellWidget(row, 6, self.create_open_file_button(file_name))
+        elif status == "Stopped" or status == "Error":
+            self.table.setCellWidget(row, 6, None)
         self.table.setItem(row, 1, QTableWidgetItem(file_name))
         self.table.setItem(row, 3, QTableWidgetItem(status))
         self.save_data()
+
+    def stop_process(self, row):
+        self.stop_variables[row].value = True

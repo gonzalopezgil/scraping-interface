@@ -72,23 +72,23 @@ class MainWindow(QMainWindow):
         url = self.browser_tab.browser.url().toString()
         column_titles = self.browser_tab.get_column_titles()
         process_manager = self.process_manager
-        self.processes_tab.add_row(url, "", column_titles)
+        stop = self.processes_tab.add_row(url, "", column_titles)
         row = self.processes_tab.table.rowCount()-1
         file_name = self.enter_file_name()
         if file_name:
             if self.process_manager.pagination_xpath:
-                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager), daemon=True)
+                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, stop), daemon=True)
             else:
-                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.browser_tab.clean_html(html)), daemon=True)
+                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.browser_tab.clean_html(html), stop), daemon=True)
             self.thread.start()
         else:
             self.signal_manager.process_signal.emit(row, "Stopped", "")
 
-    def thread_function(self, url, column_titles, file_name, row, process_manager, html=None):
+    def thread_function(self, url, column_titles, file_name, row, process_manager, html=None, stop=None):
         self.tabs.setCurrentIndex(1)
 
         scraper = ScrapySeleniumScraper()
-        scraper.scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), process_manager.pagination_xpath, file_name, self.signal_manager, row, html)
+        scraper.scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), process_manager.pagination_xpath, file_name, self.signal_manager, row, html, stop)
 
     def show_no_preview_results(self):
         QMessageBox.warning(self, "Warning", "No preview results to show", QMessageBox.Ok)

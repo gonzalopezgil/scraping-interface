@@ -12,12 +12,16 @@ from scrapy.item import Item, Field
 from scrapy.crawler import CrawlerRunner
 from scrapy.selector import Selector
 from twisted.internet import reactor
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Value
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
 class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     name = "ScrapySeleniumScraper"
+
+    def __init__(self, stop=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stop = stop
 
     def get_webpage(self, url, _):
         options = Options()
@@ -63,16 +67,22 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         url = "http://example.com"
         yield scrapy.Request(url=url, callback=self.parse, dont_filter=True)
 
+    def update_progress(self, progress):
+        if self.stop.value:
+            self.q.put("Stopped")
+            raise Exception("Scraper stopped")
+        self.q.put(progress)
+
     def parse(self, response):
-        self.q.put("1%")
+        self.update_progress("1%")
         if self.pagination_xpath:
             obj = self.get_webpage(self.url, self.default_encoding)
-        self.q.put("10%")
+        self.update_progress("10%")
 
         general_xpaths = [self.generalise_xpath(xpath) for xpath in self.xpaths]
         prefix = self.get_common_xpath(general_xpaths)
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
-        self.q.put("20%")
+        self.update_progress("20%")
 
         #for xpath,label,text in zip(self.xpaths,self.labels,self.selected_text):
         #    text = self.clean_text(text)
@@ -83,7 +93,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         #        if elements is None:
         #            print("Error: Text selected by the user not found in elements")
         #            return
-        self.q.put("50%")
+        self.update_progress("50%")
 
         combined_elements = []
         pages = 0
@@ -123,7 +133,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
             if item.load_item():
                 yield item.load_item()
 
-        self.q.put("90%")   
+        self.update_progress("90%")   
         
         if self.pagination_xpath:
             self.close_webpage(obj)
@@ -133,10 +143,10 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         new_class = type("Element", (Item,), my_dict)
         return new_class
     
-    def run_scraper(self, q, url, labels, selected_text, xpaths, pagination_xpath, file_name, html, default_encoding=True):
+    def run_scraper(self, q, url, labels, selected_text, xpaths, pagination_xpath, file_name, html, default_encoding=True, stop=None):
         try:
             runner = CrawlerRunner(self.choose_random_header())
-            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://example.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, pagination_xpath=pagination_xpath, q=q, html=html, default_encoding=default_encoding)
+            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://example.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, pagination_xpath=pagination_xpath, q=q, html=html, default_encoding=default_encoding, stop=stop)
             deferred.addBoth(lambda _: reactor.stop())
 
             spider = next(iter(runner.crawlers)).spider
@@ -177,15 +187,18 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
             print(f"Error: {e}")
             q.put(None)
     
-    def scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, default_encoding=True):
+    def scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, stop, default_encoding=True):
         q = Queue()
-        p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,pagination_xpath,file_name,html,default_encoding))
+        p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,pagination_xpath,file_name,html,default_encoding,stop))
 
         p.start()
         while True:
             data = q.get()
             if data is None:
                 signal_manager.process_signal.emit(row, "Error", "")
+                break
+            elif data == "Stopped":
+                signal_manager.process_signal.emit(row, "Stopped", "")
                 break
             elif data == "Finished":
                 signal_manager.process_signal.emit(row, data, file_name)
