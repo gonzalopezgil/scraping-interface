@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSlot
@@ -41,6 +41,8 @@ class BrowserTab(QWidget):
         self.table_widget.horizontalHeader().setStretchLastSection(True)
         self.table_widget.horizontalHeader().customContextMenuRequested.connect(self.create_horizontal_header_context_menu)
         self.table_widget.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
+        self.table_widget.customContextMenuRequested.connect(lambda pos: self.create_table_context_menu(pos, self.table_widget))
+        self.table_widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table_widget.verticalHeader().setVisible(False)
         #self.table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         
@@ -62,6 +64,8 @@ class BrowserTab(QWidget):
         self.table_xpath.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_xpath.setMaximumHeight(30)
         self.table_xpath.cellChanged.connect(self.handle_cell_changed)
+        self.table_xpath.customContextMenuRequested.connect(lambda pos: self.create_table_context_menu(pos, self.table_xpath))
+        self.table_xpath.setContextMenuPolicy(Qt.CustomContextMenu)        
 
         self.scrape_widget_layout.addWidget(self.table_xpath)
 
@@ -281,3 +285,16 @@ class BrowserTab(QWidget):
         remove_action = menu.addAction("Remove Column")
         remove_action.triggered.connect(lambda: self.remove_column(column))
         menu.exec_(self.table_widget.mapToGlobal(pos))
+
+    def create_table_context_menu(self, pos, table):
+        # Get the index of the cell at the position pos
+        index = table.indexAt(pos)
+
+        # Check if the index is valid
+        if index.isValid():
+            column = index.column()
+            menu = QMenu(self)
+            remove_action = QAction("Remove Column", self)
+            remove_action.triggered.connect(lambda: self.remove_column(column))
+            menu.addAction(remove_action)
+            menu.exec_(table.viewport().mapToGlobal(pos))
