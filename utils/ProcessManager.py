@@ -48,9 +48,6 @@ class ProcessManager:
             column = self.columns.pop(from_index)
             self.columns.insert(to_index, column)    
 
-        for col in self.columns:
-            print(col.first_text)
-
     def get_column(self, index):
         if index >= 0 and index < len(self.columns):
             return self.columns[index]

@@ -7,6 +7,7 @@ from utils.WebEnginePage import WebEnginePage
 from scrapers.ScrapyScraper import ScrapyScraper
 import threading
 from bs4 import BeautifulSoup
+from utils.CustomTableWidget import CustomTableWidget
 
 PLACEHOLDER_TEXT = "Search or enter a URL"
 COLUMN_COUNT = 0
@@ -35,7 +36,7 @@ class BrowserTab(QWidget):
         self.scrape_widget_layout.addWidget(self.scroll_area)
 
         # Create a table widget to show scraped data
-        self.table_widget = QTableWidget()
+        self.table_widget = CustomTableWidget(self)
         self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.table_widget.setColumnCount(COLUMN_COUNT)
         self.table_widget.horizontalHeader().setStretchLastSection(True)
@@ -59,7 +60,7 @@ class BrowserTab(QWidget):
         self.table_widget.horizontalHeader().sectionMoved.connect(self.move_column)
 
         # Create a second table to edit the xpath of each column
-        self.table_xpath = QTableWidget(0, COLUMN_COUNT)
+        self.table_xpath = CustomTableWidget(self)
         self.table_xpath.verticalHeader().setVisible(False)
         self.table_xpath.horizontalHeader().setVisible(False)
         self.table_xpath.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
