@@ -1,9 +1,10 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFormLayout, 
-    QRadioButton, QComboBox, QGroupBox, QSpacerItem, QSizePolicy
+    QRadioButton, QComboBox, QGroupBox, QSpacerItem, QSizePolicy, QMessageBox
 )
 from PyQt5.QtCore import Qt
 import json
+from utils.PasswordManager import clear_stored_passwords
 
 SEARCH_ENGINES = {
     "Google": ["https://www.google.com/search?q=", "https://www.google.com"],
@@ -33,6 +34,9 @@ class SettingsTab(QWidget):
         self.home_page_edit = QLineEdit(self)
         self.custom_home_page_radio.toggled.connect(self.home_page_edit.setEnabled)
         self.search_engine_radio.clicked.connect(self.save_settings)
+
+        self.clear_passwords_button = QPushButton("Clear Stored Passwords", self)
+        self.clear_passwords_button.clicked.connect(self.clear_passwords)
 
         try:
             with open(SETTINGS_FILE, "r") as f:
@@ -81,6 +85,9 @@ class SettingsTab(QWidget):
 
         form_layout.addRow(home_page_group)
         form_layout.addRow(QLabel("Search Engine:"), self.search_engine_combo)
+
+        password_manager_label = QLabel("Password Manager:")
+        form_layout.addRow(password_manager_label, self.clear_passwords_button)
 
         spacer_item = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
         form_layout.addItem(spacer_item)
@@ -165,3 +172,18 @@ class SettingsTab(QWidget):
         self.home_page_edit.setText(self.settings["home_page"])
         self.custom_home_page_radio.setChecked(self.settings["search_engine"] is None)
         self.search_engine_radio.setChecked(not self.custom_home_page_radio.isChecked())
+
+    def clear_passwords(self):
+        if clear_stored_passwords():
+            self.show_clear_passwords_message("All stored credentials have been removed.")
+        else:
+            self.show_clear_passwords_message("No credentials were found.")
+
+    def show_clear_passwords_message(self, message):
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Clear Stored Passwords")
+        msg.setText(message)
+        msg.setIcon(QMessageBox.Information)
+        msg.setStandardButtons(QMessageBox.Ok)
+
+        msg.exec_()

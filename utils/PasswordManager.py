@@ -109,3 +109,11 @@ def get_login_info_for_url(url):
 
     # If no match is found, return None
     return None
+
+def clear_stored_passwords():
+    app_data_folder = get_app_data_folder()
+    file_path = os.path.join(app_data_folder, file_name)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        return True
+    return False
