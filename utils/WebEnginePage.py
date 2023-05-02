@@ -35,7 +35,6 @@ class WebEnginePage(QWebEnginePage):
                             'username': self.username,
                             'password': self.password,
                         }
-                        print(login_info)
                         save_login_file(login_info)
                     else:
                         print("User chose not to save the credentials.")

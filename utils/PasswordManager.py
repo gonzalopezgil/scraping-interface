@@ -3,6 +3,7 @@ from cryptography.fernet import Fernet
 import os
 import platform
 import json
+from urllib.parse import urlparse
 
 key_name = "scraping_interface_password_manager_key"
 service_name = "scraping_interface"
@@ -32,7 +33,7 @@ def save_login_file(login_info):
     app_data_folder = get_app_data_folder()
     os.makedirs(app_data_folder, exist_ok=True)
     file_path = os.path.join(app_data_folder, file_name)
-    
+
     # Decrypt the existing data if the file exists
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
@@ -42,8 +43,29 @@ def save_login_file(login_info):
     else:
         existing_login_data = []
 
-    # Append new login_info to the existing data
-    existing_login_data.append(login_info)
+    # Extract the domain name from the given URL
+    domain_name = get_domain_name(login_info['url'])
+
+    if domain_name is None:
+        return
+
+    # Find the matching login info
+    login_info_updated = False
+    for i, stored_login_info in enumerate(existing_login_data):
+        stored_domain_name = get_domain_name(stored_login_info['url'])
+
+        if stored_domain_name is None:
+            continue
+
+        # If a matching domain is found, update the login_info
+        if domain_name == stored_domain_name:
+            existing_login_data[i] = login_info
+            login_info_updated = True
+            break
+
+    # If no match is found, append the new login_info to the existing data
+    if not login_info_updated:
+        existing_login_data.append(login_info)
 
     # Convert the updated login data to a JSON string
     updated_login_data_json = json.dumps(existing_login_data)
@@ -87,13 +109,8 @@ def get_login_info_for_url(url):
     decrypted_data = cipher_suite.decrypt(encrypted_data).decode("utf-8")
     login_data = json.loads(decrypted_data)
 
-    # Extract the domain name from the given URL
-    from urllib.parse import urlparse
-    domain_name = urlparse(url).netloc.split(".")
-
-    if len(domain_name) >= 2:
-        domain_name = ".".join(domain_name[-2:])
-    else:
+    domain_name = get_domain_name(url)
+    if domain_name is None:
         return None
 
     # Find the matching login info
@@ -117,3 +134,13 @@ def clear_stored_passwords():
         os.remove(file_path)
         return True
     return False
+
+def get_domain_name(url):
+    domain_name = urlparse(url).netloc.split(".")
+    
+    if len(domain_name) >= 2:
+        domain_name = ".".join(domain_name[-2:])
+    else:
+        domain_name = None
+
+    return domain_name
