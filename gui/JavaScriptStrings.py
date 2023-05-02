@@ -211,3 +211,107 @@ REMOVE_RED_BACKGROUND_JS = """
     }
     removeRedBackground(xpath);
 """
+
+LOGIN_DETECTION_JS = """
+    (function() {
+        var observeDOM = function(obj, callback) {
+            var observer = new MutationObserver(function(mutations) {
+                callback(mutations);
+            });
+            observer.observe(obj, { childList: true, subtree: true });
+        };
+
+        var init_script = function() {
+            var text_inputs = document.querySelectorAll('input[type="text"], input[type="email"]');
+            var password_inputs = document.querySelectorAll('input[type="password"]');
+
+            var found_input = false;
+            var text_value = '';
+            var found_password = false;
+            var password_value = '';
+
+            var find_button_near_password_input = function(password_input) {
+                var parent = password_input.parentElement;
+                var button = parent.querySelector('button, input[type="submit"], input[type="button"]');
+                if (button) {
+                    return button;
+                }
+
+                var siblings = parent.parentElement.children;
+                for (var i = 0; i < siblings.length; i++) {
+                    button = siblings[i].querySelector('button, input[type="submit"], input[type="button"]');
+                    if (button) {
+                        return button;
+                    }
+                }
+
+                for (var i = 0; i < siblings.length; i++) {
+                    button = siblings[i].querySelectorAll('button, input[type="submit"], input[type="button"]')[0];
+                    if (button) {
+                        return button;
+                    }
+                }
+
+                return null;
+            };
+
+            var getElementXPath = function(element) {
+                var xpath = '';
+                for (; element && element.nodeType == 1; element = element.parentNode) {
+                    var id = Array.prototype.indexOf.call(element.parentNode.children, element) + 1;
+                    id > 0 ? (id = '[' + id + ']') : (id = '');
+                    xpath = '/' + element.tagName.toLowerCase() + id + xpath;
+                }
+                return xpath;
+            };
+
+            var check_login_data = function() {
+                for (var i = 0; i < text_inputs.length; i++) {
+                    if (text_inputs[i].value !== '') {
+                        found_input = true;
+                        text_value = text_inputs[i].value;
+                        break;
+                    }
+                }
+
+                for (var j = 0; j < password_inputs.length; j++) {
+                    if (password_inputs[j].value !== '') {
+                        found_password = true;
+                        password_value = password_inputs[j].value;
+                        break;
+                    }
+                }
+
+                if (found_input) {
+                    console.log('To Python>login_text_input>' + text_value);
+                }
+
+                if (found_password) {
+                    var button = find_button_near_password_input(password_inputs[j]);
+                    var button_xpath = '';
+                    if (button) {
+                        button_xpath = getElementXPath(button);
+                    }
+                    console.log('To Python>login_button_xpath>' + button_xpath)
+                    console.log('To Python>login_password_input>' + password_value);
+                }
+            };
+
+            window.addEventListener('beforeunload', function(event) {
+                check_login_data();
+            });
+
+            document.querySelectorAll('button, input[type="submit"], input[type="button"]').forEach(function(button) {
+                button.addEventListener('click', function(event) {
+                    check_login_data();
+                });
+            });
+        };
+
+        init_script();
+
+        observeDOM(document.body, function() {
+            init_script();
+        });
+    })();
+"""

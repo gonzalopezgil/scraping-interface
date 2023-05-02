@@ -1,5 +1,5 @@
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
-from PyQt5.QtWidgets import QTableWidgetItem
+from PyQt5.QtWidgets import QTableWidgetItem, QMessageBox
 from PyQt5.QtCore import pyqtSlot
 
 class WebEnginePage(QWebEnginePage):
@@ -10,6 +10,9 @@ class WebEnginePage(QWebEnginePage):
         self.table_xpath = table_xpath
         self.process_manager = process_manager
         self.pagination_clicked = False
+        self.username = None
+        self.password = None
+        self.login_button_xpath = None
 
     def javaScriptConsoleMessage(self, level, message, line_number, source_id):
         if not message.startswith("To Python>"):
@@ -18,7 +21,30 @@ class WebEnginePage(QWebEnginePage):
             text = message.split(">")
             message_type = text[1]
             value = text[2]
-            if message_type == "selectedText" and not self.pagination_clicked:
+            if message_type == "login_text_input":
+                self.username = value
+            elif message_type == "login_button_xpath":
+                print(value)
+                self.login_button_xpath = value
+            elif message_type == "login_password_input" and self.password != value:
+                self.password = value
+                if self.username and self.password:
+                    user_choice = self.show_save_credentials_dialog(self.view(), self.username, self.password)
+                    if user_choice == QMessageBox.Yes:
+                        print("User chose to save the credentials.")
+                        # Save the credentials for future use
+                        login_info = {
+                            'url': self.url().toString(),
+                            'username': self.username,
+                            'password': self.password,
+                            'login_button_xpath': self.login_button_xpath
+                        }
+                        # Save the login_info dictionary to a file or a database
+                        # for later use with Selenium
+                        print(login_info)
+                    else:
+                        print("User chose not to save the credentials.")
+            elif message_type == "selectedText" and not self.pagination_clicked:
                 row = int(text[3])
                 col = self.process_manager.get_column_count() - 1
                 if row == 1:
@@ -43,4 +69,13 @@ class WebEnginePage(QWebEnginePage):
     def on_pagination_button_clicked(self):
         self.pagination_clicked = not self.pagination_clicked
 
-    
+    def show_save_credentials_dialog(self, parent, username, password):
+        msg_box = QMessageBox(parent)
+        msg_box.setIcon(QMessageBox.Question)
+        msg_box.setWindowTitle("Save credentials")
+        msg_box.setText("Do you want to save your login credentials for this website?")
+        msg_box.setInformativeText(f"Username: {username}\nPassword: {password}")
+        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg_box.setDefaultButton(QMessageBox.No)
+
+        return msg_box.exec_()
