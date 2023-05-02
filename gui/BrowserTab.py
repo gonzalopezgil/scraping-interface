@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSlot
@@ -45,7 +45,7 @@ class BrowserTab(QWidget):
         self.table_widget.customContextMenuRequested.connect(lambda pos: self.create_table_context_menu(pos, self.table_widget))
         self.table_widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table_widget.verticalHeader().setVisible(False)
-        #self.table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         
         # Signal to update the table widget
         self.signal_manager.table_items_signal.connect(self.set_table_data)
