@@ -1,6 +1,7 @@
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QTableWidgetItem, QMessageBox
 from PyQt5.QtCore import pyqtSlot
+from utils.PasswordManager import save_login_file
 
 class WebEnginePage(QWebEnginePage):
     
@@ -12,7 +13,6 @@ class WebEnginePage(QWebEnginePage):
         self.pagination_clicked = False
         self.username = None
         self.password = None
-        self.login_button_xpath = None
 
     def javaScriptConsoleMessage(self, level, message, line_number, source_id):
         if not message.startswith("To Python>"):
@@ -23,9 +23,6 @@ class WebEnginePage(QWebEnginePage):
             value = text[2]
             if message_type == "login_text_input":
                 self.username = value
-            elif message_type == "login_button_xpath":
-                print(value)
-                self.login_button_xpath = value
             elif message_type == "login_password_input" and self.password != value:
                 self.password = value
                 if self.username and self.password:
@@ -37,11 +34,9 @@ class WebEnginePage(QWebEnginePage):
                             'url': self.url().toString(),
                             'username': self.username,
                             'password': self.password,
-                            'login_button_xpath': self.login_button_xpath
                         }
-                        # Save the login_info dictionary to a file or a database
-                        # for later use with Selenium
                         print(login_info)
+                        save_login_file(login_info)
                     else:
                         print("User chose not to save the credentials.")
             elif message_type == "selectedText" and not self.pagination_clicked:
@@ -73,8 +68,8 @@ class WebEnginePage(QWebEnginePage):
         msg_box = QMessageBox(parent)
         msg_box.setIcon(QMessageBox.Question)
         msg_box.setWindowTitle("Save credentials")
-        msg_box.setText("Do you want to save your login credentials for this website?")
-        msg_box.setInformativeText(f"Username: {username}\nPassword: {password}")
+        msg_box.setText("Do you want to save your login credentials for this website? (Mandatory for pagination scraping)")
+        msg_box.setInformativeText(f"Username: {username}\nPassword: {'*' * len(password)}")
         msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         msg_box.setDefaultButton(QMessageBox.No)
 

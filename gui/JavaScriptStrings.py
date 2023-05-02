@@ -230,41 +230,6 @@ LOGIN_DETECTION_JS = """
             var found_password = false;
             var password_value = '';
 
-            var find_button_near_password_input = function(password_input) {
-                var parent = password_input.parentElement;
-                var button = parent.querySelector('button, input[type="submit"], input[type="button"]');
-                if (button) {
-                    return button;
-                }
-
-                var siblings = parent.parentElement.children;
-                for (var i = 0; i < siblings.length; i++) {
-                    button = siblings[i].querySelector('button, input[type="submit"], input[type="button"]');
-                    if (button) {
-                        return button;
-                    }
-                }
-
-                for (var i = 0; i < siblings.length; i++) {
-                    button = siblings[i].querySelectorAll('button, input[type="submit"], input[type="button"]')[0];
-                    if (button) {
-                        return button;
-                    }
-                }
-
-                return null;
-            };
-
-            var getElementXPath = function(element) {
-                var xpath = '';
-                for (; element && element.nodeType == 1; element = element.parentNode) {
-                    var id = Array.prototype.indexOf.call(element.parentNode.children, element) + 1;
-                    id > 0 ? (id = '[' + id + ']') : (id = '');
-                    xpath = '/' + element.tagName.toLowerCase() + id + xpath;
-                }
-                return xpath;
-            };
-
             var check_login_data = function() {
                 for (var i = 0; i < text_inputs.length; i++) {
                     if (text_inputs[i].value !== '') {
@@ -287,12 +252,6 @@ LOGIN_DETECTION_JS = """
                 }
 
                 if (found_password) {
-                    var button = find_button_near_password_input(password_inputs[j]);
-                    var button_xpath = '';
-                    if (button) {
-                        button_xpath = getElementXPath(button);
-                    }
-                    console.log('To Python>login_button_xpath>' + button_xpath)
                     console.log('To Python>login_password_input>' + password_value);
                 }
             };
@@ -314,4 +273,53 @@ LOGIN_DETECTION_JS = """
             init_script();
         });
     })();
+"""
+
+FIND_RELATED_BUTTON_JS = """
+    function find_related_button() {
+        var password_input = document.querySelector('input[type="password"]');
+        var parent = password_input.parentElement;
+        var button = parent.querySelector('button, input[type="submit"], input[type="button"]');
+        
+        if (button) {
+            return button;
+        }
+        
+        var siblings = parent.parentElement.children;
+        for (var i = 0; i < siblings.length; i++) {
+            button = siblings[i].querySelector('button, input[type="submit"], input[type="button"]');
+            if (button) {
+                return button;
+            }
+        }
+        return null;
+    }
+
+    function get_element_xpath(element) {
+        if (element.id) {
+            return '//*[@id="' + element.id + '"]';
+        } else if (element.className) {
+            var classes = element.className.split(' ');
+            var classString = '';
+            for (var i = 0; i < classes.length; i++) {
+                classString += 'contains(@class, "' + classes[i] + '")';
+                if (i < classes.length - 1) {
+                    classString += ' and ';
+                }
+            }
+            return '//' + element.tagName.toLowerCase() + '[' + classString + ']';
+        } else {
+            var xpath = '';
+            for (; element && element.nodeType == 1; element = element.parentNode) {
+                var id = Array.prototype.indexOf.call(element.parentNode.children, element) + 1;
+                id > 0 ? (id = '[' + id + ']') : (id = '');
+                xpath = '/' + element.tagName.toLowerCase() + id + xpath;
+            }
+            return xpath;
+        }
+    }
+
+    var button = find_related_button();
+    console.log('Button: ' + get_element_xpath(button))
+    return button ? get_element_xpath(button) : null;
 """

@@ -115,3 +115,4 @@ class ProcessesTab(QWidget):
 
     def stop_process(self, row):
         self.stop_variables[row].value = True
+        self.table.setItem(row, 3, QTableWidgetItem("Stopping..."))

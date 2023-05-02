@@ -15,6 +15,13 @@ from twisted.internet import reactor
 from multiprocessing import Process, Queue, Value
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import gui.JavaScriptStrings as jss
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from utils.PasswordManager import get_login_info_for_url
+
+TIMEOUT = 5
 
 class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     name = "ScrapySeleniumScraper"
@@ -25,7 +32,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
 
     def get_webpage(self, url, _):
         options = Options()
-        options.headless = True
+        #options.headless = True
         options.add_argument("--window-size=1920,1200")
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.get(url)
@@ -74,9 +81,11 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         self.q.put(progress)
 
     def parse(self, response):
+        self.pagination_xpath = "//button[contains(text(), 'Next')]"
         self.update_progress("1%")
         if self.pagination_xpath:
             obj = self.get_webpage(self.url, self.default_encoding)
+
         self.update_progress("10%")
 
         general_xpaths = [self.generalise_xpath(xpath) for xpath in self.xpaths]
@@ -84,15 +93,31 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
         self.update_progress("20%")
 
-        #for xpath,label,text in zip(self.xpaths,self.labels,self.selected_text):
-        #    text = self.clean_text(text)
-        #    elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
-        #    if elements is not None and len(elements) > 0:
-        #        elements = self.clean_list(elements)
-        #        elements = self.find_text_in_data(elements, text)
-        #        if elements is None:
-        #            print("Error: Text selected by the user not found in elements")
-        #            return
+        # Check if elements are present when pagination_xpath exists
+        elements_present = True
+        if self.pagination_xpath:
+            for xpath, label, text in zip(self.xpaths, self.labels, self.selected_text):
+                text = self.clean_text(text)
+                elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
+                if elements is None or len(elements) == 0:
+                    elements_present = False
+                    break
+
+        # If elements don't exist, execute login_using_stored_credentials and try again
+        if not elements_present:
+            login_info = get_login_info_for_url(self.url)
+            self.login_using_stored_credentials(obj, login_info)
+
+            for xpath, label, text in zip(self.xpaths, self.labels, self.selected_text):
+                text = self.clean_text(text)
+                elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
+                if elements is not None and len(elements) > 0:
+                    elements = self.clean_list(elements)
+                    elements = self.find_text_in_data(elements, text)
+                    if elements is None:
+                        print("Error: Text selected by the user not found in elements")
+                        return
+
         self.update_progress("50%")
 
         combined_elements = []
@@ -212,3 +237,54 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         if xpath.endswith("//text()"):
             xpath = xpath[:-8]
         return xpath
+    
+    def login_using_stored_credentials(self, driver, login_info):
+        try:
+            driver.get(login_info["url"])
+
+            # Find and fill in the email or username input
+            email_or_text_input = WebDriverWait(driver, TIMEOUT).until(
+                EC.presence_of_element_located((By.XPATH, '//input[@type="text"]|//input[@type="email"]'))
+            )
+            email_or_text_input.send_keys(login_info["username"])
+
+            # Find and fill in the password input
+            password_input = WebDriverWait(driver, TIMEOUT).until(
+                EC.presence_of_element_located((By.XPATH, '//input[@type="password"]'))
+            )
+            
+            if not password_input:
+                print("Not password input found")
+                # Click the form button and wait for the password input to appear
+                self.click_form_button(driver)
+
+                password_input = WebDriverWait(driver, TIMEOUT).until(
+                    EC.presence_of_element_located((By.XPATH, '//input[@type="password"]'))
+                )
+                password_input.send_keys(login_info["password"])
+                self.click_form_button(driver)
+
+            else:
+                print("Password input found")
+                password_input.send_keys(login_info["password"])
+                print("Keys sent")
+                self.click_form_button(driver)
+
+        except Exception:
+            print("Couldn't find the email or username input or the password input.")
+
+    def click_form_button(self, driver):
+        try:
+            print("looking for form button")
+            button_xpath = driver.execute_script(jss.FIND_RELATED_BUTTON_JS)
+            print(button_xpath)
+
+            if button_xpath:
+                print("Button found")
+                # Find the button using its XPath and click it
+                button = driver.find_element(By.XPATH, button_xpath)
+                button.click()
+            else:
+                print("Couldn't find a related button to click.")
+        except Exception:
+            print("Couldn't find a related button to click.")
