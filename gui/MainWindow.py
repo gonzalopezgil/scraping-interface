@@ -6,6 +6,7 @@ from scrapers.ScrapySeleniumScraper import ScrapySeleniumScraper
 import threading
 from utils.SignalManager import SignalManager
 from utils.ProcessManager import ProcessManager
+from gui.HomeTab import HomeTab
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -26,6 +27,7 @@ class MainWindow(QMainWindow):
         }
 
         # Create the tabs
+        self.home_tab = HomeTab(self)
         self.settings_tab = SettingsTab(self, self.settings)
         self.browser_tab = BrowserTab(self, self.process_manager, self.signal_manager, self.settings)
         self.processes_tab = ProcessesTab(self)
@@ -40,11 +42,19 @@ class MainWindow(QMainWindow):
         self.browser_tab.download_button.clicked.connect(lambda: self.browser_tab.browser.page().toHtml(self.start_thread))
         self.browser_tab.preview_button.clicked.connect(lambda: self.preview_scrape(self.browser_tab.browser.url().toString(), self.browser_tab.get_column_titles()))
         self.browser_tab.pagination_button.clicked.connect(self.on_pagination_button_clicked)
+        
+        self.home_tab.search_input.returnPressed.connect(self.switch_to_browser_tab)
 
         # Add the tabs to the tab widget
+        self.tabs.addTab(self.home_tab, "Home")
         self.tabs.addTab(self.browser_tab, "Browser")
         self.tabs.addTab(self.processes_tab, "Processes")
         self.tabs.addTab(self.settings_tab, "Settings")
+
+    def switch_to_browser_tab(self):
+        self.browser_tab.url_field.setText(self.home_tab.search_input.text())
+        self.browser_tab.load_url()
+        self.tabs.setCurrentIndex(1)
     
     def on_pagination_button_clicked(self):
         self.signal_manager.pagination_signal.emit()
@@ -85,7 +95,7 @@ class MainWindow(QMainWindow):
             self.signal_manager.process_signal.emit(row, "Stopped", "")
 
     def thread_function(self, url, column_titles, file_name, row, process_manager, html=None, stop=None):
-        self.tabs.setCurrentIndex(1)
+        self.tabs.setCurrentIndex(2)
 
         scraper = ScrapySeleniumScraper()
         scraper.scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), process_manager.pagination_xpath, file_name, self.signal_manager, row, html, stop)
