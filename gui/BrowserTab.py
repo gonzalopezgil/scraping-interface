@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushB
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSlot
-import gui.JavaScriptStrings as jss
+import web.JavaScriptStrings as jss
 from utils.WebEnginePage import WebEnginePage
 from scrapers.ScrapyScraper import ScrapyScraper
 import threading
