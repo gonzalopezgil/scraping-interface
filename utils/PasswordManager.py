@@ -1,10 +1,10 @@
 import keyring
 from cryptography.fernet import Fernet
 import os
-import platform
 import json
 from urllib.parse import urlparse
 from exceptions.file_exceptions import FileDeletionError
+from utils.FileManager import get_file_path
 
 KEY_NAME = "scraping_interface_password_manager_key"
 SERVICE_NAME = "scraping_interface"
@@ -39,9 +39,7 @@ def save_login_file(login_info):
         cipher_suite = Fernet(get_key())
 
         # Read existing data from the file
-        app_data_folder = get_app_data_folder()
-        os.makedirs(app_data_folder, exist_ok=True)
-        file_path = os.path.join(app_data_folder, FILE_NAME)
+        file_path = get_file_path(FILE_NAME)
 
         # Decrypt the existing data if the file exists
         if os.path.exists(file_path):
@@ -95,29 +93,13 @@ def save_login_file(login_info):
         print(f"Error saving the credentials: {e}")
         return False
 
-def get_app_data_folder():
-    try:
-        system = platform.system()
-
-        if system == "Windows":
-            app_data_folder = os.path.join(os.environ["APPDATA"], "ScrapingInterface")
-        elif system == "Darwin":  # macOS
-            app_data_folder = os.path.join(os.path.expanduser('~'), 'Library', 'Application Support', 'ScrapingInterface')
-        else:  # Linux and other Unix-based systems
-            app_data_folder = os.path.join(os.path.expanduser('~'), '.scraping_interface')
-        return app_data_folder
-    except Exception as e:
-        print(f"Error getting the App Data folder of the system: {e}")
-        return None
-
 def get_login_info_for_url(url):
     try:
         # Use the key to create a Fernet object
         cipher_suite = Fernet(get_key())
 
         # Read encrypted data from the file
-        app_data_folder = get_app_data_folder()
-        file_path = os.path.join(app_data_folder, FILE_NAME)
+        file_path = get_file_path(FILE_NAME)
 
         if not os.path.exists(file_path):
             return None
@@ -153,8 +135,7 @@ def get_login_info_for_url(url):
 
 def clear_stored_passwords():
     try:
-        app_data_folder = get_app_data_folder()
-        file_path = os.path.join(app_data_folder, FILE_NAME)
+        file_path = get_file_path(FILE_NAME)
         if os.path.exists(file_path):
             os.remove(file_path)
             return True

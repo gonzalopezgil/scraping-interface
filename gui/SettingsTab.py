@@ -6,6 +6,7 @@ from PyQt5.QtCore import Qt
 import json
 from utils.PasswordManager import clear_stored_passwords
 from exceptions.file_exceptions import FileDeletionError
+from utils.FileManager import get_file_path
 
 SEARCH_ENGINES = {
     "Google": ["https://www.google.com/search?q=", "https://www.google.com"],
@@ -13,7 +14,7 @@ SEARCH_ENGINES = {
     "DuckDuckGo": ["https://duckduckgo.com/?q=", "https://duckduckgo.com/"]
 }
 
-SETTINGS_FILE = "settings.json"
+SETTINGS_FILE = get_file_path("settings.json")
 
 default_engine = next(iter(SEARCH_ENGINES.keys()))
 default_settings = {

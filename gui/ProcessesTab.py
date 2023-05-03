@@ -4,6 +4,10 @@ import csv
 from datetime import datetime
 import os
 from multiprocessing import Value
+#from utils.FileManager import get_file_path
+
+#PROCESSES_FILE = get_file_path("processes.csv")
+PROCESSES_FILE = "processes.csv"
 
 class ProcessesTab(QWidget):
     def __init__(self, parent=None):
@@ -41,7 +45,7 @@ class ProcessesTab(QWidget):
         
     def load_data(self):
         try:
-            with open('processes.csv', newline='') as file:
+            with open(PROCESSES_FILE, newline='') as file:
                 reader = csv.reader(file)
                 data = list(reader)
                 self.table.setRowCount(len(data))
@@ -90,7 +94,7 @@ class ProcessesTab(QWidget):
         return table_data
     
     def save_data(self):
-        with open('processes.csv', 'w', newline='') as file:
+        with open(PROCESSES_FILE, 'w', newline='') as file:
             writer = csv.writer(file)
             writer.writerows(self.get_table_data())
 
