@@ -349,6 +349,7 @@ class BrowserTab(QWidget):
         self.browser.loadFinished.connect(lambda: self.set_template(template))
 
     def set_template(self, template):
+        self.scrape_widget.setVisible(False)
         self.toggle_scrape_widget()
 
         # Save all this information in the current process manager (including the pagination xpath if it exists)
