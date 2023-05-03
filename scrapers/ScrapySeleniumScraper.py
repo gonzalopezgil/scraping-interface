@@ -81,7 +81,6 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         self.q.put(progress)
 
     def parse(self, response):
-        self.pagination_xpath = "//button[contains(text(), 'Next')]"
         self.update_progress("1%")
         if self.pagination_xpath:
             obj = self.get_webpage(self.url, self.default_encoding)
@@ -106,17 +105,18 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         # If elements don't exist, execute login_using_stored_credentials and try again
         if not elements_present:
             login_info = get_login_info_for_url(self.url)
-            self.login_using_stored_credentials(obj, login_info)
+            if login_info:
+                self.login_using_stored_credentials(obj, login_info)
 
-            for xpath, label, text in zip(self.xpaths, self.labels, self.selected_text):
-                text = self.clean_text(text)
-                elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
-                if elements is not None and len(elements) > 0:
-                    elements = self.clean_list(elements)
-                    elements = self.find_text_in_data(elements, text)
-                    if elements is None:
-                        print("Error: Text selected by the user not found in elements")
-                        return
+                for xpath, label, text in zip(self.xpaths, self.labels, self.selected_text):
+                    text = self.clean_text(text)
+                    elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
+                    if elements is not None and len(elements) > 0:
+                        elements = self.clean_list(elements)
+                        elements = self.find_text_in_data(elements, text)
+                        if elements is None:
+                            print("Error: Text selected by the user not found in elements")
+                            return
 
         self.update_progress("50%")
 

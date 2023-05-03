@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 import json
 from utils.PasswordManager import clear_stored_passwords
+from exceptions.file_exceptions import FileDeletionError
 
 SEARCH_ENGINES = {
     "Google": ["https://www.google.com/search?q=", "https://www.google.com"],
@@ -174,16 +175,24 @@ class SettingsTab(QWidget):
         self.search_engine_radio.setChecked(not self.custom_home_page_radio.isChecked())
 
     def clear_passwords(self):
-        if clear_stored_passwords():
-            self.show_clear_passwords_message("All stored credentials have been removed.")
-        else:
-            self.show_clear_passwords_message("No credentials were found.")
+        try:
+            msg = self.show_clear_passwords_message()
+            message = ""
+            if clear_stored_passwords():
+                message = "All stored credentials have been removed."
+            else:
+                message = "No credentials were found."
+            msg.setText(message)
+            msg.setIcon(QMessageBox.Information)
+            msg.exec_()
+        except FileDeletionError as e:
+            msg = self.show_clear_passwords_message()
+            msg.setText(e)
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec_()
 
-    def show_clear_passwords_message(self, message):
+    def show_clear_passwords_message(self):
         msg = QMessageBox(self)
         msg.setWindowTitle("Clear Stored Passwords")
-        msg.setText(message)
-        msg.setIcon(QMessageBox.Information)
         msg.setStandardButtons(QMessageBox.Ok)
-
-        msg.exec_()
+        return msg

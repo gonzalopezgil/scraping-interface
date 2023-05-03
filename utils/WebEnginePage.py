@@ -35,7 +35,13 @@ class WebEnginePage(QWebEnginePage):
                             'username': self.username,
                             'password': self.password,
                         }
-                        save_login_file(login_info)
+                        save_success = save_login_file(login_info)
+                        if not save_success:
+                            msg = QMessageBox()
+                            msg.setIcon(QMessageBox.Critical)
+                            msg.setText("Error saving the credentials.")
+                            msg.setWindowTitle("Save Credentials")
+                            msg.exec_()
                     else:
                         print("User chose not to save the credentials.")
             elif message_type == "selectedText" and not self.pagination_clicked:
