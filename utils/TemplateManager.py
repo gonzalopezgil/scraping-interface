@@ -72,3 +72,19 @@ def load_template(index):
         template = json.load(f)
 
     return template
+
+def get_column_data_from_template(template, key):
+    result = []
+    try:
+        for column in template["columns"]:
+            result.append(column[key])
+        return result
+    except Exception as e:
+        print(f"Error getting data from template: {e}")
+        return None
+
+def get_domain(name):
+    if "_" in name:
+        return name.split("_")[0]
+    else:
+        return name

@@ -212,6 +212,21 @@ REMOVE_RED_BACKGROUND_JS = """
     removeRedBackground(xpath);
 """
 
+# xpath variable must be defined before calling this function
+PAINT_RED_BACKGROUND_JS = """
+    var lastMessage = "";
+
+    function paintRedBackground(xpath) {
+        var elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
+        var element = elements.iterateNext();
+        while (element) {
+            element.style.backgroundColor = 'red';
+            element = elements.iterateNext();
+        }
+    }
+    paintRedBackground(xpath);
+"""
+
 LOGIN_DETECTION_JS = """
     (function() {
         var observeDOM = function(obj, callback) {

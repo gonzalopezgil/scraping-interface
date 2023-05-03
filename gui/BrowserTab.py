@@ -8,7 +8,7 @@ from scrapers.ScrapyScraper import ScrapyScraper
 import threading
 from bs4 import BeautifulSoup
 from utils.CustomTableWidget import CustomTableWidget
-from utils.TemplateManager import save_template
+from utils.TemplateManager import save_template, get_column_data_from_template
 
 PLACEHOLDER_TEXT = "Search or enter a URL"
 COLUMN_COUNT = 0
@@ -251,7 +251,9 @@ class BrowserTab(QWidget):
             self.signal_manager.table_items_signal.emit(items)
 
     def handle_cell_changed(self, row, column):
-        self.process_manager.get_column(column).set_xpath(self.table_xpath.item(row, column).text())
+        xpath = self.table_xpath.item(row, column).text()
+        self.process_manager.get_column(column).set_xpath(xpath)
+        self.paint_red_background(xpath)
         self.browser.page().toHtml(self.preview_scrape)
 
     def clean_html(self, html):
@@ -298,6 +300,10 @@ class BrowserTab(QWidget):
     def remove_red_background(self, xpath):
         js_code = f"var xpath = '{xpath}'; {jss.REMOVE_RED_BACKGROUND_JS}"
         self.browser.page().runJavaScript(js_code)
+
+    def paint_red_background(self, xpath):
+        js_code = f"var xpath = '{xpath}'; {jss.PAINT_RED_BACKGROUND_JS}"
+        self.browser.page().runJavaScript(js_code)
     
     def remove_column(self, column):
         xpath = self.table_xpath.item(0, column).text()
@@ -332,3 +338,55 @@ class BrowserTab(QWidget):
         self.table_xpath.horizontalHeader().blockSignals(True)  # Temporarily block signals to avoid infinite loop
         self.table_xpath.horizontalHeader().moveSection(old_visual_index, new_visual_index)
         self.table_xpath.horizontalHeader().blockSignals(False)  # Re-enable signals
+
+    def load_template(self, template):
+        # Open the scrape widget
+        self.scrape_widget.show()
+
+        # Browse to the URL
+        self.browser.load(QUrl(template['url']))
+
+        self.browser.loadFinished.connect(lambda: self.set_template(template))
+
+    def set_template(self, template):
+        self.toggle_scrape_widget()
+
+        # Save all this information in the current process manager (including the pagination xpath if it exists)
+        self.update_process_manager(template)
+
+        # Set column titles
+        self.set_column_titles(get_column_data_from_template(template, "column_title"))
+
+        # Set the first texts in the first row of the table widget
+        self.set_first_row_data(get_column_data_from_template(template, "first_text"))
+
+        # Set the xpaths in the xpath table
+        self.set_xpaths(get_column_data_from_template(template, "xpath"))
+
+
+    def set_column_titles(self, column_titles):
+        self.table_widget.setColumnCount(len(column_titles))
+        self.table_xpath.setColumnCount(len(column_titles))
+        for i, title in enumerate(column_titles):
+            header_item = QTableWidgetItem(title)
+            self.table_widget.setHorizontalHeaderItem(i, header_item)
+
+    def set_first_row_data(self, first_row_data):
+        self.table_widget.setRowCount(1)
+        for i, data in enumerate(first_row_data):
+            item = QTableWidgetItem(data)
+            self.table_widget.setItem(0, i, item)
+
+    def set_xpaths(self, xpaths):
+        self.table_xpath.setRowCount(1)
+        for i, xpath in enumerate(xpaths):
+            item = QTableWidgetItem(xpath)
+            self.table_xpath.setItem(0, i, item)
+
+    def update_process_manager(self, template):
+        self.process_manager.clear_columns()
+        for i, (xpath, text) in enumerate(zip(get_column_data_from_template(template, "xpath"), get_column_data_from_template(template, "first_text"))):
+            self.process_manager.create_column(xpath)
+            self.process_manager.set_first_text(i, text)
+        if 'pagination_xpath' in template and template['pagination_xpath'] is not None:
+            self.process_manager.pagination_xpath(template['pagination_xpath'])

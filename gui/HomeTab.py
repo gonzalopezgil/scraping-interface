@@ -1,10 +1,12 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QStyle, QStyleOption, QHBoxLayout, QScrollArea, QPushButton
 from PyQt5.QtGui import QPainter
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from utils.TemplateThumbnail import TemplateThumbnail
 from utils.TemplateManager import list_templates
 
 class HomeTab(QWidget):
+    template_clicked = pyqtSignal(int)
+
     def __init__(self, parent=None, templates_per_page=8):
         super().__init__(parent)
         self.templates_per_page = templates_per_page
@@ -67,15 +69,21 @@ class HomeTab(QWidget):
         num_templates = len(templates_list)
 
         if not self.templates:
-            for domain in templates_list:
-                template_thumbnail = TemplateThumbnail(domain)
+            for i, domain in enumerate(templates_list):
+                template_thumbnail = TemplateThumbnail(domain, i)
                 self.templates.append(template_thumbnail)
                 self.templates_grid.addWidget(template_thumbnail)
+                template_thumbnail.clicked.connect(self.template_thumbnail_clicked)
 
         self.start_index = self.current_page * self.templates_per_page
         self.end_index = min(self.start_index + self.templates_per_page, num_templates)
 
         self.change_page()
+
+    def template_thumbnail_clicked(self):
+        sender = self.sender()
+        if isinstance(sender, TemplateThumbnail):
+            self.template_clicked.emit(sender.index)
 
     def hide_templates(self):
         width = self.width()

@@ -1,11 +1,16 @@
-from PyQt5.QtCore import QUrl, Qt, QByteArray, QBuffer, QIODevice, QSize
+from PyQt5.QtCore import QUrl, Qt, pyqtSignal, QSize
 from PyQt5.QtGui import QPixmap, QFontMetrics
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QFrame
+from utils.TemplateManager import get_domain
 
 class TemplateThumbnail(QFrame):
-    def __init__(self, domain, parent=None):
+    clicked = pyqtSignal()
+
+    def __init__(self, name, index, parent=None):
         super().__init__(parent)
+        self.name = name
+        self.index = index
 
         self.setFixedSize(QSize(100, 100))
         self.setFrameShape(QFrame.StyledPanel)
@@ -19,6 +24,7 @@ class TemplateThumbnail(QFrame):
         layout.addWidget(self.logo)
 
         # Add domain name
+        domain = get_domain(name)
         domain_label = QLabel(domain, self)
         domain_label.setAlignment(Qt.AlignCenter)
 
@@ -62,3 +68,6 @@ class TemplateThumbnail(QFrame):
                 self.logo.setPixmap(pixmap)
         except Exception as e:
             print(f"Warning: Error loading default favicon: {e}")
+
+    def mousePressEvent(self, _):
+        self.clicked.emit()

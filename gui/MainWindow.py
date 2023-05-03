@@ -7,6 +7,7 @@ import threading
 from utils.SignalManager import SignalManager
 from utils.ProcessManager import ProcessManager
 from gui.HomeTab import HomeTab
+from utils.TemplateManager import load_template
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -49,6 +50,18 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.browser_tab, "Browser")
         self.tabs.addTab(self.processes_tab, "Processes")
         self.tabs.addTab(self.settings_tab, "Settings")
+
+        self.home_tab.template_clicked.connect(self.handle_template_click)
+
+    def handle_template_click(self, index):
+        # Change the tab to the BrowserTab
+        self.tabs.setCurrentWidget(self.browser_tab)
+
+        # Load the template data
+        template = load_template(index)
+
+        # Call the function to update the BrowserTab with the template data
+        self.browser_tab.load_template(template)
 
     def switch_to_browser_tab(self):
         self.browser_tab.url_field.setText(self.home_tab.search_input.text())
