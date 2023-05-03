@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSlot
@@ -8,6 +8,7 @@ from scrapers.ScrapyScraper import ScrapyScraper
 import threading
 from bs4 import BeautifulSoup
 from utils.CustomTableWidget import CustomTableWidget
+from utils.TemplateManager import save_template
 
 PLACEHOLDER_TEXT = "Search or enter a URL"
 COLUMN_COUNT = 0
@@ -82,9 +83,10 @@ class BrowserTab(QWidget):
 
         self.pagination_clicked = False
 
-        # Add a button to show a preview of the scrape
-        self.preview_button = QPushButton("Preview", self.scrape_widget)
-        self.scrape_bar_layout.addWidget(self.preview_button)
+        # Add a button to save template
+        self.save_template_button = QPushButton("Save Template", self.scrape_widget)
+        self.scrape_bar_layout.addWidget(self.save_template_button)
+        self.save_template_button.clicked.connect(self.save_current_template)
         
         # Add a button to download the table contents as an Excel file
         self.download_button = QPushButton("Download Excel", self.scrape_widget)
@@ -149,6 +151,21 @@ class BrowserTab(QWidget):
 
     def load_homepage(self):
         self.browser.load(QUrl(self.settings["home_page"]))
+
+    def save_current_template(self):
+        if save_template(self.url_field.text(), self.process_manager, self.get_column_titles()):
+            self.show_message("Template saved successfully")
+        else:
+            self.show_message("Error saving template")
+
+    def show_message(self, message):
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Information")
+        msg.setText(message)
+        msg.setIcon(QMessageBox.Information)
+        msg.setStandardButtons(QMessageBox.Ok)
+
+        msg.exec_()
 
     def load_url(self):
         url = self.url_field.text()
