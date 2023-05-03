@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 import json
 from utils.PasswordManager import clear_stored_passwords
-from exceptions.file_exceptions import FileDeletionError
+from exceptions.file_exceptions import FileDeletionException
 from utils.FileManager import get_file_path
 
 SEARCH_ENGINES = {
@@ -186,7 +186,7 @@ class SettingsTab(QWidget):
             msg.setText(message)
             msg.setIcon(QMessageBox.Information)
             msg.exec_()
-        except FileDeletionError as e:
+        except FileDeletionException as e:
             msg = self.show_clear_passwords_message()
             msg.setText(e)
             msg.setIcon(QMessageBox.Critical)

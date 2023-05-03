@@ -3,7 +3,7 @@ from cryptography.fernet import Fernet
 import os
 import json
 from urllib.parse import urlparse
-from exceptions.file_exceptions import FileDeletionError
+from exceptions.file_exceptions import FileDeletionException
 from utils.FileManager import get_file_path
 
 KEY_NAME = "scraping_interface_password_manager_key"
@@ -143,7 +143,7 @@ def clear_stored_passwords():
     except Exception as e:
         exception_text = "Error deleting stored passwords"
         print(f"{exception_text}: {e}")
-        raise FileDeletionError(exception_text)
+        raise FileDeletionException(exception_text)
 
 def get_domain_name(url):
     try:

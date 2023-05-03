@@ -20,6 +20,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from utils.PasswordManager import get_login_info_for_url
+from exceptions.scraper_exceptions import ScraperStoppedException
 
 TIMEOUT = 5
 
@@ -32,7 +33,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
 
     def get_webpage(self, url, _):
         options = Options()
-        #options.headless = True
+        options.headless = True
         options.add_argument("--window-size=1920,1200")
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.get(url)
@@ -77,7 +78,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     def update_progress(self, progress):
         if self.stop.value:
             self.q.put("Stopped")
-            raise Exception("Scraper stopped")
+            raise ScraperStoppedException("Scraper stopped by the user")
         self.q.put(progress)
 
     def parse(self, response):
