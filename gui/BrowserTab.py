@@ -12,6 +12,7 @@ from utils.TemplateManager import save_template, get_column_data_from_template
 
 PLACEHOLDER_TEXT = "Search or enter a URL"
 COLUMN_COUNT = 0
+PAGINATION_WIDGET_WIDTH_PERCENTAGE = 1/3
 
 class BrowserTab(QWidget):
 
@@ -29,18 +30,26 @@ class BrowserTab(QWidget):
         # Create a widget for scraping
         self.scrape_widget = QWidget(self)
         self.scrape_widget_layout = QVBoxLayout(self.scrape_widget)
+        self.horizontal_scrape_layout = QHBoxLayout()
+        self.scrape_tables_layout = QVBoxLayout()
         self.scrape_widget.hide()
+
+        # Widget to manage pagination
+        self.pagination_widget = QWidget(self)
+        self.pagination_layout = QVBoxLayout(self.pagination_widget)
+        self.pagination_widget.hide()
+
+        self.horizontal_scrape_layout.addWidget(self.pagination_widget)
 
         # Create a scroll area to hold the table widget
         self.scroll_area = QScrollArea(self)
         self.scroll_area.setWidgetResizable(True)
-        self.scrape_widget_layout.addWidget(self.scroll_area)
+        self.scrape_tables_layout.addWidget(self.scroll_area)
 
         # Create a table widget to show scraped data
         self.table_widget = CustomTableWidget(self)
         self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.table_widget.setColumnCount(COLUMN_COUNT)
-        self.table_widget.horizontalHeader().setStretchLastSection(True)
         self.table_widget.horizontalHeader().customContextMenuRequested.connect(self.create_horizontal_header_context_menu)
         self.table_widget.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
         self.table_widget.customContextMenuRequested.connect(lambda pos: self.create_table_context_menu(pos, self.table_widget))
@@ -65,12 +74,12 @@ class BrowserTab(QWidget):
         self.table_xpath.verticalHeader().setVisible(False)
         self.table_xpath.horizontalHeader().setVisible(False)
         self.table_xpath.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table_xpath.setMaximumHeight(30)
+        self.table_xpath.setMaximumHeight(32)
         self.table_xpath.cellChanged.connect(self.handle_cell_changed)
         self.table_xpath.customContextMenuRequested.connect(lambda pos: self.create_table_context_menu(pos, self.table_xpath))
         self.table_xpath.setContextMenuPolicy(Qt.CustomContextMenu)        
 
-        self.scrape_widget_layout.addWidget(self.table_xpath)
+        self.scrape_tables_layout.addWidget(self.table_xpath)
 
         # Create a Scraping bar with buttons
         self.scrape_bar = QWidget(self)
@@ -91,8 +100,6 @@ class BrowserTab(QWidget):
         # Add a button to download the table contents as an Excel file
         self.download_button = QPushButton("Download Excel", self.scrape_widget)
         self.scrape_bar_layout.addWidget(self.download_button)
-
-        self.scrape_widget_layout.addWidget(self.scrape_bar)
 
         page = WebEnginePage(self.browser, self.table_widget, self.table_xpath, self.process_manager)
         self.browser.setPage(page)
@@ -136,6 +143,9 @@ class BrowserTab(QWidget):
         self.navigation_bar_layout.addWidget(self.scrape_button, 0, Qt.AlignRight)
 
         # Add the scrape widget at the bottom of the browser
+        self.horizontal_scrape_layout.addLayout(self.scrape_tables_layout)
+        self.scrape_widget_layout.addLayout(self.horizontal_scrape_layout)
+        self.scrape_widget_layout.addWidget(self.scrape_bar)
         self.browser_tab_layout.addWidget(self.scrape_widget, 0)
 
         # Create a QTimer to check for new links every second
@@ -143,6 +153,18 @@ class BrowserTab(QWidget):
 
         self.browser.loadFinished.connect(lambda: self.browser.page().runJavaScript(jss.LOGIN_DETECTION_JS))
 
+        self.pagination_button.clicked.connect(self.toggle_pagination)
+
+    def toggle_pagination(self):
+        if self.pagination_widget.isVisible():
+            self.pagination_widget.hide()
+        else:
+            self.pagination_widget.show()
+            widget_width = self.scrape_widget.width()
+            widget_width = int(widget_width * (1 / 3))
+
+            self.pagination_widget.setFixedWidth(widget_width)
+        
     def get_column_titles(self):
         column_titles = [self.table_widget.horizontalHeaderItem(col).text() 
                         if self.table_widget.horizontalHeaderItem(col) else str(self.process_manager.get_column(col).get_visual_index())
@@ -391,3 +413,10 @@ class BrowserTab(QWidget):
             self.process_manager.set_first_text(i, text)
         if 'pagination_xpath' in template and template['pagination_xpath'] is not None:
             self.process_manager.pagination_xpath(template['pagination_xpath'])
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.pagination_widget.isVisible():
+            widget_width = self.scrape_widget.width()
+            widget_width = int(widget_width * PAGINATION_WIDGET_WIDTH_PERCENTAGE)
+            self.pagination_widget.setFixedWidth(widget_width)
