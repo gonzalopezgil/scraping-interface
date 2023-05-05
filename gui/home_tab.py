@@ -26,7 +26,7 @@ class HomeTab(QWidget):
         self.search_input.setPlaceholderText("Search or write URL")
         self.search_input.setMinimumWidth(600)
         font = self.search_input.font()
-        font.setPointSize(25)
+        font.setPointSize(15)
         self.search_input.setFont(font)
         self.settings_tab_layout.addWidget(self.search_input, alignment=Qt.AlignCenter)
 
@@ -57,7 +57,6 @@ class HomeTab(QWidget):
         self.nav_buttons_layout = QHBoxLayout()
         self.previous_button = QPushButton()
         back_icon = QIcon(back_path)
-        back_icon
         self.previous_button.setIcon(back_icon)
         self.previous_button.clicked.connect(self.previous_page)
         self.previous_button.setFixedSize(QSize(50, 100))
@@ -85,6 +84,11 @@ class HomeTab(QWidget):
                 self.templates.append(template_thumbnail)
                 self.templates_grid.addWidget(template_thumbnail)
                 template_thumbnail.clicked.connect(self.template_thumbnail_clicked)
+
+        if not self.templates:
+            self.templates_scroll_area.hide()
+            self.previous_button.hide()
+            self.next_button.hide()
 
         self.start_index = self.current_page * self.templates_per_page
         self.end_index = min(self.start_index + self.templates_per_page, num_templates)
