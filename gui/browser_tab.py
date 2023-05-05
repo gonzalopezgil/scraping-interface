@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushB
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSlot
+from PyQt5.QtGui import QIcon
 import web.javascript_strings as jss
 from utils.web_engine_page import WebEnginePage
 from scrapers.scrapy_scraper import ScrapyScraper
@@ -9,6 +10,7 @@ import threading
 from bs4 import BeautifulSoup
 from utils.custom_table_widget import CustomTableWidget
 from utils.template_manager import save_template, get_column_data_from_template
+import static
 
 PLACEHOLDER_TEXT = "Search or enter a URL"
 COLUMN_COUNT = 0
@@ -96,17 +98,23 @@ class BrowserTab(QWidget):
 
         # Add a button to select the pagination element
         self.pagination_button = QPushButton("Pagination", self.scrape_widget)
+        pagination_icon = QIcon(static.pagination_path)
+        self.pagination_button.setIcon(pagination_icon)
         self.scrape_bar_layout.addWidget(self.pagination_button)
 
         self.pagination_clicked = False
 
         # Add a button to save template
         self.save_template_button = QPushButton("Save Template", self.scrape_widget)
+        save_icon = QIcon(static.save_path)
+        self.save_template_button.setIcon(save_icon)
         self.scrape_bar_layout.addWidget(self.save_template_button)
         self.save_template_button.clicked.connect(self.save_current_template)
         
         # Add a button to download the table contents as an Excel file
         self.download_button = QPushButton("Download Excel", self.scrape_widget)
+        download_icon = QIcon(static.download_path)
+        self.download_button.setIcon(download_icon)
         self.scrape_bar_layout.addWidget(self.download_button)
 
         page = WebEnginePage(self.browser, self.table_widget, self.table_xpath, self.process_manager, self.pagination_xpath_input)
@@ -118,21 +126,31 @@ class BrowserTab(QWidget):
         # Create a URL bar with navigation buttons
         self.navigation_bar = QWidget(self)
         self.navigation_bar_layout = QHBoxLayout(self.navigation_bar)
-        self.back_button = QPushButton("<", self.navigation_bar)
+        self.back_button = QPushButton(self.navigation_bar)
+        back_icon = QIcon(static.back_path)
+        self.back_button.setIcon(back_icon)
         self.back_button.clicked.connect(self.browser.back)
         self.navigation_bar_layout.addWidget(self.back_button)
 
-        self.forward_button = QPushButton(">", self.navigation_bar)
+        self.forward_button = QPushButton(self.navigation_bar)
+        forward_icon = QIcon(static.forward_path)
+        self.forward_button.setIcon(forward_icon)
         self.forward_button.clicked.connect(self.browser.forward)
         self.navigation_bar_layout.addWidget(self.forward_button)
 
-        self.refresh_button = QPushButton("Refresh", self.navigation_bar)
+        self.refresh_button = QPushButton(self.navigation_bar)
         self.refresh_button.clicked.connect(self.browser.reload)
         self.navigation_bar_layout.addWidget(self.refresh_button)
 
-        self.home_button = QPushButton("Home", self.navigation_bar)
+        refresh_icon = QIcon(static.refresh_path)
+        self.refresh_button.setIcon(refresh_icon)
+
+        self.home_button = QPushButton(self.navigation_bar)
         self.home_button.clicked.connect(self.load_homepage)
         self.navigation_bar_layout.addWidget(self.home_button)
+
+        home_icon = QIcon(static.home_path)
+        self.home_button.setIcon(home_icon)
 
         self.url_field = QLineEdit(self.navigation_bar)
         self.url_field.returnPressed.connect(self.load_url)
@@ -147,6 +165,8 @@ class BrowserTab(QWidget):
 
         # Create a button to toggle the scrape widget
         self.scrape_button = QPushButton("Scrape", self.navigation_bar)
+        scraping_icon = QIcon(static.scraping_path)
+        self.scrape_button.setIcon(scraping_icon)
         self.scrape_button.clicked.connect(self.toggle_scrape_widget)
         self.navigation_bar_layout.addWidget(self.scrape_button, 0, Qt.AlignRight)
 

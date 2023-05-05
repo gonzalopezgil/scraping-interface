@@ -1,8 +1,9 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QStyle, QStyleOption, QHBoxLayout, QScrollArea, QPushButton
-from PyQt5.QtGui import QPainter
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QPainter, QIcon
+from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from utils.template_thumbnail import TemplateThumbnail
 from utils.template_manager import list_templates
+from static import back_path, forward_path
 
 class HomeTab(QWidget):
     template_clicked = pyqtSignal(int)
@@ -54,13 +55,23 @@ class HomeTab(QWidget):
 
         # Add navigation buttons
         self.nav_buttons_layout = QHBoxLayout()
-        self.previous_button = QPushButton("Previous")
+        self.previous_button = QPushButton()
+        back_icon = QIcon(back_path)
+        back_icon
+        self.previous_button.setIcon(back_icon)
         self.previous_button.clicked.connect(self.previous_page)
-        self.next_button = QPushButton("Next")
+        self.previous_button.setFixedSize(QSize(50, 100))
+        self.next_button = QPushButton()
+        forward_icon = QIcon(forward_path)
+        self.next_button.setIcon(forward_icon)
         self.next_button.clicked.connect(self.next_page)
+        self.next_button.setFixedSize(QSize(50, 100))
         self.nav_buttons_layout.addWidget(self.previous_button)
         self.nav_buttons_layout.addWidget(self.next_button)
         self.settings_tab_layout.addLayout(self.nav_buttons_layout)
+
+        self.previous_button.setStyleSheet("background-color: transparent; border: none;")
+        self.next_button.setStyleSheet("background-color: transparent; border: none;")
 
         self.templates = []
         self.previous_width = self.width()
