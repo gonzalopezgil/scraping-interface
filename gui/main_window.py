@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, Q
 from gui.browser_tab import BrowserTab
 from gui.processes_tab import ProcessesTab
 from gui.settings_tab import SettingsTab
-from scrapers.ScrapySeleniumScraper import ScrapySeleniumScraper
+from scrapers.scrapy_selenium_scraper import ScrapySeleniumScraper
 import threading
 from utils.signal_manager import SignalManager
 from utils.process_manager import ProcessManager

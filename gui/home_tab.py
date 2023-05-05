@@ -46,7 +46,7 @@ class HomeTab(QWidget):
 
         self.setStyleSheet("""
             HomeTab {
-                background-image: url('background.jpg');
+                background-image: url('static/background.jpg');
                 background-repeat: no-repeat;
                 background-position: center;
             }

@@ -62,7 +62,7 @@ class TemplateThumbnail(QFrame):
 
     def load_default_favicon(self):
         try:
-            pixmap = QPixmap("favicon.ico")
+            pixmap = QPixmap("static/favicon.ico")
             if not pixmap.isNull():
                 pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio, Qt.SmoothTransformation)
                 self.logo.setPixmap(pixmap)
