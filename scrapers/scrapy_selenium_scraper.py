@@ -1,4 +1,4 @@
-from .scraper import Scraper
+from . scraper import Scraper
 import scrapy
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -31,7 +31,6 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     def __init__(self, stop=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.stop = stop
-        self.driver = self.get_driver()
 
     def get_driver(self):
         options = Options()
@@ -54,13 +53,12 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
         return driver
-
-
+    
     def get_webpage(self, url):
-        # Change the User-Agent in every request
-        self.driver.execute_cdp_cmd("Network.setUserAgentOverride", {"userAgent": UserAgent().random})
-
-        self.driver.get(url)
+        driver = self.get_driver()
+        driver.execute_cdp_cmd("Network.setUserAgentOverride", {"userAgent": UserAgent().random})
+        driver.get(url)
+        return driver
 
     def get_elements(self, xpath, obj, text=None):
         xpath = self.remove_text_from_xpath(xpath)
@@ -79,17 +77,17 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     def close_webpage(self, obj):
         obj.quit()
 
-    def infinite_scroll(self):
+    def infinite_scroll(self, obj):
         # scroll down repeatedly
         while True:
             # scroll down to the bottom of the page
-            self.driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+            obj.execute_script('window.scrollTo(0, document.body.scrollHeight);')
 
             # wait for the page to load new content
-            self.driver.implicitly_wait(TIMEOUT)
+            obj.implicitly_wait(TIMEOUT)
 
             # check if we have reached the end of the page
-            end_of_page = self.driver.execute_script('return window.pageYOffset + window.innerHeight >= document.body.scrollHeight;')
+            end_of_page = obj.execute_script('return window.pageYOffset + window.innerHeight >= document.body.scrollHeight;')
             if end_of_page:
                 break
 
@@ -105,9 +103,11 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         self.q.put(progress)
 
     def parse(self, response):
+        #self.pagination_xpath = '//*[@id="search"]/div[1]/div[1]/div/span[1]/div[1]/div[56]/div/div/span/a[3]'
         self.update_progress("1%")
+
         if self.pagination_xpath:
-            self.get_webpage(self.url)
+            obj = self.get_webpage(self.url)
 
         self.update_progress("10%")
 
@@ -121,7 +121,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         if self.pagination_xpath:
             for xpath, label, text in zip(self.xpaths, self.labels, self.selected_text):
                 text = self.clean_text(text)
-                elements = self.get_elements(self.generalise_xpath(xpath), self.driver, text)
+                elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
                 if elements is None or len(elements) == 0:
                     elements_present = False
                     break
@@ -130,11 +130,11 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         if not elements_present:
             login_info = get_login_info_for_url(self.url)
             if login_info:
-                self.login_using_stored_credentials(self.driver, login_info)
+                self.login_using_stored_credentials(obj, login_info)
 
                 for xpath, label, text in zip(self.xpaths, self.labels, self.selected_text):
                     text = self.clean_text(text)
-                    elements = self.get_elements(self.generalise_xpath(xpath), self.driver, text)
+                    elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
                     if elements is not None and len(elements) > 0:
                         elements = self.clean_list(elements)
                         elements = self.find_text_in_data(elements, text)
@@ -153,17 +153,17 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
             if not self.pagination_xpath:
                 html = self.html
             else:
-                self.infinite_scroll()
+                self.infinite_scroll(obj)
                 # Wait for the document to be complete (fully loaded)
                 time.sleep(2)
-                html = self.driver.page_source
+                html = obj.page_source
             sel = Selector(text=html)
             elements = sel.xpath(prefix)
             combined_elements.extend(elements)
             if self.pagination_xpath:
                 try:
-                    WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, self.pagination_xpath)))
-                    next_button = self.driver.find_element(By.XPATH, self.pagination_xpath)
+                    WebDriverWait(obj, TIMEOUT).until(EC.presence_of_element_located((By.XPATH, self.pagination_xpath)))
+                    next_button = obj.find_element(By.XPATH, self.pagination_xpath)
                     next_button.click()
                 except Exception:
                     print("Error: Pagination button not found")
@@ -192,10 +192,10 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         new_class = type("Element", (Item,), my_dict)
         return new_class
     
-    def run_scraper(self, q, url, labels, selected_text, xpaths, pagination_xpath, file_name, html, default_encoding=True, stop=None):
+    def run_scraper(self, q, url, labels, selected_text, xpaths, pagination_xpath, file_name, html, stop=None):
         try:
-            runner = CrawlerRunner(self.choose_random_header())
-            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://example.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, pagination_xpath=pagination_xpath, q=q, html=html, default_encoding=default_encoding, stop=stop)
+            runner = CrawlerRunner()
+            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://example.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, pagination_xpath=pagination_xpath, q=q, html=html, stop=stop)
             deferred.addBoth(lambda _: reactor.stop())
 
             spider = next(iter(runner.crawlers)).spider
@@ -236,9 +236,9 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
             print(f"Error: {e}")
             q.put(None)
     
-    def scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, stop, default_encoding=True):
+    def scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, stop):
         q = Queue()
-        p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,pagination_xpath,file_name,html,default_encoding,stop))
+        p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,pagination_xpath,file_name,html,stop))
 
         p.start()
         while True:

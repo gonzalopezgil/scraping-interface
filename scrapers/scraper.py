@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
 import pandas as pd
 from os.path import commonprefix
-from fake_useragent import UserAgent
 
 class Scraper(ABC):
 
     @abstractmethod
-    def get_webpage(self, url, default_encoding):
+    def get_webpage(self, url):
         pass
 
     @abstractmethod

@@ -23,7 +23,7 @@ class ScrapyScraper(Scraper, Spider):
         'CLOSESPIDER_ITEMCOUNT': 5,
     }
 
-    def get_webpage(self, response, _):
+    def get_webpage(self, response):
         return Selector(response)
 
     def get_elements(self, xpath, obj, _=None):
@@ -89,7 +89,7 @@ class ScrapyScraper(Scraper, Spider):
                 count+=1
                 yield item.load_item()
             
-            if count == 5:
+            if self.max_items and count == self.max_items:
                 break
 
         self.close_webpage(obj)
@@ -99,10 +99,10 @@ class ScrapyScraper(Scraper, Spider):
         new_class = type("Element", (Item,), my_dict)
         return new_class
     
-    def run_scraper(self, q, url, labels, xpaths, html, default_encoding=True):
+    def run_scraper(self, q, url, labels, xpaths, html, max_items):
         try:
             runner = CrawlerRunner()
-            deferred = runner.crawl(ScrapyScraper, start_urls=[url], url=url, labels=labels, xpaths=xpaths, html=html, default_encoding=default_encoding, preview=True)
+            deferred = runner.crawl(ScrapyScraper, start_urls=[url], url=url, labels=labels, xpaths=xpaths, html=html, max_items=max_items)
             deferred.addBoth(lambda _: reactor.stop())
 
             spider = next(iter(runner.crawlers)).spider
@@ -126,9 +126,9 @@ class ScrapyScraper(Scraper, Spider):
         except Exception as e:
             q.put(e)
 
-    def preview_scrape(self, url, labels, xpaths, html, default_encoding=True):
+    def scrape(self, url, labels, xpaths, html, max_items=None):
         q = Queue()
-        p = Process(target=self.run_scraper, args=(q,url,labels,xpaths,html,default_encoding,))
+        p = Process(target=self.run_scraper, args=(q,url,labels,xpaths,html,max_items,))
 
         p.start()
         result = q.get()

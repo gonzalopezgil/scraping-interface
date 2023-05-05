@@ -268,7 +268,7 @@ class BrowserTab(QWidget):
 
     def thread_preview_scrape(self, url, column_titles, xpaths, html):
         scraper = ScrapyScraper()
-        items = scraper.preview_scrape(url, column_titles, xpaths, html)
+        items = scraper.scrape(url, column_titles, xpaths, html, max_items=5)
         if items is not None and len(items) > 0:
             self.signal_manager.table_items_signal.emit(items)
 
