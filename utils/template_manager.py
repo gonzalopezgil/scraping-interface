@@ -1,7 +1,7 @@
 import os
 import json
 from collections import defaultdict
-from utils.PasswordManager import get_domain_name
+from utils.password_manager import get_domain_name
 
 TEMPLATE_FOLDER = "templates"
 

@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QStyle, QStyleOption, QHBoxLayout, QScrollArea, QPushButton
 from PyQt5.QtGui import QPainter
 from PyQt5.QtCore import Qt, pyqtSignal
-from utils.TemplateThumbnail import TemplateThumbnail
-from utils.TemplateManager import list_templates
+from utils.template_thumbnail import TemplateThumbnail
+from utils.template_manager import list_templates
 
 class HomeTab(QWidget):
     template_clicked = pyqtSignal(int)

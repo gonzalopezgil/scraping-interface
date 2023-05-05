@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication
-from gui.MainWindow import MainWindow
-from utils.PasswordManager import create_key
+from gui.main_window import MainWindow
+from utils.password_manager import create_key
 import sys
 import io
 

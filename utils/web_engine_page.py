@@ -1,7 +1,7 @@
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QTableWidgetItem, QMessageBox
 from PyQt5.QtCore import pyqtSlot
-from utils.PasswordManager import save_login_file
+from utils.password_manager import save_login_file
 
 class WebEnginePage(QWebEnginePage):
     

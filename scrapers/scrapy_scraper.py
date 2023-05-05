@@ -2,7 +2,7 @@ from scrapy.spiders import Spider
 from scrapy.selector import Selector
 from scrapy.item import Item, Field
 from scrapy.loader import ItemLoader
-from . Scraper import Scraper
+from .scraper import Scraper
 from scrapy.crawler import CrawlerRunner
 import scrapy
 from twisted.internet import reactor

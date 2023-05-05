@@ -1,13 +1,13 @@
 from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, QTableWidgetItem
-from gui.BrowserTab import BrowserTab
-from gui.ProcessesTab import ProcessesTab
-from gui.SettingsTab import SettingsTab
+from gui.browser_tab import BrowserTab
+from gui.processes_tab import ProcessesTab
+from gui.settings_tab import SettingsTab
 from scrapers.ScrapySeleniumScraper import ScrapySeleniumScraper
 import threading
-from utils.SignalManager import SignalManager
-from utils.ProcessManager import ProcessManager
-from gui.HomeTab import HomeTab
-from utils.TemplateManager import load_template
+from utils.signal_manager import SignalManager
+from utils.process_manager import ProcessManager
+from gui.home_tab import HomeTab
+from utils.template_manager import load_template
 
 class MainWindow(QMainWindow):
     def __init__(self):
