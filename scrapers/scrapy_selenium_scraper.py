@@ -1,9 +1,5 @@
 from . scraper import Scraper
 import scrapy
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
@@ -22,6 +18,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from utils.password_manager import get_login_info_for_url
 from exceptions.scraper_exceptions import ScraperStoppedException
 from fake_useragent import UserAgent
+from undetected_chromedriver import Chrome, ChromeOptions
 
 TIMEOUT = 5
 
@@ -33,21 +30,23 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         self.stop = stop
 
     def get_driver(self):
-        options = Options()
+        options = ChromeOptions()
 
         # Avoid sending information to the server to indicate the use of an automated browser.
 
         # Adding argument to disable the AutomationControlled flag 
         options.add_argument("--disable-blink-features=AutomationControlled")
         # Exclude the collection of enable-automation switches 
-        options.add_experimental_option("excludeSwitches", ["enable-automation"]) 
+        #options.add_experimental_option("excludeSwitches", ["enable-automation"]) 
         # Turn-off userAutomationExtension 
-        options.add_experimental_option("useAutomationExtension", False) 
+        #options.add_experimental_option("useAutomationExtension", False) 
 
         options.headless = True
         options.add_argument("--window-size=1920,1200")
 
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        print("Starting driver...")
+        driver = Chrome(options=options)
+        print("Driver started")
 
         # Changing the property of the navigator value for webdriver to undefined 
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
