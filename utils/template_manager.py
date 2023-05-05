@@ -2,8 +2,9 @@ import os
 import json
 from collections import defaultdict
 from utils.password_manager import get_domain_name
+from utils.file_manager import get_folder_path
 
-TEMPLATE_FOLDER = "templates"
+TEMPLATE_FOLDER = get_folder_path("templates")
 
 def save_template(url, process_manager, column_titles):
     try:
