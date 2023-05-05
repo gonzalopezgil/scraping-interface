@@ -36,12 +36,13 @@ class MainWindow(QMainWindow):
         self.signal_manager.process_signal.connect(self.processes_tab.update_status)
         self.signal_manager.pagination_signal.connect(self.browser_tab.browser.page().on_pagination_button_clicked)
 
+        self.browser_tab.pagination_checkbox.clicked.connect(self.on_pagination_button_clicked)
+
         self.thread = None
         self.file_name = None
         self.file_entered = threading.Event()
 
         self.browser_tab.download_button.clicked.connect(lambda: self.browser_tab.browser.page().toHtml(self.start_thread))
-        #self.browser_tab.pagination_button.clicked.connect(self.on_pagination_button_clicked)
         
         self.home_tab.search_input.returnPressed.connect(self.switch_to_browser_tab)
 

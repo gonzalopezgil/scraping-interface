@@ -18,8 +18,6 @@ ENABLE_LINKS_JS = """
 """
 
 DISABLE_LINKS_JS = """
-    var redElements = [];
-
     var links = document.getElementsByTagName("a");
     for (var i = 0; i < links.length; i++) {
         links[i].addEventListener("click", disableLink);
@@ -33,6 +31,66 @@ DISABLE_LINKS_JS = """
     var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
     for (var i = 0; i < textElements.length; i++) {
         textElements[i].addEventListener("click", scrapeData);
+    }
+"""
+
+START_JS = """
+    var redElements = [];
+    var greenElements = [];
+
+    function paintElementGreen(event) {
+        // Remove the green background color from the previously clicked element(s)
+        while (greenElements.length > 0) {
+            var previousElement = greenElements.pop();
+            previousElement.style.backgroundColor = '';
+        }
+        greenElements = [];
+
+        var clickedElement = event.target;
+        clickedElement.style.backgroundColor = 'green';
+        greenElements.push(clickedElement);
+
+        // Get the XPath of the clicked element
+        var xpathRel;
+        if (clickedElement.id) {
+            xpathRel = "//*[@id='" + clickedElement.id + "']";
+        } else {
+            xpathRel = getFullXPath(clickedElement);
+        }
+        console.log("To Python>xpathRel>" + xpathRel);
+    }
+
+    function getFullXPath(element) {
+        var xpath = '';
+        for (; element && element.nodeType == 1; element = element.parentNode) {
+            var id = element.id ? "[@id='" + element.id + "']" : "";
+            var index = getElementIndex(element);
+            if(id) {
+                xpath = '//*' + id + '/' + xpath;
+                break; // If an id is found, stop building the XPath
+            }
+            else {
+                xpath = '/' + element.tagName.toLowerCase() + (index ? '[' + index + ']' : '') + xpath;
+            }
+        }
+        return xpath;
+    }
+
+    // Helper function to get the index of an element among its siblings
+    function getElementIndex(element) {
+        var index = 1;
+        var sibling = element.previousSibling;
+        while (sibling) {
+            if (sibling.nodeType == 1 && sibling.tagName == element.tagName) {
+                index++;
+            }
+            sibling = sibling.previousSibling;
+        }
+        return index;
+    }
+
+    function preventMousedown(event) {
+        event.preventDefault();
     }
 
     function scrapeData(event) {
@@ -116,58 +174,14 @@ DISABLE_LINKS_JS = """
         console.log(consoleMessage + "xpath>" + xpath);
         console.log(consoleMessage + "selectedText>" + message + ">" + 1);
 
-        var elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);  // Find all elements that match the XPath
-        var count = 0;
-        var element = elements.iterateNext();
-        while (element) {
-            count++;
-            if (count <= 1) {
-                // console.log(consoleMessage + "selectedText>" + element.innerText.trim() + ">" + count);
-            }
-            element.style.backgroundColor = 'red';  // Paint the element with a red background color
-            redElements.push(element);
-            element = elements.iterateNext();
-        }
-        console.log(consoleMessage + "count>" + count);
-    }
-
-    // Helper function to get the index of an element among its siblings
-    function getElementIndex(element) {
-        var index = 1;
-        var sibling = element.previousSibling;
-        while (sibling) {
-            if (sibling.nodeType == 1 && sibling.tagName == element.tagName) {
-                index++;
-            }
-            sibling = sibling.previousSibling;
-        }
-        return index;
-    }
-"""
-
-START_JS = """
-    function paintElementGreen(event) {
-        // Remove the green background color from the previously clicked element(s)
-        while (greenElements.length > 0) {
-            var previousElement = greenElements.pop();
-            previousElement.style.backgroundColor = '';
-        }
-
-        var clickedElement = event.target;
-        clickedElement.style.backgroundColor = 'green';
-        greenElements.push(clickedElement);
-    }
-
-    function preventMousedown(event) {
-        event.preventDefault();
+        paintRedBackground(xpath);
     }
 """
 
 SELECT_PAGINATION_JS = """
-    var greenElements = [];
-
     var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
     for (var i = 0; i < textElements.length; i++) {
+        textElements[i].removeEventListener("click", scrapeData);
         textElements[i].addEventListener("click", paintElementGreen);
     }
 """
@@ -176,6 +190,7 @@ DISABLE_PAGINATION_JS = """
     var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
     for (var i = 0; i < textElements.length; i++) {
         textElements[i].removeEventListener("click", paintElementGreen);
+        textElements[i].addEventListener("click", scrapeData);
     }
 """
 
@@ -221,6 +236,7 @@ PAINT_RED_BACKGROUND_JS = """
         var element = elements.iterateNext();
         while (element) {
             element.style.backgroundColor = 'red';
+            redElements.push(element);
             element = elements.iterateNext();
         }
     }

@@ -5,11 +5,12 @@ from utils.password_manager import save_login_file
 
 class WebEnginePage(QWebEnginePage):
     
-    def __init__(self, parent=None, table_widget=None, table_xpath=None, process_manager=None):
+    def __init__(self, parent=None, table_widget=None, table_xpath=None, process_manager=None, pagination_xpath_label=None):
         super().__init__(parent)
         self.table_widget = table_widget
         self.table_xpath = table_xpath
         self.process_manager = process_manager
+        self.pagination_xpath_label = pagination_xpath_label
         self.pagination_clicked = False
         self.username = None
         self.password = None
@@ -64,6 +65,8 @@ class WebEnginePage(QWebEnginePage):
                 self.table_xpath.setItem(0, col, QTableWidgetItem(value))
             elif message_type == "xpathRel" and self.pagination_clicked:
                 self.process_manager.pagination_xpath = value
+                print(f"Pagination xpath: {value}")
+                self.pagination_xpath_label.setText(value)
 
     @pyqtSlot()
     def on_pagination_button_clicked(self):

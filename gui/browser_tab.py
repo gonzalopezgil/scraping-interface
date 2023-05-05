@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSlot
@@ -40,6 +40,15 @@ class BrowserTab(QWidget):
         self.pagination_widget.hide()
 
         self.horizontal_scrape_layout.addWidget(self.pagination_widget)
+
+        self.pagination_checkbox = QCheckBox("Pagination", self)
+        self.pagination_layout.addWidget(self.pagination_checkbox)
+        self.pagination_checkbox.clicked.connect(self.set_pagination)
+
+        self.pagination_xpath_input = QLineEdit(self)
+        self.pagination_xpath_input.setPlaceholderText("Click on the pagination button or enter an XPath")
+        self.pagination_xpath_input.setEnabled(False)
+        self.pagination_layout.addWidget(self.pagination_xpath_input)
 
         # Create a scroll area to hold the table widget
         self.scroll_area = QScrollArea(self)
@@ -87,7 +96,6 @@ class BrowserTab(QWidget):
 
         # Add a button to select the pagination element
         self.pagination_button = QPushButton("Pagination", self.scrape_widget)
-        self.pagination_button.clicked.connect(self.select_pagination)
         self.scrape_bar_layout.addWidget(self.pagination_button)
 
         self.pagination_clicked = False
@@ -101,7 +109,7 @@ class BrowserTab(QWidget):
         self.download_button = QPushButton("Download Excel", self.scrape_widget)
         self.scrape_bar_layout.addWidget(self.download_button)
 
-        page = WebEnginePage(self.browser, self.table_widget, self.table_xpath, self.process_manager)
+        page = WebEnginePage(self.browser, self.table_widget, self.table_xpath, self.process_manager, self.pagination_xpath_input)
         self.browser.setPage(page)
         page.runJavaScript(jss.START_JS)
         # Connect the urlChanged signal to update the URL field
@@ -155,6 +163,15 @@ class BrowserTab(QWidget):
 
         self.pagination_button.clicked.connect(self.toggle_pagination)
 
+        self.selected_template = None
+
+    def set_pagination(self, state):
+        self.select_pagination()
+        if state == 1:
+            self.pagination_xpath_input.setEnabled(True)
+        else:
+            self.pagination_xpath_input.setEnabled(False)
+
     def toggle_pagination(self):
         if self.pagination_widget.isVisible():
             self.pagination_widget.hide()
@@ -201,6 +218,9 @@ class BrowserTab(QWidget):
     def update_url_field(self, url):
         self.url_field.setText(url.toString())
         self.scrape_widget.setVisible(False)
+        self.pagination_widget.setVisible(False)
+        self.pagination_checkbox.setChecked(False)
+        self.pagination_xpath_input.setEnabled(False)
         self.browser.page().runJavaScript(jss.START_JS)
         self.browser.page().runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
         self.process_manager.clear_columns()
@@ -226,12 +246,14 @@ class BrowserTab(QWidget):
         # Enable links if the scrape widget is not visible
         else:
             self.timer.stop()
-            page.runJavaScript(jss.START_JS)
+            page.runJavaScript(jss.DISABLE_PAGINATION_JS)
             page.runJavaScript(jss.ENABLE_LINKS_JS)
             page.runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
             self.process_manager.clear_columns()
             self.pagination_clicked = False
-            page.runJavaScript(jss.DISABLE_PAGINATION_JS)
+            self.pagination_checkbox.setChecked(False)
+            self.pagination_widget.setVisible(False)
+            self.pagination_xpath_input.setEnabled(False)
 
     # Create a loop that continuously disables all links in the page
     def disable_links(self):
@@ -368,24 +390,27 @@ class BrowserTab(QWidget):
         # Browse to the URL
         self.browser.load(QUrl(template['url']))
 
-        self.browser.loadFinished.connect(lambda: self.set_template(template))
+        self.selected_template = template
 
-    def set_template(self, template):
+        self.browser.loadFinished.connect(self.set_template)
+
+    def set_template(self):
         self.scrape_widget.setVisible(False)
         self.toggle_scrape_widget()
 
         # Save all this information in the current process manager (including the pagination xpath if it exists)
-        self.update_process_manager(template)
+        self.update_process_manager(self.selected_template)
 
         # Set column titles
-        self.set_column_titles(get_column_data_from_template(template, "column_title"))
+        self.set_column_titles(get_column_data_from_template(self.selected_template, "column_title"))
 
         # Set the first texts in the first row of the table widget
-        self.set_first_row_data(get_column_data_from_template(template, "first_text"))
+        self.set_first_row_data(get_column_data_from_template(self.selected_template, "first_text"))
 
         # Set the xpaths in the xpath table
-        self.set_xpaths(get_column_data_from_template(template, "xpath"))
+        self.set_xpaths(get_column_data_from_template(self.selected_template, "xpath"))
 
+        self.browser.loadFinished.disconnect(self.set_template)
 
     def set_column_titles(self, column_titles):
         self.table_widget.setColumnCount(len(column_titles))
