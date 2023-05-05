@@ -76,7 +76,6 @@ class HomeTab(QWidget):
         self.previous_width = self.width()
 
         templates_list = list_templates()
-        num_templates = len(templates_list)
 
         if not self.templates:
             for i, domain in enumerate(templates_list):
@@ -89,9 +88,6 @@ class HomeTab(QWidget):
             self.templates_scroll_area.hide()
             self.previous_button.hide()
             self.next_button.hide()
-
-        self.start_index = self.current_page * self.templates_per_page
-        self.end_index = min(self.start_index + self.templates_per_page, num_templates)
 
         self.change_page()
 
