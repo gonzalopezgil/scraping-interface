@@ -18,6 +18,6 @@ def main():
     # Run the application
     app = QApplication([])
     window = MainWindow()
-    window.setMinimumSize(650, 500)
+    window.setMinimumSize(650, 850)
     window.show()
     app.exec_()
