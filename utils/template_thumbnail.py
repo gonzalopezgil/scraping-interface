@@ -13,8 +13,7 @@ class TemplateThumbnail(QFrame):
         self.index = index
 
         self.setFixedSize(QSize(100, 100))
-        self.setFrameShape(QFrame.StyledPanel)
-        self.setFrameShadow(QFrame.Raised)
+        self.setFrameShape(QFrame.NoFrame)
 
         layout = QVBoxLayout()
 
@@ -43,7 +42,7 @@ class TemplateThumbnail(QFrame):
 
         # Set background color
         self.setAutoFillBackground(True)
-        self.setStyleSheet("background-color: #CFEBCC;")
+        self.setStyleSheet("background-color: #FFFFFF; border-radius: 16px;")
 
     def set_window_icon_from_response(self, http_response):
         try:
