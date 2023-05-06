@@ -3,6 +3,7 @@ import json
 from collections import defaultdict
 from utils.password_manager import get_domain_name
 from utils.file_manager import get_folder_path
+from exceptions.file_exceptions import FileDeletionException
 
 TEMPLATE_FOLDER = get_folder_path("templates")
 
@@ -89,3 +90,17 @@ def get_domain(name):
         return name.split("_")[0]
     else:
         return name
+    
+def clear_stored_templates():
+    try:
+        if os.path.exists(TEMPLATE_FOLDER):
+            for file in os.listdir(TEMPLATE_FOLDER):
+                file_path = os.path.join(TEMPLATE_FOLDER, file)
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+            return True
+        return False
+    except Exception as e:
+        exception_text = "Error deleting stored templates"
+        print(f"{exception_text}: {e}")
+        raise FileDeletionException(exception_text)

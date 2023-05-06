@@ -35,7 +35,8 @@ class MainWindow(QMainWindow):
 
         self.signal_manager.process_signal.connect(self.processes_tab.update_status)
         self.signal_manager.pagination_signal.connect(self.browser_tab.browser.page().on_pagination_button_clicked)
-        #self.browser_tab.save_template_button.clicked.connect(self.home_tab.update_templates)
+        self.browser_tab.save_template_button.clicked.connect(self.home_tab.update_templates_list)
+        self.settings_tab.clear_templates_button.clicked.connect(self.home_tab.update_templates_list)
 
         self.browser_tab.pagination_checkbox.clicked.connect(self.on_pagination_button_clicked)
 

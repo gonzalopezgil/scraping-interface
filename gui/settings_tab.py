@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 import json
 from utils.password_manager import clear_stored_passwords
+from utils.template_manager import clear_stored_templates
 from exceptions.file_exceptions import FileDeletionException
 from utils.file_manager import get_file_path
 from static import background_path
@@ -102,6 +103,17 @@ class SettingsTab(QWidget):
         password_manager_group.setLayout(password_manager_layout)
         form_layout.addRow(password_manager_group)
 
+        self.clear_templates_button = QPushButton("Clear Stored Templates", self)
+        self.clear_templates_button.clicked.connect(self.clear_templates)
+
+        template_manager_group = QGroupBox()
+        template_manager_label = QLabel("Template Manager:")
+        template_manager_layout = QHBoxLayout()
+        template_manager_layout.addWidget(template_manager_label)
+        template_manager_layout.addWidget(self.clear_templates_button)
+        template_manager_group.setLayout(template_manager_layout)
+        form_layout.addRow(template_manager_group)
+
         spacer_item = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
         form_layout.addItem(spacer_item)
 
@@ -196,7 +208,8 @@ class SettingsTab(QWidget):
 
     def clear_passwords(self):
         try:
-            msg = self.show_clear_passwords_message()
+            msg = self.show_message()
+            msg.setWindowTitle("Clear Stored Passwords")
             message = ""
             if clear_stored_passwords():
                 message = "All stored credentials have been removed."
@@ -206,14 +219,33 @@ class SettingsTab(QWidget):
             msg.setIcon(QMessageBox.Information)
             msg.exec_()
         except FileDeletionException as e:
-            msg = self.show_clear_passwords_message()
-            msg.setText(e)
+            msg = self.show_message()
+            msg.setWindowTitle("Clear Stored Passwords")
+            msg.setText(str(e))
             msg.setIcon(QMessageBox.Critical)
             msg.exec_()
 
-    def show_clear_passwords_message(self):
+    def clear_templates(self):
+        try:
+            msg = self.show_message()
+            msg.setWindowTitle("Clear Stored Templates")
+            message = ""
+            if clear_stored_templates():
+                message = "All stored templates have been removed."
+            else:
+                message = "No templates were found."
+            msg.setText(message)
+            msg.setIcon(QMessageBox.Information)
+            msg.exec_()
+        except FileDeletionException as e:
+            msg = self.show_message()
+            msg.setWindowTitle("Clear Stored Templates")
+            msg.setText(str(e))
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec_()
+
+    def show_message(self):
         msg = QMessageBox(self)
-        msg.setWindowTitle("Clear Stored Passwords")
         msg.setStandardButtons(QMessageBox.Ok)
         return msg
     

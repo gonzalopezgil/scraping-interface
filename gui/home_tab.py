@@ -92,6 +92,34 @@ class HomeTab(QWidget):
 
         self.change_page()
 
+    def update_templates_list(self):
+        self.templates = []
+        templates_list = list_templates()
+
+        while self.templates_grid.count():
+            item = self.templates_grid.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
+        if not self.templates:
+            for i, domain in enumerate(templates_list):
+                template_thumbnail = TemplateThumbnail(domain, i)
+                self.templates.append(template_thumbnail)
+                self.templates_grid.addWidget(template_thumbnail)
+                template_thumbnail.clicked.connect(self.template_thumbnail_clicked)
+
+        if not self.templates:
+            self.templates_scroll_area.hide()
+            self.previous_button.hide()
+            self.next_button.hide()
+        else:
+            self.templates_scroll_area.show()
+            self.previous_button.show()
+            self.next_button.show()
+
+        self.change_page()
+
     def template_thumbnail_clicked(self):
         sender = self.sender()
         if isinstance(sender, TemplateThumbnail):
