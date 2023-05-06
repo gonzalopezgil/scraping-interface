@@ -44,8 +44,11 @@ class MainWindow(QMainWindow):
         self.file_name = None
         self.file_entered = threading.Event()
 
-        self.browser_tab.download_button.clicked.connect(lambda: self.browser_tab.browser.page().toHtml(self.start_thread))
-        
+        self.browser_tab.download_excel_action.triggered.connect(lambda: self.export_data(self.browser_tab.download_excel_action))
+        self.browser_tab.download_csv_action.triggered.connect(lambda: self.export_data(self.browser_tab.download_csv_action))
+        self.browser_tab.download_json_action.triggered.connect(lambda: self.export_data(self.browser_tab.download_json_action))
+        self.browser_tab.download_xml_action.triggered.connect(lambda: self.export_data(self.browser_tab.download_xml_action))
+
         self.home_tab.search_input.returnPressed.connect(self.switch_to_browser_tab)
 
         # Add the tabs to the tab widget
@@ -55,6 +58,12 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.settings_tab, "Settings")
 
         self.home_tab.template_clicked.connect(self.handle_template_click)
+
+    def export_data(self, action):
+        file_format = action.text().split(" ")[-1].lower()
+        print("Exporting data to", file_format)
+
+        self.browser_tab.browser.page().toHtml(lambda html: self.start_thread(html, file_format))
 
     def handle_template_click(self, index):
         # Change the tab to the BrowserTab
@@ -74,9 +83,22 @@ class MainWindow(QMainWindow):
     def on_pagination_button_clicked(self):
         self.signal_manager.pagination_signal.emit()
 
-    def enter_file_name(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "Save Excel file", "", "Excel files (*.xlsx)")
+    def enter_file_name(self, file_format):
+        file_extensions = {
+            'excel': 'Excel files (*.xlsx)',
+            'csv': 'CSV files (*.csv)',
+            'json': 'JSON files (*.json)',
+            'xml': 'XML files (*.xml)'
+        }
+        selected_filter = file_extensions.get(file_format, 'All files (*)')
+        filename, selected_ext = QFileDialog.getSaveFileName(self, "Save File", "", f"{selected_filter};All files (*)")
+
         if filename:
+            # Add the appropriate file extension if it's missing
+            extension = selected_ext.split('(*')[1].split(')')[0]
+            if not filename.endswith(extension):
+                filename += extension
+
             # Check if the file already exists
             i = 0
             coincidence = False
@@ -93,13 +115,15 @@ class MainWindow(QMainWindow):
             print("Error: no file name entered")
             return None
 
-    def start_thread(self, html):
+    def start_thread(self, html, file_format):
+        print("Starting thread...")
         url = self.browser_tab.browser.url().toString()
         column_titles = self.browser_tab.get_column_titles()
         process_manager = self.process_manager
         stop = self.processes_tab.add_row(url, "", column_titles)
         row = self.processes_tab.table.rowCount()-1
-        file_name = self.enter_file_name()
+        file_name = self.enter_file_name(file_format)
+        print(file_name)
         if file_name:
             if self.process_manager.pagination_xpath:
                 self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, stop), daemon=True)

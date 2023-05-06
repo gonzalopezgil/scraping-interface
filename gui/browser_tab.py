@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox, QStyle, QStyleOption
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox, QStyle, QStyleOption, QToolButton
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSlot
@@ -112,10 +112,25 @@ class BrowserTab(QWidget):
         self.save_template_button.clicked.connect(self.save_current_template)
         
         # Add a button to download the table contents as an Excel file
-        self.download_button = QPushButton("Download Excel", self.scrape_widget)
+        self.download_button = QToolButton(self.scrape_widget)
+        self.download_button.setText("Download Data")
         download_icon = QIcon(static.download_path)
         self.download_button.setIcon(download_icon)
+        self.download_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.download_button.setPopupMode(QToolButton.InstantPopup)
+        self.download_menu = QMenu(self.download_button)
+        self.download_button.setMenu(self.download_menu)
         self.scrape_bar_layout.addWidget(self.download_button)
+
+        self.download_excel_action = QAction("Download Excel", self)
+        self.download_csv_action = QAction("Download CSV", self)
+        self.download_json_action = QAction("Download JSON", self)
+        self.download_xml_action = QAction("Download XML", self)
+
+        self.download_menu.addAction(self.download_excel_action)
+        self.download_menu.addAction(self.download_csv_action)
+        self.download_menu.addAction(self.download_json_action)
+        self.download_menu.addAction(self.download_xml_action)
 
         page = WebEnginePage(self.browser, self.table_widget, self.table_xpath, self.process_manager, self.pagination_xpath_input)
         self.browser.setPage(page)
@@ -192,6 +207,9 @@ class BrowserTab(QWidget):
                 background-position: center;
             }}
         """)
+
+    def export_data(self, action):
+        self.process_manager.file_format = action.text().split(" ")[-1].lower()
 
     def set_pagination(self, state):
         self.select_pagination()

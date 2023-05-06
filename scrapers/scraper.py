@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 import pandas as pd
 from os.path import commonprefix
+import xml.etree.ElementTree as ET
+import os
 
 class Scraper(ABC):
 
@@ -58,7 +60,27 @@ class Scraper(ABC):
             return elements
 
     def save_file(self, dataframe, file_name):
-        dataframe.to_excel(file_name)
+        _, file_extension = os.path.splitext(file_name)
+        file_extension = file_extension.lower()
+
+        if file_extension == ".xlsx":
+            dataframe.to_excel(file_name)
+        elif file_extension == ".csv":
+            dataframe.to_csv(file_name, index=False)
+        elif file_extension == ".json":
+            dataframe.to_json(file_name, orient="records")
+        elif file_extension == ".xml":
+            root = ET.Element("root")
+            for index, row in dataframe.iterrows():
+                item = ET.SubElement(root, "item")
+                for col_name, value in row.items():
+                    col = ET.SubElement(item, col_name)
+                    col.text = str(value)
+
+            tree = ET.ElementTree(root)
+            tree.write(file_name, encoding="utf-8", xml_declaration=True)
+        else:
+            print(f"Error: unsupported file format: {file_extension}")
 
     # Unused
     def check_encoding(self, obj, text):
