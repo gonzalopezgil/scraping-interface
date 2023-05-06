@@ -3,7 +3,7 @@ from PyQt5.QtGui import QPainter, QIcon
 from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from utils.template_thumbnail import TemplateThumbnail
 from utils.template_manager import list_templates
-from static import back_path, forward_path
+from static import back_path, forward_path, background_path, logo_path
 
 class HomeTab(QWidget):
     template_clicked = pyqtSignal(int)
@@ -16,8 +16,9 @@ class HomeTab(QWidget):
         self.settings_tab_layout = QVBoxLayout(self)
 
         # Add a QLabel for the title
-        self.title_label = QLabel("Scraping Interface", self)
-        self.title_label.setStyleSheet("font-size: 32px; font-weight: bold;")
+        self.title_label = QLabel(self)
+        logo_icon = QIcon(logo_path)
+        self.title_label.setPixmap(logo_icon.pixmap(500, 500))
         self.title_label.setAlignment(Qt.AlignCenter)
         self.settings_tab_layout.addWidget(self.title_label)
 
@@ -26,7 +27,7 @@ class HomeTab(QWidget):
         self.search_input.setPlaceholderText("Search or write URL")
         self.search_input.setMinimumWidth(600)
         font = self.search_input.font()
-        font.setPointSize(15)
+        font.setPointSize(20)
         self.search_input.setFont(font)
         self.settings_tab_layout.addWidget(self.search_input, alignment=Qt.AlignCenter)
 
@@ -45,12 +46,12 @@ class HomeTab(QWidget):
         self.settings_tab_layout.addWidget(self.templates_scroll_area, alignment=Qt.AlignTop)
         self.templates_scroll_area.setStyleSheet("background-color: transparent;")
 
-        self.setStyleSheet("""
-            HomeTab {
-                background-image: url('static/background.jpg');
+        self.setStyleSheet(f"""
+            HomeTab {{
+                background-image: url({background_path});
                 background-repeat: no-repeat;
                 background-position: center;
-            }
+            }}
         """)
 
         # Add navigation buttons

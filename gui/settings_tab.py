@@ -1,12 +1,14 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFormLayout, 
-    QRadioButton, QComboBox, QGroupBox, QSpacerItem, QSizePolicy, QMessageBox
+    QRadioButton, QComboBox, QGroupBox, QSpacerItem, QSizePolicy, QMessageBox, QStyleOption, QStyle
 )
 from PyQt5.QtCore import Qt
 import json
 from utils.password_manager import clear_stored_passwords
 from exceptions.file_exceptions import FileDeletionException
 from utils.file_manager import get_file_path
+from static import background_path
+from PyQt5.QtGui import QPainter
 
 SEARCH_ENGINES = {
     "Google": ["https://www.google.com/search?q=", "https://www.google.com"],
@@ -70,7 +72,7 @@ class SettingsTab(QWidget):
         layout = QVBoxLayout(self)
         form_layout = QFormLayout()
 
-        home_page_group = QGroupBox("Home Page")
+        home_page_group = QGroupBox("Browser Settings")
         home_page_layout = QVBoxLayout()
         home_page_layout.addWidget(self.search_engine_radio)
         home_page_layout.addWidget(self.custom_home_page_radio)
@@ -78,18 +80,27 @@ class SettingsTab(QWidget):
         edit_layout = QHBoxLayout()
         edit_layout.addWidget(self.home_page_edit)
         edit_layout.addWidget(save_button)
+        home_page_layout.addLayout(edit_layout)
 
         button_layout = QVBoxLayout()
         button_layout.addLayout(home_page_layout)
-        button_layout.addLayout(edit_layout)
+
+        self.search_engine_layout = QHBoxLayout()
+        self.search_engine_layout.addWidget(QLabel("Search Engine:"))
+        self.search_engine_layout.addWidget(self.search_engine_combo)
+        home_page_layout.addLayout(self.search_engine_layout)
 
         home_page_group.setLayout(button_layout)
 
         form_layout.addRow(home_page_group)
-        form_layout.addRow(QLabel("Search Engine:"), self.search_engine_combo)
 
+        password_manager_group = QGroupBox()
         password_manager_label = QLabel("Password Manager:")
-        form_layout.addRow(password_manager_label, self.clear_passwords_button)
+        password_manager_layout = QHBoxLayout()
+        password_manager_layout.addWidget(password_manager_label)
+        password_manager_layout.addWidget(self.clear_passwords_button)
+        password_manager_group.setLayout(password_manager_layout)
+        form_layout.addRow(password_manager_group)
 
         spacer_item = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
         form_layout.addItem(spacer_item)
@@ -103,6 +114,14 @@ class SettingsTab(QWidget):
         layout.addWidget(widget)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setAlignment(Qt.AlignCenter)
+
+        self.setStyleSheet(f"""
+            SettingsTab {{
+                background-image: url({background_path});
+                background-repeat: no-repeat;
+                background-position: center;
+            }}
+        """)
 
     def check_values(self):
         # Check if the search engine is in the SEARCH_ENGINES dictionary
@@ -197,3 +216,9 @@ class SettingsTab(QWidget):
         msg.setWindowTitle("Clear Stored Passwords")
         msg.setStandardButtons(QMessageBox.Ok)
         return msg
+    
+    def paintEvent(self, _):
+        option = QStyleOption()
+        option.initFrom(self)
+        painter = QPainter(self)
+        self.style().drawPrimitive(QStyle.PE_Widget, option, painter, self)

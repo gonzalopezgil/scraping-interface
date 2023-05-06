@@ -1,8 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox, QStyle, QStyleOption
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSlot
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPainter
 import web.javascript_strings as jss
 from utils.web_engine_page import WebEnginePage
 from scrapers.scrapy_scraper import ScrapyScraper
@@ -184,6 +184,14 @@ class BrowserTab(QWidget):
         self.pagination_button.clicked.connect(self.toggle_pagination)
 
         self.selected_template = None
+
+        self.setStyleSheet(f"""
+            BrowserTab {{
+                background-image: url({static.background_path});
+                background-repeat: no-repeat;
+                background-position: center;
+            }}
+        """)
 
     def set_pagination(self, state):
         self.select_pagination()
@@ -465,3 +473,9 @@ class BrowserTab(QWidget):
             widget_width = self.scrape_widget.width()
             widget_width = int(widget_width * PAGINATION_WIDGET_WIDTH_PERCENTAGE)
             self.pagination_widget.setFixedWidth(widget_width)
+
+    def paintEvent(self, _):
+        option = QStyleOption()
+        option.initFrom(self)
+        painter = QPainter(self)
+        self.style().drawPrimitive(QStyle.PE_Widget, option, painter, self)

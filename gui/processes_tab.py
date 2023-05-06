@@ -1,9 +1,11 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QPushButton
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QPushButton, QStyle, QStyleOption
 from PyQt5.QtCore import Qt, QVariant, pyqtSlot
+from PyQt5.QtGui import QPainter
 import csv
 from datetime import datetime
 import os
 from multiprocessing import Value
+from static import background_path
 #from utils.FileManager import get_file_path
 
 #PROCESSES_FILE = get_file_path("processes.csv")
@@ -32,6 +34,14 @@ class ProcessesTab(QWidget):
         self.load_data()
 
         self.stop_variables = {}
+
+        self.setStyleSheet(f"""
+            ProcessesTab {{
+                background-image: url({background_path});
+                background-repeat: no-repeat;
+                background-position: center;
+            }}
+        """)
 
     def create_open_file_button(self, file_name):
         open_file_button = QPushButton('Open')
@@ -120,3 +130,9 @@ class ProcessesTab(QWidget):
     def stop_process(self, row):
         self.stop_variables[row].value = True
         self.table.setItem(row, 3, QTableWidgetItem("Stopping..."))
+
+    def paintEvent(self, _):
+        option = QStyleOption()
+        option.initFrom(self)
+        painter = QPainter(self)
+        self.style().drawPrimitive(QStyle.PE_Widget, option, painter, self)
