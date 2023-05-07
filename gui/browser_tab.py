@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox, QStyle, QStyleOption, QToolButton
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox, QStyle, QStyleOption, QToolButton, QLabel, QSpinBox
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSlot
@@ -51,6 +51,17 @@ class BrowserTab(QWidget):
         self.pagination_xpath_input.setPlaceholderText("Click on the pagination button or enter an XPath")
         self.pagination_xpath_input.setEnabled(False)
         self.pagination_layout.addWidget(self.pagination_xpath_input)
+
+        # Add a label and a spin box to enter the maximum pages to be scraped
+        self.max_pages_layout = QHBoxLayout()
+        self.max_pages_label = QLabel("Maximum pages to scrape:")
+        self.max_pages_layout.addWidget(self.max_pages_label)
+        self.max_pages_input = QSpinBox(self)
+        self.max_pages_input.setMinimum(0)
+        self.max_pages_input.setMaximum(1000000)
+        self.max_pages_input.setSpecialValueText("Unlimited")
+        self.max_pages_layout.addWidget(self.max_pages_input)
+        self.pagination_layout.addLayout(self.max_pages_layout)
 
         # Create a scroll area to hold the table widget
         self.scroll_area = QScrollArea(self)

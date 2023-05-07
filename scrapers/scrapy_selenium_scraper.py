@@ -145,7 +145,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
 
         combined_elements = []
         pages = 0
-        max_pages = 4
+        max_pages = self.max_pages if self.max_pages else 100
         next_page = True
         while next_page and pages < max_pages:
             html = ""
@@ -191,10 +191,10 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         new_class = type("Element", (Item,), my_dict)
         return new_class
     
-    def run_scraper(self, q, url, labels, selected_text, xpaths, pagination_xpath, file_name, html, stop=None):
+    def run_scraper(self, q, url, labels, selected_text, xpaths, pagination_xpath, file_name, html, stop=None, max_pages=None):
         try:
             runner = CrawlerRunner()
-            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://example.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, pagination_xpath=pagination_xpath, q=q, html=html, stop=stop)
+            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://example.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, pagination_xpath=pagination_xpath, q=q, html=html, stop=stop, max_pages=max_pages)
             deferred.addBoth(lambda _: reactor.stop())
 
             spider = next(iter(runner.crawlers)).spider
@@ -235,9 +235,9 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
             print(f"Error: {e}")
             q.put(None)
     
-    def scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, stop):
+    def scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, stop, max_pages):
         q = Queue()
-        p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,pagination_xpath,file_name,html,stop))
+        p = Process(target=self.run_scraper, args=(q,url,labels,selected_text,xpaths,pagination_xpath,file_name,html,stop,max_pages))
 
         p.start()
         while True:
