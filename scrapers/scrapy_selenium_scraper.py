@@ -25,6 +25,10 @@ TIMEOUT = 5
 class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     name = "ScrapySeleniumScraper"
 
+    custom_settings = {
+        'REQUEST_FINGERPRINTER_IMPLEMENTATION': '2.7'
+    }
+
     def __init__(self, stop=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.stop = stop

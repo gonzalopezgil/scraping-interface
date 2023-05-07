@@ -21,6 +21,7 @@ class ScrapyScraper(Scraper, Spider):
         'AUTOTHROTTLE_MAX_DELAY': 5.0,
         'AUTOTHROTTLE_DEBUG': True,
         'CLOSESPIDER_ITEMCOUNT': 5,
+        'REQUEST_FINGERPRINTER_IMPLEMENTATION': '2.7',
     }
 
     def get_webpage(self, response):
