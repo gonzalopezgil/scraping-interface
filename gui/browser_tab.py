@@ -15,6 +15,8 @@ import static
 PLACEHOLDER_TEXT = "Search or enter a URL"
 COLUMN_COUNT = 0
 PAGINATION_WIDGET_WIDTH_PERCENTAGE = 1/3
+PAGINATION_OFF_TEXT = "Click to select the pagination button..."
+PAGINATION_ON_TEXT = "Click to stop selecting the pagination button..."
 
 class BrowserTab(QWidget):
 
@@ -43,7 +45,7 @@ class BrowserTab(QWidget):
 
         self.horizontal_scrape_layout.addWidget(self.pagination_widget)
 
-        self.pagination_checkbox = QCheckBox("Pagination", self)
+        self.pagination_checkbox = QCheckBox("Click to select the pagination button...", self)
         self.pagination_layout.addWidget(self.pagination_checkbox)
         self.pagination_checkbox.clicked.connect(self.set_pagination)
 
@@ -123,12 +125,9 @@ class BrowserTab(QWidget):
         self.save_template_button.clicked.connect(self.save_current_template)
         
         # Add a button to download the table contents as an Excel file
-        self.download_button = QToolButton(self.scrape_widget)
-        self.download_button.setText("Download Data")
+        self.download_button = QPushButton("Download Data", self.scrape_widget)
         download_icon = QIcon(static.download_path)
         self.download_button.setIcon(download_icon)
-        self.download_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self.download_button.setPopupMode(QToolButton.InstantPopup)
         self.download_menu = QMenu(self.download_button)
         self.download_button.setMenu(self.download_menu)
         self.scrape_bar_layout.addWidget(self.download_button)
@@ -211,6 +210,14 @@ class BrowserTab(QWidget):
 
         self.selected_template = None
 
+        # Get the maximum width among the three buttons
+        max_width = max(self.pagination_button.sizeHint().width(), self.save_template_button.sizeHint().width(), self.download_button.sizeHint().width())
+
+        # Set the width of the three buttons to be the maximum width
+        self.pagination_button.setFixedWidth(max_width)
+        self.save_template_button.setFixedWidth(max_width)
+        self.download_button.setFixedWidth(max_width)
+
         self.setStyleSheet(f"""
             BrowserTab {{
                 background-image: url({static.background_path});
@@ -219,6 +226,27 @@ class BrowserTab(QWidget):
             }}
         """)
 
+        self.download_button.setStyleSheet("""
+            QPushButton { text-align: center; }
+        """)
+
+        self.pagination_checkbox.setStyleSheet("""
+            QCheckBox {
+                spacing: 5px;
+            }
+            QCheckBox::indicator {
+                width: 52px;
+                height: 32px;
+            }
+            QCheckBox::indicator:unchecked {
+                image: url(static/off.png);
+            }
+            QCheckBox::indicator:checked {
+                image: url(static/on.png);
+            }
+        """)
+
+
     def export_data(self, action):
         self.process_manager.file_format = action.text().split(" ")[-1].lower()
 
@@ -226,8 +254,10 @@ class BrowserTab(QWidget):
         self.select_pagination()
         if state == 1:
             self.pagination_xpath_input.setEnabled(True)
+            self.pagination_checkbox.setText(PAGINATION_ON_TEXT)
         else:
             self.pagination_xpath_input.setEnabled(False)
+            self.pagination_checkbox.setText(PAGINATION_OFF_TEXT)
 
     def toggle_pagination(self):
         if self.pagination_widget.isVisible():
@@ -278,6 +308,7 @@ class BrowserTab(QWidget):
         self.pagination_widget.setVisible(False)
         self.pagination_checkbox.setChecked(False)
         self.pagination_xpath_input.setEnabled(False)
+        self.pagination_checkbox.setText(PAGINATION_OFF_TEXT)
         self.browser.page().runJavaScript(jss.START_JS)
         self.browser.page().runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
         self.process_manager.clear_columns()
@@ -311,6 +342,7 @@ class BrowserTab(QWidget):
             self.pagination_checkbox.setChecked(False)
             self.pagination_widget.setVisible(False)
             self.pagination_xpath_input.setEnabled(False)
+            self.pagination_checkbox.setText(PAGINATION_OFF_TEXT)
 
     # Create a loop that continuously disables all links in the page
     def disable_links(self):

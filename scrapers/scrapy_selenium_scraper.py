@@ -40,17 +40,11 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
 
         # Adding argument to disable the AutomationControlled flag 
         options.add_argument("--disable-blink-features=AutomationControlled")
-        # Exclude the collection of enable-automation switches 
-        #options.add_experimental_option("excludeSwitches", ["enable-automation"]) 
-        # Turn-off userAutomationExtension 
-        #options.add_experimental_option("useAutomationExtension", False) 
 
         options.headless = True
         options.add_argument("--window-size=1920,1200")
 
-        print("Starting driver...")
         driver = Chrome(options=options)
-        print("Driver started")
 
         # Changing the property of the navigator value for webdriver to undefined 
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -106,7 +100,6 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         self.q.put(progress)
 
     def parse(self, response):
-        #self.pagination_xpath = '//*[@id="search"]/div[1]/div[1]/div/span[1]/div[1]/div[56]/div/div/span/a[3]'
         self.update_progress("1%")
 
         if self.pagination_xpath:
