@@ -6,10 +6,9 @@ from datetime import datetime
 import os
 from multiprocessing import Value
 from static import background_path
-#from utils.FileManager import get_file_path
+from utils.file_manager import get_file_path
 
-#PROCESSES_FILE = get_file_path("processes.csv")
-PROCESSES_FILE = "processes.csv"
+PROCESSES_FILE = get_file_path("processes.csv")
 
 class ProcessesTab(QWidget):
     def __init__(self, parent=None):
