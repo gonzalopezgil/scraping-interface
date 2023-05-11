@@ -15,7 +15,7 @@ import web.javascript_strings as jss
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from utils.password_manager import get_login_info_for_url
+from utils.manager.password_manager import get_login_info_for_url
 from exceptions.scraper_exceptions import ScraperStoppedException
 from fake_useragent import UserAgent
 from undetected_chromedriver import Chrome, ChromeOptions

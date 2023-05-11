@@ -2,7 +2,7 @@ from PyQt5.QtCore import QUrl, Qt, pyqtSignal, QSize
 from PyQt5.QtGui import QPixmap, QFontMetrics
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QFrame
-from utils.template_manager import get_domain
+from utils.manager.template_manager import get_domain
 
 class TemplateThumbnail(QFrame):
     clicked = pyqtSignal()

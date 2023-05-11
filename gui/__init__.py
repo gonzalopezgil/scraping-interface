@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication
 from gui.main_window import MainWindow
 from PyQt5.QtGui import QIcon
-from utils.password_manager import create_key
+from utils.manager.password_manager import create_key
 import sys
 import io
 from static import icon_path

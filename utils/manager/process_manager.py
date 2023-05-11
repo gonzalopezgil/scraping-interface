@@ -1,5 +1,5 @@
 import os
-from utils.file_manager import get_file_path
+from utils.manager.file_manager import get_file_path
 from exceptions.file_exceptions import FileDeletionException
 
 def clear_process_history():

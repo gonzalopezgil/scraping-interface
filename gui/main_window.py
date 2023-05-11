@@ -4,10 +4,10 @@ from gui.processes_tab import ProcessesTab
 from gui.settings_tab import SettingsTab
 from scrapers.scrapy_selenium_scraper import ScrapySeleniumScraper
 import threading
-from utils.signal_manager import SignalManager
-from utils.process_manager import ProcessManager
+from utils.manager.signal_manager import SignalManager
+from utils.manager.process_manager import ProcessManager
 from gui.home_tab import HomeTab
-from utils.template_manager import load_template
+from utils.manager.template_manager import load_template
 
 class MainWindow(QMainWindow):
     def __init__(self):

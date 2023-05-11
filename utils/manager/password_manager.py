@@ -4,7 +4,7 @@ import os
 import json
 from urllib.parse import urlparse
 from exceptions.file_exceptions import FileDeletionException
-from utils.file_manager import get_file_path
+from utils.manager.file_manager import get_file_path
 
 KEY_NAME = "scraping_interface_password_manager_key"
 SERVICE_NAME = "scraping_interface"

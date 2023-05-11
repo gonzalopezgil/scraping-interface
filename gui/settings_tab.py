@@ -4,13 +4,13 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 import json
-from utils.password_manager import clear_stored_passwords
-from utils.template_manager import clear_stored_templates
+from utils.manager.password_manager import clear_stored_passwords
+from utils.manager.template_manager import clear_stored_templates
 from exceptions.file_exceptions import FileDeletionException
-from utils.file_manager import get_file_path
+from utils.manager.file_manager import get_file_path
 from static import background_path
 from PyQt5.QtGui import QPainter
-from utils.process_manager import clear_process_history
+from utils.manager.process_manager import clear_process_history
 
 SEARCH_ENGINES = {
     "Google": ["https://www.google.com/search?q=", "https://www.google.com"],

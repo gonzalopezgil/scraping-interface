@@ -4,12 +4,12 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSlot
 from PyQt5.QtGui import QIcon, QPainter
 import web.javascript_strings as jss
-from utils.web_engine_page import WebEnginePage
+from utils.pyqt5_utils.web_engine_page import WebEnginePage
 from scrapers.scrapy_scraper import ScrapyScraper
 import threading
 from bs4 import BeautifulSoup
-from utils.custom_table_widget import CustomTableWidget
-from utils.template_manager import save_template, get_column_data_from_template
+from utils.pyqt5_utils.custom_table_widget import CustomTableWidget
+from utils.manager.template_manager import save_template, get_column_data_from_template
 import static
 
 PLACEHOLDER_TEXT = "Search or enter a URL"

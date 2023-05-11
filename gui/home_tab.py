@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QStyle, QStyleOption, QHBoxLayout, QScrollArea, QPushButton
 from PyQt5.QtGui import QPainter, QIcon
 from PyQt5.QtCore import Qt, pyqtSignal, QSize
-from utils.template_thumbnail import TemplateThumbnail
-from utils.template_manager import list_templates
+from utils.pyqt5_utils.template_thumbnail import TemplateThumbnail
+from utils.manager.template_manager import list_templates
 from static import back_path, forward_path, background_path, logo_path
 
 class HomeTab(QWidget):

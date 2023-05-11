@@ -6,7 +6,7 @@ from datetime import datetime
 import os
 from multiprocessing import Value
 from static import background_path
-from utils.file_manager import get_file_path
+from utils.manager.file_manager import get_file_path
 
 PROCESSES_FILE = get_file_path("processes.csv")
 

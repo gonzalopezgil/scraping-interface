@@ -1,8 +1,8 @@
 import os
 import json
 from collections import defaultdict
-from utils.password_manager import get_domain_name
-from utils.file_manager import get_folder_path
+from utils.manager.password_manager import get_domain_name
+from utils.manager.file_manager import get_folder_path
 from exceptions.file_exceptions import FileDeletionException
 
 TEMPLATE_FOLDER = get_folder_path("templates")
