@@ -10,6 +10,7 @@ from exceptions.file_exceptions import FileDeletionException
 from utils.file_manager import get_file_path
 from static import background_path
 from PyQt5.QtGui import QPainter
+from utils.process_manager import clear_process_history
 
 SEARCH_ENGINES = {
     "Google": ["https://www.google.com/search?q=", "https://www.google.com"],
@@ -26,10 +27,11 @@ default_settings = {
 }
 
 class SettingsTab(QWidget):
-    def __init__(self, parent=None, settings=None):
+    def __init__(self, parent=None, settings=None, processes_tab=None):
         super().__init__(parent)
 
         self.settings = settings
+        self.processes_tab = processes_tab
 
         # Create the UI elements
         self.search_engine_radio = QRadioButton("Search Engine Home Page")
@@ -113,6 +115,18 @@ class SettingsTab(QWidget):
         template_manager_layout.addWidget(self.clear_templates_button)
         template_manager_group.setLayout(template_manager_layout)
         form_layout.addRow(template_manager_group)
+
+
+        self.clear_processes_button = QPushButton("Clear Process History", self)
+        self.clear_processes_button.clicked.connect(self.clear_processes)
+
+        process_manager_group = QGroupBox()
+        process_manager_label = QLabel("Process Manager:")
+        process_manager_layout = QHBoxLayout()
+        process_manager_layout.addWidget(process_manager_label)
+        process_manager_layout.addWidget(self.clear_processes_button)
+        process_manager_group.setLayout(process_manager_layout)
+        form_layout.addRow(process_manager_group)
 
         spacer_item = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
         form_layout.addItem(spacer_item)
@@ -243,6 +257,27 @@ class SettingsTab(QWidget):
             msg.setText(str(e))
             msg.setIcon(QMessageBox.Critical)
             msg.exec_()
+
+    def clear_processes(self):
+        try:
+            msg = self.show_message()
+            msg.setWindowTitle("Clear Process History")
+            message = ""
+            if clear_process_history():
+                message = "Process history have been removed."
+            else:
+                message = "No process history was found."
+            msg.setText(message)
+            msg.setIcon(QMessageBox.Information)
+            msg.exec_()
+            self.processes_tab.load_data()
+        except FileDeletionException as e:
+            msg = self.show_message()
+            msg.setWindowTitle("Clear Process History")
+            msg.setText(str(e))
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec_()
+            self.processes_tab.load_data()
 
     def show_message(self):
         msg = QMessageBox(self)

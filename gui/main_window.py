@@ -29,9 +29,9 @@ class MainWindow(QMainWindow):
 
         # Create the tabs
         self.home_tab = HomeTab(self)
-        self.settings_tab = SettingsTab(self, self.settings)
-        self.browser_tab = BrowserTab(self, self.process_manager, self.signal_manager, self.settings)
         self.processes_tab = ProcessesTab(self)
+        self.settings_tab = SettingsTab(self, self.settings, self.processes_tab)
+        self.browser_tab = BrowserTab(self, self.process_manager, self.signal_manager, self.settings)
 
         self.signal_manager.process_signal.connect(self.processes_tab.update_status)
         self.signal_manager.pagination_signal.connect(self.browser_tab.browser.page().on_pagination_button_clicked)

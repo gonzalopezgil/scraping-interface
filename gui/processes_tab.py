@@ -73,6 +73,7 @@ class ProcessesTab(QWidget):
             self.no_data_label.setText("No processes found") # Set label text if no data is found
             self.no_data_label.show() # Show label if no data is found
             self.table.hide() # Hide table if no data is found
+            self.table.setRowCount(0)
 
     def add_row(self, scraped_web, file_name, column_titles):
         row_count = self.table.rowCount()
@@ -100,6 +101,7 @@ class ProcessesTab(QWidget):
                         for col in range(self.table.columnCount())
                         if self.table.item(row, col)]
             table_data.append(row_data)
+        print(table_data)
         return table_data
     
     def save_data(self):

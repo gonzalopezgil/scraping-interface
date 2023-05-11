@@ -1,3 +1,19 @@
+import os
+from utils.file_manager import get_file_path
+from exceptions.file_exceptions import FileDeletionException
+
+def clear_process_history():
+    try:
+        file_path = get_file_path("processes.csv")
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            return True
+        return False
+    except Exception as e:
+        exception_text = "Error deleting process history"
+        print(f"{exception_text}: {e}")
+        raise FileDeletionException(exception_text)
+
 class Column:
     def __init__(self, xpath, visual_index):
         self.xpath = xpath
