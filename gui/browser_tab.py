@@ -383,7 +383,8 @@ class BrowserTab(QWidget):
     def thread_preview_scrape(self, url, column_titles, xpaths, html):
         scraper = ScrapyScraper()
         items = scraper.scrape(url, column_titles, xpaths, html, max_items=5)
-        if items is not None and len(items) > 0:
+        actual_column_titles = self.get_column_titles()
+        if items is not None and len(items) > 0 and column_titles == actual_column_titles:
             self.signal_manager.table_items_signal.emit(items)
 
     def handle_cell_changed(self, row, column):
@@ -447,6 +448,8 @@ class BrowserTab(QWidget):
         self.table_xpath.removeColumn(column)
         self.process_manager.remove_column(column)
         self.remove_red_background(xpath)
+
+        self.browser.page().toHtml(self.preview_scrape)
 
         # Expand remaining columns to occupy all available space
         total_width = self.table_widget.width()
