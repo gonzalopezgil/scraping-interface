@@ -5,6 +5,8 @@ from utils.pyqt5_utils.template_thumbnail import TemplateThumbnail
 from utils.manager.template_manager import list_templates
 from static import back_path, forward_path, background_path, logo_path
 
+STYLE_SHEET = "background-color: transparent; border: none;"
+
 class HomeTab(QWidget):
     template_clicked = pyqtSignal(int)
 
@@ -27,13 +29,9 @@ class HomeTab(QWidget):
         self.search_input.setPlaceholderText("Search or write URL")
         self.search_input.setMinimumWidth(600)
         font = self.search_input.font()
-        font.setPointSize(20)
+        font.setPointSize(16)
         self.search_input.setFont(font)
         self.settings_tab_layout.addWidget(self.search_input, alignment=Qt.AlignCenter)
-
-        #self.templates_label = QLabel("Saved templates", self)
-        #self.templates_label.setAlignment(Qt.AlignCenter)
-        #self.settings_tab_layout.addWidget(self.templates_label)
 
         self.templates_grid = QHBoxLayout()
         self.templates_scroll_area = QScrollArea()
@@ -44,7 +42,7 @@ class HomeTab(QWidget):
         self.templates_scroll_area.setWidget(QWidget())
         self.templates_scroll_area.widget().setLayout(self.templates_grid)
         self.settings_tab_layout.addWidget(self.templates_scroll_area, alignment=Qt.AlignTop)
-        self.templates_scroll_area.setStyleSheet("background-color: transparent;")
+        self.templates_scroll_area.setStyleSheet(STYLE_SHEET)
 
         self.setStyleSheet(f"""
             HomeTab {{
@@ -70,8 +68,8 @@ class HomeTab(QWidget):
         self.nav_buttons_layout.addWidget(self.next_button)
         self.settings_tab_layout.addLayout(self.nav_buttons_layout)
 
-        self.previous_button.setStyleSheet("background-color: transparent; border: none;")
-        self.next_button.setStyleSheet("background-color: transparent; border: none;")
+        self.previous_button.setStyleSheet(STYLE_SHEET)
+        self.next_button.setStyleSheet(STYLE_SHEET)
 
         self.templates = []
         self.previous_width = self.width()
