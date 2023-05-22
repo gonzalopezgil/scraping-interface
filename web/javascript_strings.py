@@ -196,6 +196,16 @@ DISABLE_PAGINATION_JS = """
 
 HIGHLIGHT_TEXT_JS = """
     var style = document.createElement('style');
+    style.innerHTML = `
+        ::selection {
+            background: #E7d5ff; /* WebKit/Blink Browsers */
+            color: black;
+        }
+        ::-moz-selection {
+            background: #E7d5ff; /* Gecko Browsers */
+            color: black;
+        }
+    `;
     document.head.appendChild(style);
     var range = document.createRange();
     range.selectNodeContents(document.body);
