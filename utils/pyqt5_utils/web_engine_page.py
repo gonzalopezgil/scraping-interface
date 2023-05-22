@@ -65,7 +65,6 @@ class WebEnginePage(QWebEnginePage):
                 self.table_xpath.setItem(0, col, QTableWidgetItem(value))
             elif message_type == "xpathRel" and self.pagination_clicked:
                 self.process_manager.pagination_xpath = value
-                print(f"Pagination xpath: {value}")
                 self.pagination_xpath_label.setText(value)
 
     @pyqtSlot()

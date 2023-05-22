@@ -10,6 +10,12 @@ ENABLE_LINKS_JS = """
     }
     redElements = [];
 
+    // Remove green background from previously painted elements
+    for (var i = 0; i < greenElements.length; i++) {
+        greenElements[i].style.backgroundColor = '';
+    }
+    greenElements = [];
+
     // Remove all the squares created
     var squares = document.querySelectorAll('div[style*="2px solid red"]');
     squares.forEach(function(square) {
