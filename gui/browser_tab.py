@@ -448,6 +448,13 @@ class BrowserTab(QWidget):
         self.process_manager.remove_column(column)
         self.remove_red_background(xpath)
 
+        # Expand remaining columns to occupy all available space
+        total_width = self.table_widget.width()
+        num_columns = self.table_widget.columnCount()
+        if num_columns > 0:
+            for i in range(num_columns):
+                self.table_widget.setColumnWidth(i, total_width // num_columns)
+
     def create_horizontal_header_context_menu(self, pos):
         column = self.table_widget.horizontalHeader().logicalIndexAt(pos)
         menu = QMenu(self)
