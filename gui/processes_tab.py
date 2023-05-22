@@ -7,6 +7,7 @@ import os
 from multiprocessing import Value
 from static import background_path
 from utils.manager.file_manager import get_file_path
+import sys
 
 PROCESSES_FILE = get_file_path("processes.csv")
 
@@ -113,7 +114,10 @@ class ProcessesTab(QWidget):
         if os.name == 'nt':
             os.system(f'start {file_name}')
         elif os.name == 'posix':
-            os.system(f"open '{file_name}'")
+            if sys.platform.startswith('darwin'):
+                os.system(f"open '{file_name}'")
+            else:
+                os.system(f"xdg-open '{file_name}'")
         else:
             print('Error: File is not opening due to unknown operating system')
         
