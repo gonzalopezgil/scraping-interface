@@ -38,8 +38,6 @@ class MainWindow(QMainWindow):
         self.browser_tab.save_template_button.clicked.connect(self.home_tab.update_templates_list)
         self.settings_tab.clear_templates_button.clicked.connect(self.home_tab.update_templates_list)
 
-        self.browser_tab.pagination_checkbox.clicked.connect(self.on_pagination_button_clicked)
-
         self.thread = None
         self.file_name = None
         self.file_entered = threading.Event()
@@ -79,9 +77,6 @@ class MainWindow(QMainWindow):
         self.browser_tab.url_field.setText(self.home_tab.search_input.text())
         self.browser_tab.load_url()
         self.tabs.setCurrentIndex(1)
-    
-    def on_pagination_button_clicked(self):
-        self.signal_manager.pagination_signal.emit()
 
     def enter_file_name(self, file_format):
         file_extensions = {

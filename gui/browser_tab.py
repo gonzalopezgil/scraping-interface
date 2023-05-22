@@ -118,8 +118,6 @@ class BrowserTab(QWidget):
         self.pagination_button.setIcon(pagination_icon)
         self.scrape_bar_layout.addWidget(self.pagination_button)
 
-        self.pagination_clicked = False
-
         # Add a button to save template
         self.save_template_button = QPushButton("Save Template", self.scrape_widget)
         save_icon = QIcon(static.save_path)
@@ -254,13 +252,18 @@ class BrowserTab(QWidget):
         self.process_manager.file_format = action.text().split(" ")[-1].lower()
 
     def set_pagination(self, state):
-        self.select_pagination()
+        page = self.browser.page()
         if state == 1:
+            self.signal_manager.pagination_signal.emit(True)
             self.pagination_xpath_input.setEnabled(True)
             self.pagination_checkbox.setText(PAGINATION_ON_TEXT)
+            page.runJavaScript(jss.SELECT_PAGINATION_JS)
         else:
+            print("Pagination off")
+            self.signal_manager.pagination_signal.emit(False)
             self.pagination_xpath_input.setEnabled(False)
             self.pagination_checkbox.setText(PAGINATION_OFF_TEXT)
+            page.runJavaScript(jss.DISABLE_PAGINATION_JS)
 
     def toggle_pagination(self):
         if self.pagination_widget.isVisible():
@@ -310,14 +313,15 @@ class BrowserTab(QWidget):
     def update_url_field(self, url):
         self.url_field.setText(url.toString())
         self.scrape_widget.setVisible(False)
-        self.pagination_widget.setVisible(False)
-        self.pagination_checkbox.setChecked(False)
-        self.pagination_xpath_input.setEnabled(False)
-        self.pagination_checkbox.setText(PAGINATION_OFF_TEXT)
         self.browser.page().runJavaScript(jss.START_JS)
         self.browser.page().runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
         self.process_manager.clear_columns()
-        self.pagination_clicked = False
+        self.pagination_checkbox.setChecked(False)
+        self.pagination_xpath_input.setEnabled(False)
+        self.pagination_checkbox.setText(PAGINATION_OFF_TEXT)
+        self.signal_manager.pagination_signal.emit(False)
+        self.pagination_xpath_input.setText("")
+        self.pagination_widget.setVisible(False)
 
     def toggle_scrape_widget(self):
         # Get the page
@@ -339,27 +343,20 @@ class BrowserTab(QWidget):
         # Enable links if the scrape widget is not visible
         else:
             self.timer.stop()
-            page.runJavaScript(jss.DISABLE_PAGINATION_JS)
             page.runJavaScript(jss.ENABLE_LINKS_JS)
             page.runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
             self.process_manager.clear_columns()
-            self.pagination_clicked = False
             self.pagination_checkbox.setChecked(False)
-            self.pagination_widget.setVisible(False)
             self.pagination_xpath_input.setEnabled(False)
             self.pagination_checkbox.setText(PAGINATION_OFF_TEXT)
+            self.signal_manager.pagination_signal.emit(False)
+            self.pagination_xpath_input.setText("")
+            self.browser.page().runJavaScript(jss.DISABLE_PAGINATION_JS)
+            self.pagination_widget.setVisible(False)
 
     # Create a loop that continuously disables all links in the page
     def disable_links(self):
         self.browser.page().runJavaScript(jss.DISABLE_LINKS_JS)
-
-    def select_pagination(self):
-        self.pagination_clicked = not self.pagination_clicked
-        page = self.browser.page()
-        if self.pagination_clicked:
-            page.runJavaScript(jss.SELECT_PAGINATION_JS)
-        else:
-            page.runJavaScript(jss.DISABLE_PAGINATION_JS)
 
     def change_column_header(self, index):
         current_header = self.table_widget.horizontalHeaderItem(index)

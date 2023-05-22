@@ -67,9 +67,9 @@ class WebEnginePage(QWebEnginePage):
                 self.process_manager.pagination_xpath = value
                 self.pagination_xpath_label.setText(value)
 
-    @pyqtSlot()
-    def on_pagination_button_clicked(self):
-        self.pagination_clicked = not self.pagination_clicked
+    @pyqtSlot(bool)
+    def on_pagination_button_clicked(self, clicked):
+        self.pagination_clicked = clicked
 
     def show_save_credentials_dialog(self, parent, username, password):
         msg_box = QMessageBox(parent)
