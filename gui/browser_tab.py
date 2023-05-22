@@ -273,7 +273,9 @@ class BrowserTab(QWidget):
             self.pagination_widget.setFixedWidth(widget_width)
         
     def get_column_titles(self):
-        column_titles = [self.table_widget.horizontalHeaderItem(col).text() 
+        column_titles = []
+        if self.scrape_widget.isVisible():
+            column_titles = [self.table_widget.horizontalHeaderItem(col).text() 
                         if self.table_widget.horizontalHeaderItem(col) else str(self.process_manager.get_column(col).get_visual_index())
                         for col in range(self.table_widget.columnCount())][:self.process_manager.get_column_count()]
         return column_titles
