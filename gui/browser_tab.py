@@ -96,9 +96,12 @@ class BrowserTab(QWidget):
         # Create a second table to edit the xpath of each column
         self.table_xpath = CustomTableWidget(self)
         self.table_xpath.verticalHeader().setVisible(False)
+        self.table_xpath.setRowCount(1)
+        single_row_height = self.table_xpath.rowHeight(0)
+        self.table_xpath.setMaximumHeight(single_row_height)
+        self.table_xpath.setRowCount(0)
         self.table_xpath.horizontalHeader().setVisible(False)
         self.table_xpath.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table_xpath.setMaximumHeight(32)
         self.table_xpath.cellChanged.connect(self.handle_cell_changed)
         self.table_xpath.customContextMenuRequested.connect(lambda pos: self.create_table_context_menu(pos, self.table_xpath))
         self.table_xpath.setContextMenuPolicy(Qt.CustomContextMenu)        
@@ -211,7 +214,7 @@ class BrowserTab(QWidget):
         self.selected_template = None
 
         # Get the maximum width among the three buttons
-        max_width = max(self.pagination_button.sizeHint().width(), self.save_template_button.sizeHint().width(), self.download_button.sizeHint().width())
+        max_width = max(self.pagination_button.sizeHint().width(), self.save_template_button.sizeHint().width(), self.download_button.sizeHint().width()) + 20
 
         # Set the width of the three buttons to be the maximum width
         self.pagination_button.setFixedWidth(max_width)
