@@ -36,7 +36,7 @@ class ScrapyScraper(Scraper, Spider):
 
     def start_requests(self):
         # Using a dummy website to start scrapy request
-        url = "http://example.com"
+        url = "https://httpbin.org/ip"
         yield scrapy.Request(url=url, callback=self.parse, dont_filter=True)
 
     def parse(self, response):
