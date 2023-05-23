@@ -79,7 +79,14 @@ class TemplateThumbnail(QFrame):
 
         delete_action = QAction('Delete', self)
         delete_action.triggered.connect(self.delete_template)
+
         context_menu.addAction(delete_action)
+
+        context_menu.setStyleSheet("""
+        QMenu::item:selected {
+            background-color: #000000;
+        }
+        """)
 
         context_menu.exec_(event.globalPos())
 
