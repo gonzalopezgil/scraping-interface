@@ -104,3 +104,20 @@ def clear_stored_templates():
         exception_text = "Error deleting stored templates"
         print(f"{exception_text}: {e}")
         raise FileDeletionException(exception_text)
+
+def delete_template(index):
+    try:
+        domain_list = list_templates()
+        if index < 0 or index >= len(domain_list):
+            return False
+
+        template_path = _get_template_path(get_domain(domain_list[index]), 0)
+        if os.path.exists(template_path):
+            os.remove(template_path)
+            return True
+
+        return False
+    except Exception as e:
+        exception_text = f"Error deleting template: {domain_list[index]}"
+        print(f"{exception_text}: {e}")
+        raise FileDeletionException(exception_text)

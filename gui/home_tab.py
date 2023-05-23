@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QStyle, QSt
 from PyQt5.QtGui import QPainter, QIcon
 from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from utils.pyqt5_utils.template_thumbnail import TemplateThumbnail
-from utils.manager.template_manager import list_templates
+from utils.manager.template_manager import list_templates, delete_template
 from static import back_path, forward_path, background_path, logo_path
 
 STYLE_SHEET = "background-color: transparent; border: none;"
@@ -82,6 +82,7 @@ class HomeTab(QWidget):
                 self.templates.append(template_thumbnail)
                 self.templates_grid.addWidget(template_thumbnail)
                 template_thumbnail.clicked.connect(self.template_thumbnail_clicked)
+                template_thumbnail.deleted.connect(self.template_thumbnail_deleted)
 
         if not self.templates:
             self.templates_scroll_area.hide()
@@ -199,3 +200,20 @@ class HomeTab(QWidget):
         option.initFrom(self)
         painter = QPainter(self)
         self.style().drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
+    def template_thumbnail_deleted(self, index):
+        delete_template(index)
+
+        # Remove the template from the list of templates
+        del self.templates[index]
+
+        # Also remove it from the layout
+        for i in reversed(range(self.templates_grid.count())): 
+            if i == index:
+                widget_to_remove = self.templates_grid.itemAt(i).widget()
+                # remove it from the layout list
+                self.templates_grid.removeWidget(widget_to_remove)
+                # remove it from the gui
+                widget_to_remove.setParent(None)
+
+        self.update_templates_list()

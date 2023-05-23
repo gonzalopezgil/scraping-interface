@@ -3,9 +3,11 @@ from PyQt5.QtGui import QPixmap, QFontMetrics
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QFrame
 from utils.manager.template_manager import get_domain
+from PyQt5.QtWidgets import QMenu, QAction
 
 class TemplateThumbnail(QFrame):
     clicked = pyqtSignal()
+    deleted = pyqtSignal(int)
 
     def __init__(self, name, index, parent=None):
         super().__init__(parent)
@@ -68,5 +70,18 @@ class TemplateThumbnail(QFrame):
         except Exception as e:
             print(f"Warning: Error loading default favicon: {e}")
 
-    def mousePressEvent(self, _):
-        self.clicked.emit()
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.clicked.emit()
+
+    def contextMenuEvent(self, event):
+        context_menu = QMenu(self)
+
+        delete_action = QAction('Delete', self)
+        delete_action.triggered.connect(self.delete_template)
+        context_menu.addAction(delete_action)
+
+        context_menu.exec_(event.globalPos())
+
+    def delete_template(self):
+        self.deleted.emit(self.index)
