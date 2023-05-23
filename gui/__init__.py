@@ -5,6 +5,8 @@ from utils.manager.password_manager import create_key
 import sys
 import io
 from static import icon_path
+from PyQt5.QtCore import QTranslator, QLocale
+import os
 
 def main():
 
@@ -19,6 +21,15 @@ def main():
 
     # Run the application
     app = QApplication([])
+
+    translator = QTranslator(app)
+    # Get the absolute path to the translation file
+    translation_file = os.path.abspath("translations/translations.qm")
+    print(f"Translation file: {translation_file}")
+
+    if translator.load(QLocale("es_ES"), translation_file):  # Specify the desired target locale
+        app.installTranslator(translator)
+
     app.setWindowIcon(QIcon(icon_path))
     window = MainWindow()
     window.setMinimumSize(650, 850)

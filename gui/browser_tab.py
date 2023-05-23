@@ -12,11 +12,8 @@ from utils.pyqt5_utils.custom_table_widget import CustomTableWidget
 from utils.manager.template_manager import save_template, get_column_data_from_template
 import static
 
-PLACEHOLDER_TEXT = "Search or enter a URL"
 COLUMN_COUNT = 0
 PAGINATION_WIDGET_WIDTH_PERCENTAGE = 1/3
-PAGINATION_OFF_TEXT = "Click to select the pagination button..."
-PAGINATION_ON_TEXT = "Click to stop selecting the pagination button..."
 
 class BrowserTab(QWidget):
 
@@ -27,6 +24,11 @@ class BrowserTab(QWidget):
         self.settings = settings
         self.browser_tab_layout = QVBoxLayout(self)
         self.browser_tab_layout.addWidget(QWidget(self))
+
+        # Use self.tr() to translate the constants
+        self.PLACEHOLDER_TEXT = self.tr("Search or enter a URL")
+        self.PAGINATION_OFF_TEXT = self.tr("Click to select the pagination button...")
+        self.PAGINATION_ON_TEXT = self.tr("Click to stop selecting the pagination button...")
 
         # Create a browser window
         self.browser = QWebEngineView(self)
@@ -45,23 +47,23 @@ class BrowserTab(QWidget):
 
         self.horizontal_scrape_layout.addWidget(self.pagination_widget)
 
-        self.pagination_checkbox = QCheckBox("Click to select the pagination button...", self)
+        self.pagination_checkbox = QCheckBox(self.PAGINATION_OFF_TEXT, self)
         self.pagination_layout.addWidget(self.pagination_checkbox)
         self.pagination_checkbox.clicked.connect(self.set_pagination)
 
         self.pagination_xpath_input = QLineEdit(self)
-        self.pagination_xpath_input.setPlaceholderText("Click on the pagination button or enter an XPath")
+        self.pagination_xpath_input.setPlaceholderText(self.tr("Click on the pagination button or enter an XPath"))
         self.pagination_xpath_input.setEnabled(False)
         self.pagination_layout.addWidget(self.pagination_xpath_input)
 
         # Add a label and a spin box to enter the maximum pages to be scraped
         self.max_pages_layout = QHBoxLayout()
-        self.max_pages_label = QLabel("Maximum pages to scrape:")
+        self.max_pages_label = QLabel(self.tr("Maximum pages to scrape:"))
         self.max_pages_layout.addWidget(self.max_pages_label)
         self.max_pages_input = QSpinBox(self)
         self.max_pages_input.setMinimum(0)
         self.max_pages_input.setMaximum(1000000)
-        self.max_pages_input.setSpecialValueText("Unlimited")
+        self.max_pages_input.setSpecialValueText(self.tr("Unlimited"))
         self.max_pages_layout.addWidget(self.max_pages_input)
         self.pagination_layout.addLayout(self.max_pages_layout)
 
@@ -113,30 +115,30 @@ class BrowserTab(QWidget):
         self.scrape_bar_layout = QHBoxLayout(self.scrape_bar)
 
         # Add a button to select the pagination element
-        self.pagination_button = QPushButton("Pagination", self.scrape_widget)
+        self.pagination_button = QPushButton(self.tr("Pagination"), self.scrape_widget)
         pagination_icon = QIcon(static.pagination_path)
         self.pagination_button.setIcon(pagination_icon)
         self.scrape_bar_layout.addWidget(self.pagination_button)
 
         # Add a button to save template
-        self.save_template_button = QPushButton("Save Template", self.scrape_widget)
+        self.save_template_button = QPushButton(self.tr("Save Template"), self.scrape_widget)
         save_icon = QIcon(static.save_path)
         self.save_template_button.setIcon(save_icon)
         self.scrape_bar_layout.addWidget(self.save_template_button)
         self.save_template_button.clicked.connect(self.save_current_template)
         
         # Add a button to download the table contents as an Excel file
-        self.download_button = QPushButton("Download Data", self.scrape_widget)
+        self.download_button = QPushButton(self.tr("Download Data"), self.scrape_widget)
         download_icon = QIcon(static.download_path)
         self.download_button.setIcon(download_icon)
         self.download_menu = QMenu(self.download_button)
         self.download_button.setMenu(self.download_menu)
         self.scrape_bar_layout.addWidget(self.download_button)
 
-        self.download_excel_action = QAction("Download Excel", self)
-        self.download_csv_action = QAction("Download CSV", self)
-        self.download_json_action = QAction("Download JSON", self)
-        self.download_xml_action = QAction("Download XML", self)
+        self.download_excel_action = QAction(self.tr("Download Excel"), self)
+        self.download_csv_action = QAction(self.tr("Download CSV"), self)
+        self.download_json_action = QAction(self.tr("Download JSON"), self)
+        self.download_xml_action = QAction(self.tr("Download XML"), self)
 
         self.download_menu.addAction(self.download_excel_action)
         self.download_menu.addAction(self.download_csv_action)
@@ -181,7 +183,7 @@ class BrowserTab(QWidget):
         self.url_field = QLineEdit(self.navigation_bar)
         self.url_field.returnPressed.connect(self.load_url)
         self.navigation_bar_layout.addWidget(self.url_field)
-        self.url_field.setPlaceholderText(PLACEHOLDER_TEXT)
+        self.url_field.setPlaceholderText(self.PLACEHOLDER_TEXT)
         self.url_field.setClearButtonEnabled(True)
 
         self.browser_tab_layout.addWidget(self.navigation_bar, 0, Qt.AlignTop)
@@ -190,7 +192,7 @@ class BrowserTab(QWidget):
         self.browser_tab_layout.addWidget(self.browser, 1)
 
         # Create a button to toggle the scrape widget
-        self.scrape_button = QPushButton("Scrape", self.navigation_bar)
+        self.scrape_button = QPushButton(self.tr("Scrape"), self.navigation_bar)
         scraping_icon = QIcon(static.scraping_path)
         self.scrape_button.setIcon(scraping_icon)
         self.scrape_button.clicked.connect(self.toggle_scrape_widget)
@@ -256,13 +258,12 @@ class BrowserTab(QWidget):
         if state == 1:
             self.signal_manager.pagination_signal.emit(True)
             self.pagination_xpath_input.setEnabled(True)
-            self.pagination_checkbox.setText(PAGINATION_ON_TEXT)
+            self.pagination_checkbox.setText(self.PAGINATION_ON_TEXT)
             page.runJavaScript(jss.SELECT_PAGINATION_JS)
         else:
-            print("Pagination off")
             self.signal_manager.pagination_signal.emit(False)
             self.pagination_xpath_input.setEnabled(False)
-            self.pagination_checkbox.setText(PAGINATION_OFF_TEXT)
+            self.pagination_checkbox.setText(self.PAGINATION_OFF_TEXT)
             page.runJavaScript(jss.DISABLE_PAGINATION_JS)
 
     def toggle_pagination(self):
@@ -288,13 +289,13 @@ class BrowserTab(QWidget):
 
     def save_current_template(self):
         if save_template(self.url_field.text(), self.process_manager, self.get_column_titles()):
-            self.show_message("Template saved successfully")
+            self.show_message(self.tr("Template saved successfully"))
         else:
-            self.show_message("Error saving template")
+            self.show_message(self.tr("Error saving template"))
 
     def show_message(self, message):
         msg = QMessageBox(self)
-        msg.setWindowTitle("Information")
+        msg.setWindowTitle(self.tr("Information"))
         msg.setText(message)
         msg.setIcon(QMessageBox.Information)
         msg.setStandardButtons(QMessageBox.Ok)
@@ -318,7 +319,7 @@ class BrowserTab(QWidget):
         self.process_manager.clear_columns()
         self.pagination_checkbox.setChecked(False)
         self.pagination_xpath_input.setEnabled(False)
-        self.pagination_checkbox.setText(PAGINATION_OFF_TEXT)
+        self.pagination_checkbox.setText(self.PAGINATION_OFF_TEXT)
         self.signal_manager.pagination_signal.emit(False)
         self.pagination_xpath_input.setText("")
         self.pagination_widget.setVisible(False)
@@ -348,7 +349,7 @@ class BrowserTab(QWidget):
             self.process_manager.clear_columns()
             self.pagination_checkbox.setChecked(False)
             self.pagination_xpath_input.setEnabled(False)
-            self.pagination_checkbox.setText(PAGINATION_OFF_TEXT)
+            self.pagination_checkbox.setText(self.PAGINATION_OFF_TEXT)
             self.signal_manager.pagination_signal.emit(False)
             self.pagination_xpath_input.setText("")
             self.browser.page().runJavaScript(jss.DISABLE_PAGINATION_JS)
@@ -360,7 +361,7 @@ class BrowserTab(QWidget):
 
     def change_column_header(self, index):
         current_header = self.table_widget.horizontalHeaderItem(index)
-        new_header_text, ok = QInputDialog.getText(self, "Edit Column Header", "Enter new column header text:", QLineEdit.Normal, current_header.text() if current_header else "")
+        new_header_text, ok = QInputDialog.getText(self, self.tr("Edit Column Header"), self.tr("Enter new column header text:"), QLineEdit.Normal, current_header.text() if current_header else "")
         if ok and new_header_text:
             new_header = QTableWidgetItem(new_header_text)
             self.table_widget.setHorizontalHeaderItem(index, new_header)
@@ -460,7 +461,7 @@ class BrowserTab(QWidget):
     def create_horizontal_header_context_menu(self, pos):
         column = self.table_widget.horizontalHeader().logicalIndexAt(pos)
         menu = QMenu(self)
-        remove_action = menu.addAction("Remove Column")
+        remove_action = menu.addAction(self.tr("Remove Column"))
         remove_action.triggered.connect(lambda: self.remove_column(column))
         menu.exec_(self.table_widget.mapToGlobal(pos))
 
@@ -472,7 +473,7 @@ class BrowserTab(QWidget):
         if index.isValid():
             column = index.column()
             menu = QMenu(self)
-            remove_action = QAction("Remove Column", self)
+            remove_action = QAction(self.tr("Remove Column"), self)
             remove_action.triggered.connect(lambda: self.remove_column(column))
             menu.addAction(remove_action)
             menu.exec_(table.viewport().mapToGlobal(pos))
