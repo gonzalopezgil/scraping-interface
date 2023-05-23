@@ -7,6 +7,8 @@ from scrapy.crawler import CrawlerRunner
 import scrapy
 from twisted.internet import reactor
 from multiprocessing import Process, Queue
+from scrapy.http import HtmlResponse
+from scrapy import Request
 
 class ScrapyScraper(Scraper, Spider):
     name = "ScrapyScraper"
@@ -35,15 +37,15 @@ class ScrapyScraper(Scraper, Spider):
         pass
 
     def start_requests(self):
-        # Using a dummy website to start scrapy request
-        url = "https://httpbin.org/ip"
-        yield scrapy.Request(url=url, callback=self.parse, dont_filter=True)
+        url = "http://www.example.com"
+        # The request is just to pass the html to the parse method, not to visit the url
+        request = Request(url, callback=self.parse)
+        request.meta['response'] = HtmlResponse(url=url, body=self.html, encoding='utf-8')
+        yield request
 
-    def parse(self, response):
-        if response.status != 200:
-            print("Error: Status code not 200")
-
-        obj = Selector(text=self.html)
+    def parse(self, request):
+        response = request.meta['response']
+        obj = Selector(response)
         
         general_xpaths = [self.generalise_xpath(xpath) for xpath in self.xpaths]
         prefix = self.get_common_xpath(general_xpaths)
