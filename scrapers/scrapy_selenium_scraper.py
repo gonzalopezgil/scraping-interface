@@ -8,7 +8,7 @@ from scrapy.item import Item, Field
 from scrapy.crawler import CrawlerRunner
 from scrapy.selector import Selector
 from twisted.internet import reactor
-from multiprocessing import Process, Queue, Value
+from multiprocessing import Process, Queue
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import web.javascript_strings as jss
@@ -118,6 +118,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         self.q.put(progress)
 
     def parse(self, response):
+        #self.pagination_xpath = "//a[contains(text(), 'Next') or contains(text(), 'next') or contains(text(), 'NEXT')]"
         self.update_progress("1%")
 
         if self.pagination_xpath:
@@ -326,3 +327,10 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
                 print("Couldn't find a related button to click.")
         except Exception:
             print("Couldn't find a related button to click.")
+
+    def check_for_captcha(self, obj):
+        # Look for CAPTCHA in iframes
+        iframes = self.get_elements("//iframe[@title='reCAPTCHA']", obj)
+        if iframes is not None and len(iframes) > 0:
+            return True
+        return False
