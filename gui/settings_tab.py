@@ -1,16 +1,16 @@
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFormLayout, 
+    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFormLayout, QApplication,
     QRadioButton, QComboBox, QGroupBox, QSpacerItem, QSizePolicy, QMessageBox, QStyleOption, QStyle
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QLocale
 import json
 from utils.manager.password_manager import clear_stored_passwords
 from utils.manager.template_manager import clear_stored_templates
 from exceptions.file_exceptions import FileDeletionException
-from utils.manager.file_manager import get_file_path
 from static import background_path
 from PyQt5.QtGui import QPainter
 from utils.manager.process_manager import clear_process_history
+from . constants import SETTINGS_FILE, LANGUAGES, RESTART_CODE
 
 SEARCH_ENGINES = {
     "Google": ["https://www.google.com/search?q=", "https://www.google.com"],
@@ -18,20 +18,21 @@ SEARCH_ENGINES = {
     "DuckDuckGo": ["https://duckduckgo.com/?q=", "https://duckduckgo.com/"]
 }
 
-SETTINGS_FILE = get_file_path("settings.json")
-
 default_engine = next(iter(SEARCH_ENGINES.keys()))
 default_settings = {
     "search_engine": SEARCH_ENGINES[default_engine][0], 
-    "home_page": SEARCH_ENGINES[default_engine][1]
+    "home_page": SEARCH_ENGINES[default_engine][1],
+    "locale": QLocale().name().split('_')[0]
 }
 
 class SettingsTab(QWidget):
-    def __init__(self, parent=None, settings=None, processes_tab=None):
+    def __init__(self, parent=None, settings=None, processes_tab=None, main_window=None, app=None):
         super().__init__(parent)
 
         self.settings = settings
         self.processes_tab = processes_tab
+        self.main_window = main_window
+        self.app = app
 
         # Create the UI elements
         self.search_engine_radio = QRadioButton(self.tr("Search Engine Home Page"))
@@ -49,7 +50,7 @@ class SettingsTab(QWidget):
             with open(SETTINGS_FILE, "r") as f:
                 loaded_json = json.load(f)
 
-                if "search_engine" in loaded_json and "home_page" in loaded_json:
+                if "search_engine" in loaded_json and "home_page" in loaded_json and "locale" in loaded_json:
                     # Both "search_engine" and "home_page" keys exist in the JSON object
                     self.settings.update(loaded_json)
                     self.check_values()
@@ -128,6 +129,21 @@ class SettingsTab(QWidget):
         process_manager_group.setLayout(process_manager_layout)
         form_layout.addRow(process_manager_group)
 
+        self.language_combo = QComboBox(self)
+        for language, locale in LANGUAGES.items():
+            self.language_combo.addItem(language, locale)
+
+        self.language_combo.setCurrentIndex(self.language_combo.findData(self.settings["locale"]))
+        self.language_combo.currentIndexChanged.connect(self.save_settings)
+
+        user_settings_group = QGroupBox()
+        language_label = QLabel(self.tr("Language:"))
+        language_layout = QHBoxLayout()
+        language_layout.addWidget(language_label)
+        language_layout.addWidget(self.language_combo)
+        user_settings_group.setLayout(language_layout)
+        form_layout.addRow(user_settings_group)
+
         spacer_item = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
         form_layout.addItem(spacer_item)
 
@@ -189,6 +205,27 @@ class SettingsTab(QWidget):
         else:
             self.settings["search_engine"] = self.search_engine_combo.currentData()
             self.settings["home_page"] = self.get_home_page_url()
+        
+        if self.settings["locale"] != self.language_combo.currentData():
+            self.settings["locale"] = self.language_combo.currentData()
+
+            # Prompt the user to restart the application
+            reply = QMessageBox.question(
+                self,
+                self.tr("Restart Required"),
+                self.tr("Language change will take effect after restart. Do you want to restart now?"),
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+
+            if reply == QMessageBox.Yes:
+                # Restart the application
+                self.check_values()
+                self.save_json()
+
+                self.main_window.close()
+                self.app.quit()
+                QApplication.instance().exit(RESTART_CODE)
 
         # Save the settings to the file
         self.check_values()

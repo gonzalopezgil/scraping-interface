@@ -7,6 +7,8 @@ import io
 from static import icon_path
 from PyQt5.QtCore import QTranslator, QLocale
 import os
+import json
+from . constants import SETTINGS_FILE, LANGUAGES, RESTART_CODE
 
 def main():
 
@@ -21,17 +23,34 @@ def main():
 
     # Run the application
     app = QApplication([])
+    exit_code = RESTART_CODE
 
-    translator = QTranslator(app)
-    # Get the absolute path to the translation file
-    translation_file = os.path.abspath("translations/translations.qm")
-    print(f"Translation file: {translation_file}")
+    while exit_code == RESTART_CODE:
+        translator = QTranslator(app)
 
-    if translator.load(QLocale("es_ES"), translation_file):  # Specify the desired target locale
-        app.installTranslator(translator)
+        # Load settings
+        try:
+            with open(SETTINGS_FILE, 'r') as f:
+                settings = json.load(f)
+        except FileNotFoundError:
+            settings = {}
 
-    app.setWindowIcon(QIcon(icon_path))
-    window = MainWindow()
-    window.setMinimumSize(650, 850)
-    window.show()
-    app.exec_()
+        # Translate the app
+        if 'locale' not in settings:
+            system_locale = QLocale.system()
+            language = system_locale.languageToString(system_locale.language())
+            if language in LANGUAGES:
+                settings['locale'] = LANGUAGES[language]
+            else:
+                settings['locale'] = 'en'
+
+        locale = settings.get('locale')
+        translation_file = os.path.abspath(f"translations/translations_{locale}.qm")
+        if translator.load(QLocale(locale), translation_file):  # Load the specified locale (if not found, don't translate)
+            app.installTranslator(translator)
+
+        app.setWindowIcon(QIcon(icon_path))
+        window = MainWindow(app)
+        window.setMinimumSize(650, 850)
+        window.show()
+        exit_code = app.exec_()

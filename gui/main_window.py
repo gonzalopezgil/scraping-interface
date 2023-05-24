@@ -10,8 +10,11 @@ from gui.home_tab import HomeTab
 from utils.manager.template_manager import load_template
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, app):
         super().__init__()
+
+        self.app = app
+
         self.setWindowTitle("Scraping Interface")
         self.resize(1800, 1000)
 
@@ -30,7 +33,7 @@ class MainWindow(QMainWindow):
         # Create the tabs
         self.home_tab = HomeTab(self)
         self.processes_tab = ProcessesTab(self)
-        self.settings_tab = SettingsTab(self, self.settings, self.processes_tab)
+        self.settings_tab = SettingsTab(self, self.settings, self.processes_tab, self, self.app)
         self.browser_tab = BrowserTab(self, self.process_manager, self.signal_manager, self.settings)
 
         self.signal_manager.process_signal.connect(self.processes_tab.update_status)

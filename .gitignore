@@ -133,3 +133,6 @@ dmypy.json
 *.csv
 *.json
 *.xml
+
+# Installation files
+package/
