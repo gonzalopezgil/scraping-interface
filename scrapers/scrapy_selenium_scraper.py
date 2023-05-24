@@ -18,7 +18,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from utils.manager.password_manager import get_login_info_for_url
 from exceptions.scraper_exceptions import ScraperStoppedException
 from fake_useragent import UserAgent
-from undetected_chromedriver import Chrome, ChromeOptions
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 
 TIMEOUT = 5
 
@@ -50,17 +53,21 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
         self.stop = stop
 
     def get_driver(self):
-        options = ChromeOptions()
+        options = Options()
 
         # Avoid sending information to the server to indicate the use of an automated browser.
 
         # Adding argument to disable the AutomationControlled flag 
         options.add_argument("--disable-blink-features=AutomationControlled")
+        # Exclude the collection of enable-automation switches 
+        options.add_experimental_option("excludeSwitches", ["enable-automation"]) 
+        # Turn-off userAutomationExtension 
+        options.add_experimental_option("useAutomationExtension", False) 
 
         options.headless = True
         options.add_argument("--window-size=1920,1200")
 
-        driver = Chrome(options=options)
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
         # Changing the property of the navigator value for webdriver to undefined 
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -202,7 +209,7 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     def run_scraper(self, q, url, labels, selected_text, xpaths, pagination_xpath, file_name, html, stop=None, max_pages=None):
         try:
             runner = CrawlerRunner()
-            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://example.com"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, pagination_xpath=pagination_xpath, q=q, html=html, stop=stop, max_pages=max_pages)
+            deferred = runner.crawl(ScrapySeleniumScraper, start_urls=["http://localhost:8000"], url=url, labels=labels, selected_text=selected_text, xpaths=xpaths, pagination_xpath=pagination_xpath, q=q, html=html, stop=stop, max_pages=max_pages)
             deferred.addBoth(lambda _: reactor.stop())
 
             spider = next(iter(runner.crawlers)).spider

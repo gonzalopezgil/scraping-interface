@@ -101,7 +101,6 @@ class ProcessesTab(QWidget):
                         for col in range(self.table.columnCount())
                         if self.table.item(row, col)]
             table_data.append(row_data)
-        print(table_data)
         return table_data
     
     def save_data(self):
