@@ -34,15 +34,15 @@ class SettingsTab(QWidget):
         self.processes_tab = processes_tab
 
         # Create the UI elements
-        self.search_engine_radio = QRadioButton("Search Engine Home Page")
-        self.custom_home_page_radio = QRadioButton("Custom Home Page")
+        self.search_engine_radio = QRadioButton(self.tr("Search Engine Home Page"))
+        self.custom_home_page_radio = QRadioButton(self.tr("Custom Home Page"))
         self.search_engine_combo = QComboBox(self)
 
         self.home_page_edit = QLineEdit(self)
         self.custom_home_page_radio.toggled.connect(self.home_page_edit.setEnabled)
         self.search_engine_radio.clicked.connect(self.save_settings)
 
-        self.clear_passwords_button = QPushButton("Clear Stored Passwords", self)
+        self.clear_passwords_button = QPushButton(self.tr("Clear Stored Passwords"), self)
         self.clear_passwords_button.clicked.connect(self.clear_passwords)
 
         try:
@@ -69,13 +69,13 @@ class SettingsTab(QWidget):
 
         self.search_engine_combo.currentIndexChanged.connect(self.save_settings)
 
-        save_button = QPushButton("Save", self)
+        save_button = QPushButton(self.tr("Save"), self)
         save_button.clicked.connect(self.save_settings)
 
         layout = QVBoxLayout(self)
         form_layout = QFormLayout()
 
-        home_page_group = QGroupBox("Browser Settings")
+        home_page_group = QGroupBox(self.tr("Browser Settings"))
         home_page_layout = QVBoxLayout()
         home_page_layout.addWidget(self.search_engine_radio)
         home_page_layout.addWidget(self.custom_home_page_radio)
@@ -89,7 +89,7 @@ class SettingsTab(QWidget):
         button_layout.addLayout(home_page_layout)
 
         self.search_engine_layout = QHBoxLayout()
-        self.search_engine_layout.addWidget(QLabel("Search Engine:"))
+        self.search_engine_layout.addWidget(QLabel(self.tr("Search Engine:")))
         self.search_engine_layout.addWidget(self.search_engine_combo)
         home_page_layout.addLayout(self.search_engine_layout)
 
@@ -98,14 +98,14 @@ class SettingsTab(QWidget):
         form_layout.addRow(home_page_group)
 
         password_manager_group = QGroupBox()
-        password_manager_label = QLabel("Password Manager:")
+        password_manager_label = QLabel(self.tr("Password Manager:"))
         password_manager_layout = QHBoxLayout()
         password_manager_layout.addWidget(password_manager_label)
         password_manager_layout.addWidget(self.clear_passwords_button)
         password_manager_group.setLayout(password_manager_layout)
         form_layout.addRow(password_manager_group)
 
-        self.clear_templates_button = QPushButton("Clear Stored Templates", self)
+        self.clear_templates_button = QPushButton(self.tr("Clear Stored Templates"), self)
         self.clear_templates_button.clicked.connect(self.clear_templates)
 
         template_manager_group = QGroupBox()
@@ -117,11 +117,11 @@ class SettingsTab(QWidget):
         form_layout.addRow(template_manager_group)
 
 
-        self.clear_processes_button = QPushButton("Clear Process History", self)
+        self.clear_processes_button = QPushButton(self.tr("Clear Process History"), self)
         self.clear_processes_button.clicked.connect(self.clear_processes)
 
         process_manager_group = QGroupBox()
-        process_manager_label = QLabel("Process Manager:")
+        process_manager_label = QLabel(self.tr("Process Manager:"))
         process_manager_layout = QHBoxLayout()
         process_manager_layout.addWidget(process_manager_label)
         process_manager_layout.addWidget(self.clear_processes_button)
@@ -223,18 +223,16 @@ class SettingsTab(QWidget):
     def clear_passwords(self):
         try:
             msg = self.show_message()
-            msg.setWindowTitle("Clear Stored Passwords")
             message = ""
             if clear_stored_passwords():
-                message = "All stored credentials have been removed."
+                message = self.tr("All stored credentials have been removed.")
             else:
-                message = "No credentials were found."
+                message = self.tr("No credentials were found.")
             msg.setText(message)
             msg.setIcon(QMessageBox.Information)
             msg.exec_()
         except FileDeletionException as e:
             msg = self.show_message()
-            msg.setWindowTitle("Clear Stored Passwords")
             msg.setText(str(e))
             msg.setIcon(QMessageBox.Critical)
             msg.exec_()
@@ -242,18 +240,16 @@ class SettingsTab(QWidget):
     def clear_templates(self):
         try:
             msg = self.show_message()
-            msg.setWindowTitle("Clear Stored Templates")
             message = ""
             if clear_stored_templates():
-                message = "All stored templates have been removed."
+                message = self.tr("All stored templates have been removed.")
             else:
-                message = "No templates were found."
+                message = self.tr("No templates were found.")
             msg.setText(message)
             msg.setIcon(QMessageBox.Information)
             msg.exec_()
         except FileDeletionException as e:
             msg = self.show_message()
-            msg.setWindowTitle("Clear Stored Templates")
             msg.setText(str(e))
             msg.setIcon(QMessageBox.Critical)
             msg.exec_()
@@ -261,19 +257,17 @@ class SettingsTab(QWidget):
     def clear_processes(self):
         try:
             msg = self.show_message()
-            msg.setWindowTitle("Clear Process History")
             message = ""
             if clear_process_history():
-                message = "Process history have been removed."
+                message = self.tr("Process history have been removed.")
             else:
-                message = "No process history was found."
+                message = self.tr("No process history was found.")
             msg.setText(message)
             msg.setIcon(QMessageBox.Information)
             msg.exec_()
             self.processes_tab.load_data()
         except FileDeletionException as e:
             msg = self.show_message()
-            msg.setWindowTitle("Clear Process History")
             msg.setText(str(e))
             msg.setIcon(QMessageBox.Critical)
             msg.exec_()
@@ -282,6 +276,7 @@ class SettingsTab(QWidget):
     def show_message(self):
         msg = QMessageBox(self)
         msg.setStandardButtons(QMessageBox.Ok)
+        msg.setWindowTitle(self.tr("Information"))
         return msg
     
     def paintEvent(self, _):

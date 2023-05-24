@@ -26,7 +26,7 @@ class HomeTab(QWidget):
 
         # Add a QLineEdit for the search/URL input
         self.search_input = QLineEdit(self)
-        self.search_input.setPlaceholderText("Search or write URL")
+        self.search_input.setPlaceholderText(self.tr("Search or write URL"))
         self.search_input.setMinimumWidth(600)
         font = self.search_input.font()
         font.setPointSize(16)
