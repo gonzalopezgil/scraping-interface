@@ -26,7 +26,23 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     name = "ScrapySeleniumScraper"
 
     custom_settings = {
-        'REQUEST_FINGERPRINTER_IMPLEMENTATION': '2.7'
+        'REQUEST_FINGERPRINTER_IMPLEMENTATION': '2.7',
+        'DOWNLOADER_MIDDLEWARES': {
+            'scrapers.middlewares.NoInternetMiddleware': 1,
+            'scrapy.downloadermiddlewares.robotstxt.RobotsTxtMiddleware': None,
+            'scrapy.downloadermiddlewares.httpauth.HttpAuthMiddleware': None,
+            'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware': None,
+            'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware': None,
+            'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+            'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
+            'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware': None,
+            'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': None,
+            'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': None,
+            'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
+            'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': None,
+            'scrapy.downloadermiddlewares.stats.DownloaderStats': None,
+            'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': None,
+        },
     }
 
     def __init__(self, stop=None, *args, **kwargs):
@@ -87,11 +103,6 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
             end_of_page = obj.execute_script('return window.pageYOffset + window.innerHeight >= document.body.scrollHeight;')
             if end_of_page:
                 break
-
-    def start_requests(self):
-        # Using a dummy website to start scrapy request
-        url = "http://example.com"
-        yield scrapy.Request(url=url, callback=self.parse, dont_filter=True)
 
     def update_progress(self, progress):
         if self.stop.value:
