@@ -60,12 +60,10 @@ class ProcessesTab(QWidget):
                 data = list(reader)
                 self.table.setRowCount(len(data))
                 for row, item in enumerate(data):
-                    self.table.setItem(row, 0, QTableWidgetItem(item[0]))
-                    self.table.setItem(row, 1, QTableWidgetItem(item[1]))
-                    self.table.setItem(row, 2, QTableWidgetItem(item[2]))
-                    self.table.setItem(row, 3, QTableWidgetItem(item[3]))
-                    self.table.setItem(row, 4, QTableWidgetItem(item[4]))
-                    self.table.setItem(row, 5, QTableWidgetItem(item[5]))
+                    for col in range(len(item)):
+                        table_item = QTableWidgetItem(item[col])
+                        table_item.setFlags(table_item.flags() & ~Qt.ItemIsEditable)  # Disable editing
+                        self.table.setItem(row, col, table_item)
                     if item[3] == "Finished":
                         self.table.setCellWidget(row, 6, self.create_open_file_button(item[1]))
                 self.no_data_label.hide() # Hide label if data is found
@@ -82,12 +80,13 @@ class ProcessesTab(QWidget):
         now = datetime.now()
         date = now.strftime("%Y-%m-%d")
         time = now.strftime("%H:%M:%S")
-        self.table.setItem(row_count, 0, QTableWidgetItem(scraped_web))
-        self.table.setItem(row_count, 1, QTableWidgetItem(file_name))
-        self.table.setItem(row_count, 2, QTableWidgetItem(', '.join(column_titles)))
-        self.table.setItem(row_count, 3, QTableWidgetItem("Running"))
-        self.table.setItem(row_count, 4, QTableWidgetItem(date))
-        self.table.setItem(row_count, 5, QTableWidgetItem(time))
+        
+        items = [scraped_web, file_name, ', '.join(column_titles), "Running", date, time]
+        for col, text in enumerate(items):
+            table_item = QTableWidgetItem(text)
+            table_item.setFlags(table_item.flags() & ~Qt.ItemIsEditable)  # Disable editing
+            self.table.setItem(row_count, col, table_item)
+            
         self.table.setCellWidget(row_count, 6, self.create_stop_button(row_count))
         self.table.show()
         self.no_data_label.hide()
