@@ -7,8 +7,6 @@ from scrapy.crawler import CrawlerRunner
 import scrapy
 from twisted.internet import reactor
 from multiprocessing import Process, Queue
-from scrapy.http import HtmlResponse
-from scrapy import Request
 
 class ScrapyScraper(Scraper, Spider):
     name = "ScrapyScraper"
@@ -24,6 +22,25 @@ class ScrapyScraper(Scraper, Spider):
         'AUTOTHROTTLE_DEBUG': True,
         'CLOSESPIDER_ITEMCOUNT': 5,
         'REQUEST_FINGERPRINTER_IMPLEMENTATION': '2.7',
+        'LOG_ENABLED': True,
+        'LOG_LEVEL': 'DEBUG',
+        'LOG_FORMATTER': 'scrapy.logformatter.LogFormatter',
+        'DOWNLOADER_MIDDLEWARES': {
+            'scrapers.middlewares.NoInternetMiddleware': 1,
+            'scrapy.downloadermiddlewares.robotstxt.RobotsTxtMiddleware': None,
+            'scrapy.downloadermiddlewares.httpauth.HttpAuthMiddleware': None,
+            'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware': None,
+            'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware': None,
+            'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+            'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
+            'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware': None,
+            'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': None,
+            'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': None,
+            'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
+            'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': None,
+            'scrapy.downloadermiddlewares.stats.DownloaderStats': None,
+            'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': None,
+        },
     }
 
     def get_webpage(self, response):
@@ -36,16 +53,8 @@ class ScrapyScraper(Scraper, Spider):
         # No need to close webpage with scrapy
         pass
 
-    def start_requests(self):
-        url = "http://www.example.com"
-        # The request is just to pass the html to the parse method, not to visit the url
-        request = Request(url, callback=self.parse)
-        request.meta['response'] = HtmlResponse(url=url, body=self.html, encoding='utf-8')
-        yield request
-
-    def parse(self, request):
-        response = request.meta['response']
-        obj = Selector(response)
+    def parse(self, response):
+        obj = Selector(text=self.html)
         
         general_xpaths = [self.generalise_xpath(xpath) for xpath in self.xpaths]
         prefix = self.get_common_xpath(general_xpaths)
@@ -103,9 +112,20 @@ class ScrapyScraper(Scraper, Spider):
         return new_class
     
     def run_scraper(self, q, url, labels, xpaths, html, max_items):
+        import logging
+
+        # Set up root logger
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+        file_handler = logging.FileHandler('scrapy_scraper.log')
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
         try:
             runner = CrawlerRunner()
-            deferred = runner.crawl(ScrapyScraper, start_urls=[url], url=url, labels=labels, xpaths=xpaths, html=html, max_items=max_items)
+
+            deferred = runner.crawl(ScrapyScraper, start_urls=['http://localhost:8000'], url=url, labels=labels, xpaths=xpaths, html=html, max_items=max_items)
             deferred.addBoth(lambda _: reactor.stop())
 
             spider = next(iter(runner.crawlers)).spider
@@ -127,6 +147,7 @@ class ScrapyScraper(Scraper, Spider):
             
             q.put(dict_results)
         except Exception as e:
+            logger.error("Exception occurred", exc_info=True)
             q.put(e)
 
     def scrape(self, url, labels, xpaths, html, max_items=None):
