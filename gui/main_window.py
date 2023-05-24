@@ -53,16 +53,16 @@ class MainWindow(QMainWindow):
         self.home_tab.search_input.returnPressed.connect(self.switch_to_browser_tab)
 
         # Add the tabs to the tab widget
-        self.tabs.addTab(self.home_tab, "Home")
-        self.tabs.addTab(self.browser_tab, "Browser")
-        self.tabs.addTab(self.processes_tab, "Processes")
-        self.tabs.addTab(self.settings_tab, "Settings")
+        self.tabs.addTab(self.home_tab, self.tr("Home"))
+        self.tabs.addTab(self.browser_tab, self.tr("Browser"))
+        self.tabs.addTab(self.processes_tab, self.tr("Processes"))
+        self.tabs.addTab(self.settings_tab, self.tr("Settings"))
 
         self.home_tab.template_clicked.connect(self.handle_template_click)
 
     def export_data(self, action):
         file_format = action.text().split(" ")[-1].lower()
-        print("Exporting data to", file_format)
+        print(self.tr("Exporting data to"), file_format)
 
         self.browser_tab.browser.page().toHtml(lambda html: self.start_thread(html, file_format))
 
@@ -83,13 +83,13 @@ class MainWindow(QMainWindow):
 
     def enter_file_name(self, file_format):
         file_extensions = {
-            'excel': 'Excel files (*.xlsx)',
-            'csv': 'CSV files (*.csv)',
-            'json': 'JSON files (*.json)',
-            'xml': 'XML files (*.xml)'
+            'excel': f"{self.tr('Excel files')} (*.xlsx)",
+            'csv': f"{self.tr('CSV files')} (*.csv)",
+            'json': f"{self.tr('JSON files')} (*.json)",
+            'xml': f"{self.tr('XML files')} (*.xml)"
         }
-        selected_filter = file_extensions.get(file_format, 'All files (*)')
-        filename, selected_ext = QFileDialog.getSaveFileName(self, "Save File", "", f"{selected_filter};All files (*)")
+        selected_filter = file_extensions.get(file_format, f"{self.tr('All files')} (*)")
+        filename, selected_ext = QFileDialog.getSaveFileName(self, self.tr("Save File"), "", f"{selected_filter};{self.tr('All files')} (*)")
 
         if filename:
             # Add the appropriate file extension if it's missing
@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
                 i += 1
             return filename
         else:
-            print("Error: no file name entered")
+            print(self.tr("Error: no file name entered"))
             return None
 
     def start_thread(self, html, file_format):
@@ -139,7 +139,7 @@ class MainWindow(QMainWindow):
         scraper.scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), process_manager.pagination_xpath, file_name, self.signal_manager, row, html, stop, max_pages)
 
     def show_no_preview_results(self):
-        QMessageBox.warning(self, "Warning", "No preview results to show", QMessageBox.Ok)
+        QMessageBox.warning(self, self.tr("Warning"), self.tr("No preview results to show"), QMessageBox.Ok)
 
     def save_file(self, dataframe, file_name):
         dataframe.to_excel(file_name)
@@ -147,7 +147,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if self.thread and self.thread.is_alive():
             # Display a message box with a "Force Stop" button
-            reply = QMessageBox.question(self, "Warning", "The thread is still running. Do you want to force it to stop?", QMessageBox.Yes | QMessageBox.No)
+            reply = QMessageBox.question(self, self.tr("Warning"), self.tr("The thread is still running. Do you want to force it to stop?"), QMessageBox.Yes | QMessageBox.No)
             if reply == QMessageBox.Yes:
                 # Call a method that stops the thread
                 self.stop_thread()

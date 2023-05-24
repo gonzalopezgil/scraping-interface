@@ -28,4 +28,4 @@ SOURCES = \
         ../scrapers/__init__.py \
         ../main.py \
 
-TRANSLATIONS = translations.ts
+TRANSLATIONS = translations_es.ts

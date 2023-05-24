@@ -113,91 +113,220 @@
     </message>
 </context>
 <context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../gui/main_window.py" line="56"/>
+        <source>Home</source>
+        <translation>Inicio</translation>
+    </message>
+    <message>
+        <location filename="../gui/main_window.py" line="57"/>
+        <source>Browser</source>
+        <translation>Navegador</translation>
+    </message>
+    <message>
+        <location filename="../gui/main_window.py" line="58"/>
+        <source>Processes</source>
+        <translation>Procesos</translation>
+    </message>
+    <message>
+        <location filename="../gui/main_window.py" line="59"/>
+        <source>Settings</source>
+        <translation>Configuración</translation>
+    </message>
+    <message>
+        <location filename="../gui/main_window.py" line="65"/>
+        <source>Exporting data to</source>
+        <translation>Exportando datos a</translation>
+    </message>
+    <message>
+        <location filename="../gui/main_window.py" line="92"/>
+        <source>Save File</source>
+        <translation>Guardar archivo</translation>
+    </message>
+    <message>
+        <location filename="../gui/main_window.py" line="113"/>
+        <source>Error: no file name entered</source>
+        <translation>Error: no se ingresó un nombre de archivo</translation>
+    </message>
+    <message>
+        <location filename="../gui/main_window.py" line="150"/>
+        <source>Warning</source>
+        <translation>Advertencia</translation>
+    </message>
+    <message>
+        <location filename="../gui/main_window.py" line="142"/>
+        <source>No preview results to show</source>
+        <translation>No hay resultados de vista previa para mostrar</translation>
+    </message>
+    <message>
+        <location filename="../gui/main_window.py" line="150"/>
+        <source>The thread is still running. Do you want to force it to stop?</source>
+        <translation>El hilo aún está en ejecución. ¿Desea forzarlo a detenerse?</translation>
+    </message>
+</context>
+<context>
+    <name>ProcessesTab</name>
+    <message>
+        <location filename="../gui/processes_tab.py" line="20"/>
+        <source>Scraped Web</source>
+        <translation>Web Extraída</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="20"/>
+        <source>File Name</source>
+        <translation>Nombre de archivo</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="20"/>
+        <source>Scraped Items</source>
+        <translation>Elementos Extraídos</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="20"/>
+        <source>Status</source>
+        <translation>Estado</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="20"/>
+        <source>Date</source>
+        <translation>Fecha</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="20"/>
+        <source>Time</source>
+        <translation>Hora</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="20"/>
+        <source>Action</source>
+        <translation>Acción</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="47"/>
+        <source>Open</source>
+        <translation>Abrir</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="52"/>
+        <source>Stop</source>
+        <translation>Detener</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="72"/>
+        <source>No processes found</source>
+        <translation>No se encontraron procesos</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="121"/>
+        <source>Error: File is not opening due to unknown operating system</source>
+        <translation>Error: el archivo no se está abriendo debido a un sistema operativo desconocido</translation>
+    </message>
+</context>
+<context>
     <name>SettingsTab</name>
     <message>
-        <location filename="../gui/settings_tab.py" line="37"/>
+        <location filename="../gui/settings_tab.py" line="38"/>
         <source>Search Engine Home Page</source>
         <translation>Página de inicio del motor de búsqueda</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="38"/>
+        <location filename="../gui/settings_tab.py" line="39"/>
         <source>Custom Home Page</source>
         <translation>Página de inicio personalizada</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="45"/>
+        <location filename="../gui/settings_tab.py" line="46"/>
         <source>Clear Stored Passwords</source>
         <translation>Borrar contraseñas almacenadas</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="72"/>
+        <location filename="../gui/settings_tab.py" line="73"/>
         <source>Save</source>
         <translation>Guardar</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="78"/>
+        <location filename="../gui/settings_tab.py" line="79"/>
         <source>Browser Settings</source>
         <translation>Configuración del navegador</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="92"/>
+        <location filename="../gui/settings_tab.py" line="93"/>
         <source>Search Engine:</source>
         <translation>Motor de búsqueda:</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="101"/>
+        <location filename="../gui/settings_tab.py" line="102"/>
         <source>Password Manager:</source>
         <translation>Gestor de contraseñas:</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="108"/>
+        <location filename="../gui/settings_tab.py" line="109"/>
         <source>Clear Stored Templates</source>
         <translation>Borrar plantillas almacenadas</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="120"/>
+        <location filename="../gui/settings_tab.py" line="121"/>
         <source>Clear Process History</source>
         <translation>Borrar historial de procesos</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="124"/>
+        <location filename="../gui/settings_tab.py" line="125"/>
         <source>Process Manager:</source>
         <translation>Gestor de procesos:</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="228"/>
+        <location filename="../gui/settings_tab.py" line="265"/>
         <source>All stored credentials have been removed.</source>
         <translation>Se han eliminado todas las credenciales almacenadas.</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="230"/>
+        <location filename="../gui/settings_tab.py" line="267"/>
         <source>No credentials were found.</source>
         <translation>No se encontraron credenciales.</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="245"/>
+        <location filename="../gui/settings_tab.py" line="282"/>
         <source>All stored templates have been removed.</source>
         <translation>Se han eliminado todas las plantillas almacenadas.</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="247"/>
+        <location filename="../gui/settings_tab.py" line="284"/>
         <source>No templates were found.</source>
         <translation>No se encontraron plantillas.</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="262"/>
+        <location filename="../gui/settings_tab.py" line="299"/>
         <source>Process history have been removed.</source>
         <translation>Se ha eliminado el historial de procesos.</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="264"/>
-        <
-
-source>No process history was found.</source>
+        <location filename="../gui/settings_tab.py" line="113"/>
+        <source>Template Manager:</source>
+        <translation>Gestor de plantillas:</translation>
+    </message>
+    <message>
+        <location filename="../gui/settings_tab.py" line="140"/>
+        <source>Language:</source>
+        <translation>Idioma:</translation>
+    </message>
+    <message>
+        <location filename="../gui/settings_tab.py" line="213"/>
+        <source>Restart Required</source>
+        <translation>Reinicio requerido</translation>
+    </message>
+    <message>
+        <location filename="../gui/settings_tab.py" line="213"/>
+        <source>Language change will take effect after restart. Do you want to restart now?</source>
+        <translation>El cambio de idioma se aplicará después de reiniciar. ¿Desea reiniciar ahora?</translation>
+    </message>
+    <message>
+        <location filename="../gui/settings_tab.py" line="301"/>
+        <source>No process history was found.</source>
         <translation>No se encontró historial de procesos.</translation>
     </message>
     <message>
-        <location filename="../gui/settings_tab.py" line="279"/>
+        <location filename="../gui/settings_tab.py" line="316"/>
         <source>Information</source>
         <translation>Información</translation>
     </message>

@@ -17,7 +17,7 @@ class ProcessesTab(QWidget):
         self.processes_tab_layout = QVBoxLayout(self)
         self.table = QTableWidget(self)
         self.table.setColumnCount(7)
-        self.table.setHorizontalHeaderLabels(['Scraped Web', 'File Name', 'Scraped Items', 'Status', 'Date', 'Time', 'Action'])
+        self.table.setHorizontalHeaderLabels([self.tr('Scraped Web'), self.tr('File Name'), self.tr('Scraped Items'), self.tr('Status'), self.tr('Date'), self.tr('Time'), self.tr('Action')])
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch) # Set stretch factor for 'Scraped Web' column
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
@@ -44,12 +44,12 @@ class ProcessesTab(QWidget):
         """)
 
     def create_open_file_button(self, file_name):
-        open_file_button = QPushButton('Open')
+        open_file_button = QPushButton(self.tr('Open'))
         open_file_button.clicked.connect(lambda: self.open_file(file_name))
         return open_file_button
     
     def create_stop_button(self, row):
-        stop_button = QPushButton('Stop')
+        stop_button = QPushButton(self.tr('Stop'))
         stop_button.clicked.connect(lambda: self.stop_process(row))
         return stop_button
         
@@ -69,7 +69,7 @@ class ProcessesTab(QWidget):
                 self.no_data_label.hide() # Hide label if data is found
                 self.table.show() # Show table if data is found
         except FileNotFoundError:
-            self.no_data_label.setText("No processes found") # Set label text if no data is found
+            self.no_data_label.setText(self.tr("No processes found")) # Set label text if no data is found
             self.no_data_label.show() # Show label if no data is found
             self.table.hide() # Hide table if no data is found
             self.table.setRowCount(0)
@@ -78,7 +78,7 @@ class ProcessesTab(QWidget):
         row_count = self.table.rowCount()
         self.table.insertRow(row_count)
         now = datetime.now()
-        date = now.strftime("%Y-%m-%d")
+        date = now.strftime("%d/%m/%Y")
         time = now.strftime("%H:%M:%S")
         
         items = [scraped_web, file_name, ', '.join(column_titles), "Running", date, time]
@@ -118,7 +118,7 @@ class ProcessesTab(QWidget):
             else:
                 os.system(f"xdg-open '{file_name}'")
         else:
-            print('Error: File is not opening due to unknown operating system')
+            print(self.tr('Error: File is not opening due to unknown operating system'))
         
 
     @pyqtSlot(int, QVariant, QVariant)

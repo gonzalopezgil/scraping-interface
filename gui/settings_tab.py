@@ -110,7 +110,7 @@ class SettingsTab(QWidget):
         self.clear_templates_button.clicked.connect(self.clear_templates)
 
         template_manager_group = QGroupBox()
-        template_manager_label = QLabel("Template Manager:")
+        template_manager_label = QLabel(self.tr("Template Manager:"))
         template_manager_layout = QHBoxLayout()
         template_manager_layout.addWidget(template_manager_label)
         template_manager_layout.addWidget(self.clear_templates_button)
