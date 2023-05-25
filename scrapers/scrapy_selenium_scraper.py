@@ -45,20 +45,6 @@ class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     def close_webpage(self, obj):
         pass
 
-    def infinite_scroll(self, obj):
-        # scroll down repeatedly
-        while True:
-            # scroll down to the bottom of the page
-            obj.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-
-            # wait for the page to load new content
-            obj.implicitly_wait(TIMEOUT)
-
-            # check if we have reached the end of the page
-            end_of_page = obj.execute_script('return window.pageYOffset + window.innerHeight >= document.body.scrollHeight;')
-            if end_of_page:
-                break
-
     # html, prefix, labels, xpath_suffixes
     def parse(self, response):
         sel = Selector(text=self.html)

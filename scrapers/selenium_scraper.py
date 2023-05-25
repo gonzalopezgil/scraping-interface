@@ -292,3 +292,17 @@ class SeleniumScraper(Scraper):
             signal_manager.process_signal.emit(row, "Stopped", "")
             raise ScraperStoppedException("Scraper stopped by the user")
         signal_manager.process_signal.emit(row, progress, "")
+
+    def infinite_scroll(self, obj):
+        # scroll down repeatedly
+        while True:
+            # scroll down to the bottom of the page
+            obj.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+
+            # wait for the page to load new content
+            obj.implicitly_wait(TIMEOUT)
+
+            # check if we have reached the end of the page
+            end_of_page = obj.execute_script('return window.pageYOffset + window.innerHeight >= document.body.scrollHeight;')
+            if end_of_page:
+                break
