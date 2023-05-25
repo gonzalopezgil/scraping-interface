@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, Q
 from gui.browser_tab import BrowserTab
 from gui.processes_tab import ProcessesTab
 from gui.settings_tab import SettingsTab
-from scrapers.scrapy_selenium_scraper import ScrapySeleniumScraper
+from scrapers.selenium_scraper import SeleniumScraper
 import threading
 from utils.manager.signal_manager import SignalManager
 from utils.manager.process_manager import ProcessManager
@@ -125,18 +125,18 @@ class MainWindow(QMainWindow):
                 max_pages = self.browser_tab.max_pages_input.value()
                 if not max_pages or max_pages == 0:
                     max_pages = None
-                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.browser_tab.clean_html(html), stop, max_pages), daemon=True)
+                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.signal_manager, self.browser_tab.clean_html(html), stop, max_pages), daemon=True)
             else:
-                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.browser_tab.clean_html(html), stop), daemon=True)
+                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.signal_manager, self.browser_tab.clean_html(html), stop), daemon=True)
             self.thread.start()
         else:
             self.signal_manager.process_signal.emit(row, "Stopped", "")
 
-    def thread_function(self, url, column_titles, file_name, row, process_manager, html=None, stop=None, max_pages=None):
+    def thread_function(self, url, column_titles, file_name, row, process_manager, signal_manager, html=None, stop=None, max_pages=None):
         self.tabs.setCurrentIndex(2)
 
-        scraper = ScrapySeleniumScraper()
-        scraper.scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), process_manager.pagination_xpath, file_name, self.signal_manager, row, html, stop, max_pages)
+        scraper = SeleniumScraper()
+        scraper.before_scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), process_manager.pagination_xpath, file_name, signal_manager, row, html, stop, max_pages)
 
     def show_no_preview_results(self):
         QMessageBox.warning(self, self.tr("Warning"), self.tr("No preview results to show"), QMessageBox.Ok)
