@@ -122,7 +122,7 @@ class SeleniumScraper(Scraper):
         self.after_scrape(results, labels, selected_text, file_name, row, signal_manager)
 
     def after_scrape(self, results, labels, selected_text, file_name, row, signal_manager):
-        dict_results = self.merge_dicts(results)
+        dict_results = self.merge_list_dicts(results)
         print(dict_results)
         if len(dict_results) > 0:
             for label,text in zip(labels, selected_text):

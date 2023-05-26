@@ -185,7 +185,21 @@ class Scraper(ABC):
     def clean_list(self, elements):
         return [self.clean_text(elem) for elem in elements]
     
-    def merge_dicts(self, lists_of_dicts):
+    def merge_dicts(self, dicts):
+        result = {}
+        for d in dicts:
+            for k, v in d.items():
+                item = [' '.join(v)]
+                if k in result:
+                    if isinstance(result[k], list):
+                        result[k].extend(item)
+                    else:
+                        result[k] = [result[k]] + item
+                else:
+                    result[k] = item
+        return result
+    
+    def merge_list_dicts(self, lists_of_dicts):
         result = {}
         for dict_list in lists_of_dicts:
             for d in dict_list:
