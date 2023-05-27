@@ -8,6 +8,7 @@ from multiprocessing import Value
 from static import background_path
 from utils.manager.file_manager import get_file_path
 import sys
+import threading
 
 PROCESSES_FILE = get_file_path("processes.csv")
 
@@ -34,6 +35,7 @@ class ProcessesTab(QWidget):
         self.load_data()
 
         self.stop_variables = {}
+        self.interaction_variables = {}
 
         self.setStyleSheet(f"""
             ProcessesTab {{
@@ -52,6 +54,16 @@ class ProcessesTab(QWidget):
         stop_button = QPushButton(self.tr('Stop'))
         stop_button.clicked.connect(lambda: self.stop_process(row))
         return stop_button
+    
+    def create_interaction_button(self, row):
+        interaction_button = QPushButton(self.tr('Interact'))
+        interaction_button.clicked.connect(lambda: self.on_interaction(row))
+        return interaction_button
+    
+    def create_resolved_button(self, row):
+        resolved_button = QPushButton(self.tr('Resolved'))
+        resolved_button.clicked.connect(lambda: self.on_resolved(row))
+        return resolved_button
         
     def load_data(self):
         try:
@@ -92,7 +104,11 @@ class ProcessesTab(QWidget):
         self.no_data_label.hide()
         stop = Value('b', False)
         self.stop_variables[row_count] = stop
-        return stop
+
+        interaction = threading.Event()
+        self.interaction_variables[row_count] = interaction
+
+        return stop, interaction
 
     def get_table_data(self):
         table_data = []
@@ -126,6 +142,8 @@ class ProcessesTab(QWidget):
             self.table.setCellWidget(row, 6, self.create_open_file_button(file_name))
         elif status == "Stopped" or status == "Error":
             self.table.setCellWidget(row, 6, None)
+        elif status == "Requires interaction":
+            self.table.setCellWidget(row, 6, self.create_interaction_button(row))
         self.table.setItem(row, 1, QTableWidgetItem(file_name))
         self.table.setItem(row, 3, QTableWidgetItem(status))
         self.save_data()
@@ -133,6 +151,16 @@ class ProcessesTab(QWidget):
     def stop_process(self, row):
         self.stop_variables[row].value = True
         self.table.setItem(row, 3, QTableWidgetItem("Stopping..."))
+
+    def on_interaction(self, row):
+        self.interaction_variables[row].set()
+        self.table.setItem(row, 3, QTableWidgetItem("Interacting..."))
+        self.table.setCellWidget(row, 6, self.create_resolved_button(row))
+
+    def on_resolved(self, row):
+        self.interaction_variables[row].set()
+        self.table.setItem(row, 3, QTableWidgetItem("Running"))
+        self.table.setCellWidget(row, 6, self.create_stop_button(row))
 
     def paintEvent(self, _):
         option = QStyleOption()

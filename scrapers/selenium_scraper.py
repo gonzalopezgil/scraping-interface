@@ -23,12 +23,13 @@ from utils.manager.password_manager import get_login_info_for_url
 from . scrapy_selenium_scraper import ScrapySeleniumScraper
 from exceptions.scraper_exceptions import ScraperStoppedException
 import time
+import random
 
 TIMEOUT = 5
 
 class SeleniumScraper(Scraper):
 
-    def get_driver(self):
+    def get_driver(self, headless=True):
         options = Options()
 
         # Avoid sending information to the server to indicate the use of an automated browser.
@@ -40,7 +41,7 @@ class SeleniumScraper(Scraper):
         # Turn-off userAutomationExtension 
         options.add_experimental_option("useAutomationExtension", False) 
 
-        options.headless = True
+        options.headless = headless
         options.add_argument("--window-size=1920,1200")
 
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
@@ -50,33 +51,36 @@ class SeleniumScraper(Scraper):
 
         return driver
     
-    def get_webpage(self, url):
-        driver = self.get_driver()
-        driver.execute_cdp_cmd("Network.setUserAgentOverride", {"userAgent": UserAgent().random})
+    def get_webpage(self, url, headless=True):
+        driver = self.get_driver(headless)
+        #user_agent = UserAgent().random
+        user_agent = self.get_random_chrome_ua()
+        driver.execute_cdp_cmd("Network.setUserAgentOverride", {"userAgent": user_agent})
         driver.get(url)
         return driver
 
     def get_elements(self, xpath, obj, text=None):
         xpath = self.remove_text_from_xpath(xpath)
-
-        elements = obj.find_elements(By.XPATH, xpath)
-        if text:
-            try:
+        try:
+            WebDriverWait(obj, TIMEOUT).until(EC.presence_of_element_located((By.XPATH, xpath)))
+            elements = obj.find_elements(By.XPATH, xpath)
+            if text:
                 WebDriverWait(obj, TIMEOUT).until(lambda driver: any(text in element.text for element in elements))
                 elements = [element.text for element in elements]
-            except TimeoutException:
-                print("Error: Text selected by the user not found in elements")
-                return None
-
-        return elements
+            return elements
+        except TimeoutException:
+            print("Error: Text selected by the user not found in elements")
+            return None
     
     def close_webpage(self, obj):
         obj.quit()
 
-    def before_scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, stop, max_pages=None):
+    def before_scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, stop, interaction, max_pages=None):
         obj = self.get_webpage(url)
-        if not self.check_elements(stop, signal_manager, row, pagination_xpath, xpaths, selected_text, url, obj):
-            return
+        if pagination_xpath:
+            obj = self.check_elements(stop, signal_manager, row, xpaths, selected_text, url, obj, interaction)
+            if obj is None:
+                return
         
         general_xpaths = [self.generalise_xpath(xpath) for xpath in xpaths]
         prefix = self.get_common_xpath(general_xpaths)
@@ -99,7 +103,6 @@ class SeleniumScraper(Scraper):
             
             # html, prefix, labels, xpath_suffixes, selected_text, file_name, row, signal_manager
             dictionary = self.scrape(actual_html, prefix, labels, xpath_suffixes)
-            print(f"Dictionary after scrape: {dictionary}")
             results.append(dictionary)
 
             if pagination_xpath:
@@ -117,13 +120,10 @@ class SeleniumScraper(Scraper):
         if pagination_xpath:
             self.close_webpage(obj)
 
-        print(f"Results at the end of the scraping: {results}")
-
         self.after_scrape(results, labels, selected_text, file_name, row, signal_manager)
 
     def after_scrape(self, results, labels, selected_text, file_name, row, signal_manager):
         dict_results = self.merge_list_dicts(results)
-        print(dict_results)
         if len(dict_results) > 0:
             for label,text in zip(labels, selected_text):
                 elements = dict_results[label]
@@ -253,19 +253,56 @@ class SeleniumScraper(Scraper):
             return True
         return False
     
-    def check_elements(self, stop, signal_manager, row, pagination_xpath, xpaths, selected_text, url, obj=None):
-        #self.pagination_xpath = "//a[contains(text(), 'Next') or contains(text(), 'next') or contains(text(), 'NEXT')]"
+    def check_elements(self, stop, signal_manager, row, xpaths, selected_text, url, obj, interaction):
         self.update_progress("1%", stop, signal_manager, row)
 
         # Check if elements are present when pagination_xpath exists
         elements_present = True
-        if pagination_xpath:
-            for xpath, text in zip(xpaths, selected_text):
-                text = self.clean_text(text)
-                elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
-                if elements is None or len(elements) == 0:
-                    elements_present = False
-                    break
+        for xpath, text in zip(xpaths, selected_text):
+            text = self.clean_text(text)
+            elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
+            if elements is None or len(elements) == 0:
+                elements_present = False
+                break
+
+        if not elements_present and self.check_for_captcha(obj):
+            print("CAPTCHA found")
+            # Save cookies
+            cookies = obj.get_cookies()
+
+            # Quit the headless driver
+            obj.quit()
+
+            self.update_progress("Requires interaction", stop, signal_manager, row)
+            # Wait for the user to open the Selenium window
+            interaction.wait()
+            interaction.clear()
+
+            # Start a new driver without headless mode
+            obj = self.get_webpage(url, headless=False)
+
+            # Add the cookies to the new driver
+            for cookie in cookies:
+                obj.add_cookie(cookie)
+
+            # Refresh to apply the cookies
+            obj.refresh()
+
+            if self.check_for_captcha(obj):
+                # Wait for the user to solve the CAPTCHA
+                interaction.wait()
+                interaction.clear()
+        else:
+            print("No CAPTCHA found")
+
+        # Check again if elements are present
+        elements_present = True
+        for xpath, text in zip(xpaths, selected_text):
+            text = self.clean_text(text)
+            elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
+            if elements is None or len(elements) == 0:
+                elements_present = False
+                break
 
         # If elements don't exist, execute login_using_stored_credentials and try again
         if not elements_present:
@@ -281,11 +318,10 @@ class SeleniumScraper(Scraper):
                         elements = self.find_text_in_data(elements, text)
                         if elements is None:
                             print("Error: Text selected by the user not found in elements")
-                            return False
+                            return None
 
         self.update_progress("50%", stop, signal_manager, row)
-        print("Selenium found elements")
-        return True
+        return obj
     
     def update_progress(self, progress, stop, signal_manager, row):
         if stop.value:
@@ -306,3 +342,25 @@ class SeleniumScraper(Scraper):
             end_of_page = obj.execute_script('return window.pageYOffset + window.innerHeight >= document.body.scrollHeight;')
             if end_of_page:
                 break
+
+    def get_random_chrome_ua(self):
+        version = str(random.randint(80, 90))
+        platforms = [
+            '(Windows NT 10.0; Win64; x64)',  # Windows 10
+            '(Macintosh; Intel Mac OS X 10_15_4)',  # Mac OS X
+            '(X11; Linux x86_64)',  # Linux
+            '(Android 10; Mobile)',  # Android
+            '(iPhone; CPU iPhone OS 13_3 like Mac OS X)',  # iPhone
+        ]
+        platform = random.choice(platforms)
+        return f"Mozilla/5.0 {platform} AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version}.0.0.0 Safari/537.36"
+    
+    def check_for_captcha(self, obj):
+        # Look for CAPTCHA in iframes
+        iframes = self.get_elements("//iframe[@title='reCAPTCHA']", obj)
+        if iframes is not None and len(iframes) > 0:
+            # Display the Selenium window for user interaction
+            obj.set_window_position(0, 0)
+            obj.set_window_size(800, 600)
+            return True
+        return False
