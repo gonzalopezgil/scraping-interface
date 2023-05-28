@@ -66,12 +66,12 @@ class MainWindow(QMainWindow):
 
         self.browser_tab.browser.page().toHtml(lambda html: self.start_thread(html, file_format))
 
-    def handle_template_click(self, index):
+    def handle_template_click(self, template_id):
         # Change the tab to the BrowserTab
         self.tabs.setCurrentWidget(self.browser_tab)
 
         # Load the template data
-        template = load_template(index)
+        template = load_template(template_id)
 
         # Call the function to update the BrowserTab with the template data
         self.browser_tab.load_template(template)
