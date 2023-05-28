@@ -167,7 +167,7 @@ class BrowserTab(QWidget):
         self.navigation_bar_layout.addWidget(self.forward_button)
 
         self.refresh_button = QPushButton(self.navigation_bar)
-        self.refresh_button.clicked.connect(self.browser.reload)
+        self.refresh_button.clicked.connect(self.refresh_browser)
         self.navigation_bar_layout.addWidget(self.refresh_button)
 
         refresh_icon = QIcon(static.refresh_path)
@@ -249,6 +249,9 @@ class BrowserTab(QWidget):
             }
         """)
 
+    def refresh_browser(self):
+        self.browser.reload()
+        self.browser.loadFinished.connect(lambda _: self.update_url_field(self.browser.url()))
 
     def export_data(self, action):
         self.process_manager.file_format = action.text().split(" ")[-1].lower()
