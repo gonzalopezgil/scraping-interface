@@ -93,7 +93,7 @@ def save_login_file(login_info):
         print(f"Error saving the credentials: {e}")
         return False
 
-def get_login_info_for_url(url):
+def get_login_info(url):
     try:
         # Use the key to create a Fernet object
         cipher_suite = Fernet(get_key())

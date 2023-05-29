@@ -19,13 +19,15 @@ import web.javascript_strings as jss
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from utils.manager.password_manager import get_login_info_for_url
+from utils.manager.password_manager import get_login_info
 from . scrapy_selenium_scraper import ScrapySeleniumScraper
 from exceptions.scraper_exceptions import ScraperStoppedException
 import time
 import random
 
 TIMEOUT = 5
+XPATH_USERNAME = '//input[@type="text"]|//input[@type="email"]'
+XPATH_PASSWORD = '//input[@type="password"]'
 
 class SeleniumScraper(Scraper):
 
@@ -195,37 +197,52 @@ class SeleniumScraper(Scraper):
             xpath = xpath[:-8]
         return xpath
     
-    def login_using_stored_credentials(self, driver, login_info):
+    def find_login_input(self, obj, xpath):
         try:
-            driver.get(login_info["url"])
+            login_input = WebDriverWait(obj, TIMEOUT).until(
+                EC.presence_of_element_located((By.XPATH, xpath))
+            )
+            return login_input != None
+        except Exception:
+            print("Couldn't find the email or username input.")
+
+    def fill_input(self, obj, xpath, text):
+        try:
+            login_input = WebDriverWait(obj, TIMEOUT).until(
+                EC.presence_of_element_located((By.XPATH, xpath))
+            )
+            if login_input:
+                login_input.send_keys(text)
+                print("Login input filled")
+                return True
+            else:
+                print("Error: Login input not found")
+                return False
+        except Exception:
+            print("Error: Login input not filled")
+            return False
+    
+    def login_using_stored_credentials(self, driver, url, stop, signal_manager, row, interaction, login_info=None):
+        try:
+            driver.get(login_info["url"] if login_info else url)
 
             # Find and fill in the email or username input
-            email_or_text_input = WebDriverWait(driver, TIMEOUT).until(
-                EC.presence_of_element_located((By.XPATH, '//input[@type="text"]|//input[@type="email"]'))
-            )
-            email_or_text_input.send_keys(login_info["username"])
 
-            # Find and fill in the password input
-            password_input = WebDriverWait(driver, TIMEOUT).until(
-                EC.presence_of_element_located((By.XPATH, '//input[@type="password"]'))
-            )
+            if not self.find_login_input(driver, XPATH_USERNAME):
+                print("Not login form found")
+                return False
             
-            if not password_input:
-                print("Not password input found")
-                # Click the form button and wait for the password input to appear
-                self.click_form_button(driver)
+            self.require_user_interaction(driver, url, stop, signal_manager, row, interaction)
 
-                password_input = WebDriverWait(driver, TIMEOUT).until(
-                    EC.presence_of_element_located((By.XPATH, '//input[@type="password"]'))
-                )
-                password_input.send_keys(login_info["password"])
-                self.click_form_button(driver)
+            if self.find_login_input(driver, XPATH_USERNAME):
 
-            else:
-                print("Password input found")
-                password_input.send_keys(login_info["password"])
-                print("Keys sent")
-                self.click_form_button(driver)
+                if login_info:
+                    self.fill_input(driver, XPATH_USERNAME, login_info["username"])
+                    self.fill_input(driver, XPATH_PASSWORD, login_info["password"])
+
+                # Wait for the user to login
+                interaction.wait()
+                interaction.clear()
 
         except Exception:
             print("Couldn't find the email or username input or the password input.")
@@ -253,40 +270,43 @@ class SeleniumScraper(Scraper):
             return True
         return False
     
-    def check_elements(self, stop, signal_manager, row, xpaths, selected_text, url, obj, interaction):
-        self.update_progress("1%", stop, signal_manager, row)
-
-        # Check if elements are present when pagination_xpath exists
-        elements_present = True
+    def _check_elements(self, xpaths, selected_text, obj):
         for xpath, text in zip(xpaths, selected_text):
             text = self.clean_text(text)
             elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
             if elements is None or len(elements) == 0:
-                elements_present = False
-                break
+                return False
+        return True
+    
+    def require_user_interaction(self, obj, url, stop, signal_manager, row, interaction):
+        # Save cookies
+        cookies = obj.get_cookies()
 
-        if not elements_present and self.check_for_captcha(obj):
+        # Quit the headless driver
+        obj.quit()
+
+        self.update_progress("Requires interaction", stop, signal_manager, row)
+        # Wait for the user to open the Selenium window
+        interaction.wait()
+        interaction.clear()
+
+        # Start a new driver without headless mode
+        obj = self.get_webpage(url, headless=False)
+
+        # Add the cookies to the new driver
+        for cookie in cookies:
+            obj.add_cookie(cookie)
+
+        # Refresh to apply the cookies
+        obj.refresh()
+    
+    def check_elements(self, stop, signal_manager, row, xpaths, selected_text, url, obj, interaction):
+        self.update_progress("1%", stop, signal_manager, row)
+
+        if not self._check_elements(xpaths, selected_text, obj) and self.check_for_captcha(obj):
             print("CAPTCHA found")
-            # Save cookies
-            cookies = obj.get_cookies()
-
-            # Quit the headless driver
-            obj.quit()
-
-            self.update_progress("Requires interaction", stop, signal_manager, row)
-            # Wait for the user to open the Selenium window
-            interaction.wait()
-            interaction.clear()
-
-            # Start a new driver without headless mode
-            obj = self.get_webpage(url, headless=False)
-
-            # Add the cookies to the new driver
-            for cookie in cookies:
-                obj.add_cookie(cookie)
-
-            # Refresh to apply the cookies
-            obj.refresh()
+            
+            self.require_user_interaction(obj, url, stop, signal_manager, row, interaction)
 
             if self.check_for_captcha(obj):
                 # Wait for the user to solve the CAPTCHA
@@ -295,30 +315,19 @@ class SeleniumScraper(Scraper):
         else:
             print("No CAPTCHA found")
 
-        # Check again if elements are present
-        elements_present = True
-        for xpath, text in zip(xpaths, selected_text):
-            text = self.clean_text(text)
-            elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
-            if elements is None or len(elements) == 0:
-                elements_present = False
-                break
+        # Check if login is required
+        if not self._check_elements(xpaths, selected_text, obj):
+            self.login_using_stored_credentials(obj, url, stop, signal_manager, row, interaction, get_login_info(url))
 
-        # If elements don't exist, execute login_using_stored_credentials and try again
-        if not elements_present:
-            login_info = get_login_info_for_url(url)
-            if login_info:
-                self.login_using_stored_credentials(obj, login_info)
-
-                for xpath, text in zip(xpaths, selected_text):
-                    text = self.clean_text(text)
-                    elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
-                    if elements is not None and len(elements) > 0:
-                        elements = self.clean_list(elements)
-                        elements = self.find_text_in_data(elements, text)
-                        if elements is None:
-                            print("Error: Text selected by the user not found in elements")
-                            return None
+            for xpath, text in zip(xpaths, selected_text):
+                text = self.clean_text(text)
+                elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
+                if elements is not None and len(elements) > 0:
+                    elements = self.clean_list(elements)
+                    elements = self.find_text_in_data(elements, text)
+                    if elements is None:
+                        print("Error: Text selected by the user not found in elements")
+                        return None
 
         self.update_progress("50%", stop, signal_manager, row)
         return obj
