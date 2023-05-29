@@ -78,12 +78,15 @@ class SeleniumScraper(Scraper):
         obj.quit()
 
     def before_scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, stop, interaction, max_pages=None):
-        obj = self.get_webpage(url)
+        self.update_progress("1%", stop, signal_manager, row)
         if pagination_xpath:
+            obj = self.get_webpage(url)
             obj = self.check_elements(stop, signal_manager, row, xpaths, selected_text, url, obj, interaction)
             if obj is None:
                 return
         
+        self.update_progress("5%", stop, signal_manager, row)
+
         general_xpaths = [self.generalise_xpath(xpath) for xpath in xpaths]
         prefix = self.get_common_xpath(general_xpaths)
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
@@ -94,6 +97,9 @@ class SeleniumScraper(Scraper):
         results = []
 
         while next_page and pages < max_pages:
+
+            self.update_progress("10%", stop, signal_manager, row)
+
             actual_html = ""
             if not pagination_xpath:
                 actual_html = html
@@ -118,6 +124,7 @@ class SeleniumScraper(Scraper):
             else:
                 next_page = False
             pages+=1
+            self.update_progress(f"{10+(pages/max_pages)*80}%", stop, signal_manager, row)
 
         if pagination_xpath:
             self.close_webpage(obj)
@@ -131,13 +138,6 @@ class SeleniumScraper(Scraper):
                 elements = dict_results[label]
                 elements = self.clean_list(elements)
                 text = self.clean_text(text)
-                #if text not in elements:
-                #    index = self.check_pattern(elements, text)
-                #    if index != -1:
-                #        elements = self.get_pattern(elements, text, index)
-                #    else:
-                #        print("Error: Text selected by the user not found in elements")
-                #        return None
                 dict_results[label] = elements
             
             df = self.dict_to_df(dict_results)
@@ -317,8 +317,6 @@ class SeleniumScraper(Scraper):
         return obj
     
     def check_elements(self, stop, signal_manager, row, xpaths, selected_text, url, obj, interaction):
-        self.update_progress("1%", stop, signal_manager, row)
-
         if not self._check_elements(xpaths, selected_text, obj) and self.check_for_captcha(obj):
             print("CAPTCHA found")
             
@@ -344,8 +342,6 @@ class SeleniumScraper(Scraper):
                         if elements is None:
                             print("Error: Text selected by the user not found in elements")
                             return None
-
-        self.update_progress("50%", stop, signal_manager, row)
         return obj
     
     def update_progress(self, progress, stop, signal_manager, row):

@@ -127,7 +127,7 @@ class MainWindow(QMainWindow):
                     max_pages = None
                 self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.signal_manager, interaction, self.browser_tab.clean_html(html), stop, max_pages), daemon=True)
             else:
-                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.signal_manager, interaction, self.browser_tab.clean_html(html), stop), daemon=True)
+                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.signal_manager, interaction, self.browser_tab.clean_html(html), stop, 1), daemon=True)
             self.thread.start()
         else:
             self.signal_manager.process_signal.emit(row, "Stopped", "")

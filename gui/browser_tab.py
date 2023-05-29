@@ -502,7 +502,7 @@ class BrowserTab(QWidget):
 
         self.selected_template = template
 
-        QTimer.singleShot(5000, self.set_template)
+        QTimer.singleShot(4000, self.set_template)
 
     def set_template(self):
         self.scrape_widget.setVisible(False)
