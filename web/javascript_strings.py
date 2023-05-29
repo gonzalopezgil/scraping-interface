@@ -227,7 +227,7 @@ UNHIGHLIGHT_TEXT_JS = """
 """
 
 # xpath variable must be defined before calling this function
-REMOVE_RED_BACKGROUND_JS = """
+REMOVE_BACKGROUND_JS = """
     var lastMessage = "";
 
     function removeRedBackground(xpath) {
@@ -241,15 +241,15 @@ REMOVE_RED_BACKGROUND_JS = """
     removeRedBackground(xpath);
 """
 
-# xpath variable must be defined before calling this function
-PAINT_RED_BACKGROUND_JS = """
+# xpath and color variables must be defined before calling this function
+PAINT_BACKGROUND_JS = """
     var lastMessage = "";
 
     function paintRedBackground(xpath) {
         var elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
         var element = elements.iterateNext();
         while (element) {
-            element.style.backgroundColor = 'red';
+            element.style.backgroundColor = color;
             redElements.push(element);
             element = elements.iterateNext();
         }
