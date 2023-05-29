@@ -224,7 +224,10 @@ class SeleniumScraper(Scraper):
     
     def login_using_stored_credentials(self, driver, url, stop, signal_manager, row, interaction, login_info=None):
         try:
-            driver.get(login_info["url"] if login_info else url)
+            login_url = url
+            if login_info:
+                login_url = login_info["url"]
+            driver.get(login_url)
 
             # Find and fill in the email or username input
 
@@ -232,7 +235,7 @@ class SeleniumScraper(Scraper):
                 print("Not login form found")
                 return False
             
-            driver = self.require_user_interaction(driver, url, stop, signal_manager, row, interaction)
+            driver = self.require_user_interaction(driver, login_url, stop, signal_manager, row, interaction)
 
             if self.find_login_input(driver, XPATH_USERNAME):
 
@@ -244,8 +247,18 @@ class SeleniumScraper(Scraper):
                 interaction.wait()
                 interaction.clear()
 
+            cookies = driver.get_cookies()
+                
+            driver.quit()
+            driver = self.get_webpage(url)
+            for cookie in cookies:
+                driver.add_cookie(cookie)
+            driver.get(url)
+            return driver
+
         except Exception:
             print("Couldn't find the email or username input or the password input.")
+            return None
 
     def click_form_button(self, driver):
         try:
@@ -278,7 +291,7 @@ class SeleniumScraper(Scraper):
                 return False
         return True
     
-    def require_user_interaction(self, obj, url, stop, signal_manager, row, interaction):
+    def require_user_interaction(self, obj, url, stop, signal_manager, row, interaction, captcha=False):
         # Save cookies
         cookies = obj.get_cookies()
 
@@ -293,9 +306,10 @@ class SeleniumScraper(Scraper):
         # Start a new driver without headless mode
         obj = self.get_webpage(url, headless=False)
 
-        # Add the cookies to the new driver
-        for cookie in cookies:
-            obj.add_cookie(cookie)
+        if captcha:
+            # Add the cookies to the new driver
+            for cookie in cookies:
+                obj.add_cookie(cookie)
 
         # Refresh to apply the cookies
         obj.refresh()
@@ -308,7 +322,7 @@ class SeleniumScraper(Scraper):
         if not self._check_elements(xpaths, selected_text, obj) and self.check_for_captcha(obj):
             print("CAPTCHA found")
             
-            obj = self.require_user_interaction(obj, url, stop, signal_manager, row, interaction)
+            obj = self.require_user_interaction(obj, url, stop, signal_manager, row, interaction, True)
 
             if self.check_for_captcha(obj):
                 # Wait for the user to solve the CAPTCHA
@@ -319,17 +333,17 @@ class SeleniumScraper(Scraper):
 
         # Check if login is required
         if not self._check_elements(xpaths, selected_text, obj):
-            self.login_using_stored_credentials(obj, url, stop, signal_manager, row, interaction, get_login_info(url))
-
-            for xpath, text in zip(xpaths, selected_text):
-                text = self.clean_text(text)
-                elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
-                if elements is not None and len(elements) > 0:
-                    elements = self.clean_list(elements)
-                    elements = self.find_text_in_data(elements, text)
-                    if elements is None:
-                        print("Error: Text selected by the user not found in elements")
-                        return None
+            obj = self.login_using_stored_credentials(obj, url, stop, signal_manager, row, interaction, get_login_info(url))
+            if obj:
+                for xpath, text in zip(xpaths, selected_text):
+                    text = self.clean_text(text)
+                    elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
+                    if elements is not None and len(elements) > 0:
+                        elements = self.clean_list(elements)
+                        elements = self.find_text_in_data(elements, text)
+                        if elements is None:
+                            print("Error: Text selected by the user not found in elements")
+                            return None
 
         self.update_progress("50%", stop, signal_manager, row)
         return obj
