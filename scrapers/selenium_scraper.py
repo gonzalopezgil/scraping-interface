@@ -232,7 +232,7 @@ class SeleniumScraper(Scraper):
                 print("Not login form found")
                 return False
             
-            self.require_user_interaction(driver, url, stop, signal_manager, row, interaction)
+            driver = self.require_user_interaction(driver, url, stop, signal_manager, row, interaction)
 
             if self.find_login_input(driver, XPATH_USERNAME):
 
@@ -299,6 +299,8 @@ class SeleniumScraper(Scraper):
 
         # Refresh to apply the cookies
         obj.refresh()
+
+        return obj
     
     def check_elements(self, stop, signal_manager, row, xpaths, selected_text, url, obj, interaction):
         self.update_progress("1%", stop, signal_manager, row)
@@ -306,7 +308,7 @@ class SeleniumScraper(Scraper):
         if not self._check_elements(xpaths, selected_text, obj) and self.check_for_captcha(obj):
             print("CAPTCHA found")
             
-            self.require_user_interaction(obj, url, stop, signal_manager, row, interaction)
+            obj = self.require_user_interaction(obj, url, stop, signal_manager, row, interaction)
 
             if self.check_for_captcha(obj):
                 # Wait for the user to solve the CAPTCHA
