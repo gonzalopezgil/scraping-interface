@@ -343,7 +343,6 @@ class BrowserTab(QWidget):
             self.table_widget.setColumnCount(COLUMN_COUNT)
             self.table_xpath.setColumnCount(COLUMN_COUNT)
             self.timer.singleShot(100, self.disable_links)
-            page.runJavaScript(jss.HIGHLIGHT_TEXT_JS)
         # Enable links if the scrape widget is not visible
         else:
             self.timer.stop()

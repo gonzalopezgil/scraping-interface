@@ -38,6 +38,26 @@ DISABLE_LINKS_JS = """
     for (var i = 0; i < textElements.length; i++) {
         textElements[i].addEventListener("click", scrapeData);
     }
+
+    var style = document.createElement('style');
+    style.innerHTML = `
+        ::selection {
+            background: #E7d5ff; /* WebKit/Blink Browsers */
+            color: black;
+        }
+        ::-moz-selection {
+            background: #E7d5ff; /* Gecko Browsers */
+            color: black;
+        }
+    `;
+    document.head.appendChild(style);
+    var range = document.createRange();
+    range.selectNodeContents(document.body);
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    document.addEventListener('mousedown', preventMousedown);
 """
 
 START_JS = """
@@ -198,28 +218,6 @@ DISABLE_PAGINATION_JS = """
         textElements[i].removeEventListener("click", paintElementGreen);
         textElements[i].addEventListener("click", scrapeData);
     }
-"""
-
-HIGHLIGHT_TEXT_JS = """
-    var style = document.createElement('style');
-    style.innerHTML = `
-        ::selection {
-            background: #E7d5ff; /* WebKit/Blink Browsers */
-            color: black;
-        }
-        ::-moz-selection {
-            background: #E7d5ff; /* Gecko Browsers */
-            color: black;
-        }
-    `;
-    document.head.appendChild(style);
-    var range = document.createRange();
-    range.selectNodeContents(document.body);
-    var selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    document.addEventListener('mousedown', preventMousedown);
 """
 
 UNHIGHLIGHT_TEXT_JS = """
