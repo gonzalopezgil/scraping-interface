@@ -82,11 +82,12 @@ class SeleniumScraper(Scraper):
         self.update_progress("1%", stop, signal_manager, row)
         if pagination_xpath:
             obj = self.get_webpage(url)
+            self.update_progress("2%", stop, signal_manager, row)
             obj = self.check_elements(stop, signal_manager, row, xpaths, selected_text, url, obj, interaction)
             if obj is None:
                 return
         
-        self.update_progress("5%", stop, signal_manager, row)
+        self.update_progress("10%", stop, signal_manager, row)
 
         general_xpaths = [self.generalise_xpath(xpath) for xpath in xpaths]
         prefix = self.get_common_xpath(general_xpaths)
@@ -98,20 +99,28 @@ class SeleniumScraper(Scraper):
         results = []
 
         while next_page and pages < max_pages:
-
-            self.update_progress("10%", stop, signal_manager, row)
+            max_percentage_page = int(10+((pages+1)/max_pages)*80)
+            decrement = max_pages * 10 if max_pages > 1 else 100
 
             actual_html = ""
             if not pagination_xpath:
                 actual_html = html
             else:
+                decrement -= max_pages * 10 if max_pages > 1 else 90
+                self.update_progress(f"{int(max_percentage_page - decrement/10)}%", stop, signal_manager, row)
                 self.infinite_scroll(obj)
+                decrement -= max_pages * 10 if max_pages > 1 else 80
+                self.update_progress(f"{int(max_percentage_page - decrement/10)}%", stop, signal_manager, row)
                 # Wait for the document to be complete (fully loaded)
                 time.sleep(2)
+                decrement -= max_pages * 10 if max_pages > 1 else 70
+                self.update_progress(f"{int(max_percentage_page - decrement/10)}%", stop, signal_manager, row)
                 actual_html = obj.page_source
             
             # html, prefix, labels, xpath_suffixes, selected_text, file_name, row, signal_manager
             dictionary = self.scrape(actual_html, prefix, labels, xpath_suffixes)
+            decrement -= max_pages * 10 if max_pages > 1 else 20
+            self.update_progress(f"{int(max_percentage_page - decrement/10)}%", stop, signal_manager, row)
             results.append(dictionary)
 
             if pagination_xpath:
@@ -119,21 +128,25 @@ class SeleniumScraper(Scraper):
                     WebDriverWait(obj, TIMEOUT).until(EC.presence_of_element_located((By.XPATH, pagination_xpath)))
                     next_button = obj.find_element(By.XPATH, pagination_xpath)
                     next_button.click()
+                    decrement -= max_pages * 10 if max_pages > 1 else 10
+                    self.update_progress(f"{int(max_percentage_page - decrement/10)}%", stop, signal_manager, row)
                 except Exception:
                     print("Error: Pagination button not found")
                     next_page = False
             else:
                 next_page = False
             pages+=1
-            self.update_progress(f"{int(10+(pages/max_pages)*80)}%", stop, signal_manager, row)
+            self.update_progress(f"{max_percentage_page}%", stop, signal_manager, row)
 
         if pagination_xpath:
             self.close_webpage(obj)
 
-        self.after_scrape(results, labels, selected_text, file_name, row, signal_manager)
+        self.after_scrape(results, labels, selected_text, file_name, row, signal_manager, stop)
 
-    def after_scrape(self, results, labels, selected_text, file_name, row, signal_manager):
+    def after_scrape(self, results, labels, selected_text, file_name, row, signal_manager, stop):
+        self.update_progress("91%", stop, signal_manager, row)
         dict_results = self.merge_list_dicts(results)
+        self.update_progress("92%", stop, signal_manager, row)
         if len(dict_results) > 0:
             for label,text in zip(labels, selected_text):
                 elements = dict_results[label]
@@ -141,7 +154,9 @@ class SeleniumScraper(Scraper):
                 text = self.clean_text(text)
                 dict_results[label] = elements
             
+            self.update_progress("95%", stop, signal_manager, row)
             df = self.dict_to_df(dict_results)
+            self.update_progress("96%", stop, signal_manager, row)
 
             if df is not None and file_name is not None:
                 self.save_file(df, file_name)
@@ -319,6 +334,7 @@ class SeleniumScraper(Scraper):
     
     def check_elements(self, stop, signal_manager, row, xpaths, selected_text, url, obj, interaction):
         if not self._check_elements(xpaths, selected_text, obj) and self.check_for_captcha(obj):
+            self.update_progress("3%", stop, signal_manager, row)
             print("CAPTCHA found")
             
             obj = self.require_user_interaction(obj, url, stop, signal_manager, row, interaction, True)
@@ -329,11 +345,15 @@ class SeleniumScraper(Scraper):
                 interaction.clear()
         else:
             print("No CAPTCHA found")
+        
+        self.update_progress("5%", stop, signal_manager, row)
 
         # Check if login is required
         if not self._check_elements(xpaths, selected_text, obj):
+            self.update_progress("6%", stop, signal_manager, row)
             obj = self.login_using_stored_credentials(obj, url, stop, signal_manager, row, interaction, get_login_info(url))
             if obj:
+                self.update_progress("7%", stop, signal_manager, row)
                 for xpath, text in zip(xpaths, selected_text):
                     text = self.clean_text(text)
                     elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
