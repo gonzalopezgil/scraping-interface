@@ -24,9 +24,10 @@ def main():
     # Run the application
     app = QApplication([])
     exit_code = RESTART_CODE
+    translator = QTranslator(app)
 
     while exit_code == RESTART_CODE:
-        translator = QTranslator(app)
+        app.removeTranslator(translator)
 
         # Load settings
         try:
@@ -45,9 +46,11 @@ def main():
                 settings['locale'] = 'en'
 
         locale = settings.get('locale')
-        translation_file = os.path.abspath(f"translations/translations_{locale}.qm")
-        if translator.load(QLocale(locale), translation_file):  # Load the specified locale (if not found, don't translate)
-            app.installTranslator(translator)
+        if locale != 'en':
+            translator = QTranslator(app)
+            translation_file = os.path.abspath(f"translations/translations_{locale}.qm")
+            if translator.load(QLocale(locale), translation_file):  # Load the specified locale (if not found, don't translate)
+                app.installTranslator(translator)
 
         app.setWindowIcon(QIcon(icon_path))
         window = MainWindow(app)
