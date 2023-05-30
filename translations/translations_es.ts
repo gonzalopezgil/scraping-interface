@@ -6,92 +6,92 @@
     <message>
         <location filename="../gui/browser_tab.py" line="55"/>
         <source>Click on the pagination button or enter an XPath</source>
-        <translation>Haga clic en el botón de paginación o ingrese una XPath</translation>
+        <translation>Haga click en el botón de paginación o ingrese un XPath</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="61"/>
+        <location filename="../gui/browser_tab.py" line="62"/>
         <source>Maximum pages to scrape:</source>
-        <translation>Máximo de páginas para extraer:</translation>
+        <translation>Máximo de páginas a extraer:</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="66"/>
+        <location filename="../gui/browser_tab.py" line="67"/>
         <source>Unlimited</source>
         <translation>Ilimitado</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="118"/>
+        <location filename="../gui/browser_tab.py" line="119"/>
         <source>Pagination</source>
         <translation>Paginación</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="124"/>
+        <location filename="../gui/browser_tab.py" line="125"/>
         <source>Save Template</source>
         <translation>Guardar Plantilla</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="131"/>
+        <location filename="../gui/browser_tab.py" line="132"/>
         <source>Download Data</source>
         <translation>Descargar Datos</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="138"/>
+        <location filename="../gui/browser_tab.py" line="139"/>
         <source>Download Excel</source>
         <translation>Descargar Excel</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="139"/>
+        <location filename="../gui/browser_tab.py" line="140"/>
         <source>Download CSV</source>
         <translation>Descargar CSV</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="140"/>
+        <location filename="../gui/browser_tab.py" line="141"/>
         <source>Download JSON</source>
         <translation>Descargar JSON</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="141"/>
+        <location filename="../gui/browser_tab.py" line="142"/>
         <source>Download XML</source>
         <translation>Descargar XML</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="195"/>
+        <location filename="../gui/browser_tab.py" line="196"/>
         <source>Scrape</source>
         <translation>Extraer</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="292"/>
+        <location filename="../gui/browser_tab.py" line="296"/>
         <source>Template saved successfully</source>
         <translation>Plantilla guardada correctamente</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="294"/>
+        <location filename="../gui/browser_tab.py" line="298"/>
         <source>Error saving template</source>
         <translation>Error al guardar la plantilla</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="298"/>
+        <location filename="../gui/browser_tab.py" line="302"/>
         <source>Information</source>
         <translation>Información</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="364"/>
+        <location filename="../gui/browser_tab.py" line="367"/>
         <source>Edit Column Header</source>
-        <translation>Editar Encabezado de Columna</translation>
+        <translation>Editar título de la columna</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="364"/>
+        <location filename="../gui/browser_tab.py" line="367"/>
         <source>Enter new column header text:</source>
-        <translation>Ingrese el nuevo texto del encabezado de columna:</translation>
+        <translation>Ingrese el nuevo título de la columna:</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="476"/>
+        <location filename="../gui/browser_tab.py" line="484"/>
         <source>Remove Column</source>
         <translation>Eliminar Columna</translation>
     </message>
     <message>
         <location filename="../gui/browser_tab.py" line="29"/>
         <source>Search or enter a URL</source>
-        <translation>Buscar o introducir una URL</translation>
+        <translation>Buscar o introducir URL</translation>
     </message>
     <message>
         <location filename="../gui/browser_tab.py" line="30"/>
@@ -109,7 +109,7 @@
     <message>
         <location filename="../gui/home_tab.py" line="29"/>
         <source>Search or write URL</source>
-        <translation>Buscar o escribir URL</translation>
+        <translation>Buscar o introducir URL</translation>
     </message>
 </context>
 <context>
@@ -147,80 +147,130 @@
     <message>
         <location filename="../gui/main_window.py" line="113"/>
         <source>Error: no file name entered</source>
-        <translation>Error: no se ingresó un nombre de archivo</translation>
+        <translation>Error: no se ha introducido un nombre de archivo</translation>
     </message>
     <message>
         <location filename="../gui/main_window.py" line="150"/>
         <source>Warning</source>
-        <translation>Advertencia</translation>
+        <translation>Aviso</translation>
     </message>
     <message>
         <location filename="../gui/main_window.py" line="142"/>
         <source>No preview results to show</source>
-        <translation>No hay resultados de vista previa para mostrar</translation>
+        <translation>No existen resultados de vista previa para mostrar</translation>
     </message>
     <message>
         <location filename="../gui/main_window.py" line="150"/>
         <source>The thread is still running. Do you want to force it to stop?</source>
-        <translation>El hilo aún está en ejecución. ¿Desea forzarlo a detenerse?</translation>
+        <translation>Existe al menos un hilo en ejecución. ¿Desea forzarlo a detenerse?</translation>
     </message>
 </context>
 <context>
     <name>ProcessesTab</name>
     <message>
-        <location filename="../gui/processes_tab.py" line="20"/>
+        <location filename="../gui/processes_tab.py" line="45"/>
         <source>Scraped Web</source>
-        <translation>Web Extraída</translation>
+        <translation>Web extraída</translation>
     </message>
     <message>
-        <location filename="../gui/processes_tab.py" line="20"/>
+        <location filename="../gui/processes_tab.py" line="45"/>
         <source>File Name</source>
-        <translation>Nombre de archivo</translation>
+        <translation>Nombre del archivo</translation>
     </message>
     <message>
-        <location filename="../gui/processes_tab.py" line="20"/>
+        <location filename="../gui/processes_tab.py" line="45"/>
         <source>Scraped Items</source>
-        <translation>Elementos Extraídos</translation>
+        <translation>Elementos extraídos</translation>
     </message>
     <message>
-        <location filename="../gui/processes_tab.py" line="20"/>
+        <location filename="../gui/processes_tab.py" line="45"/>
         <source>Status</source>
         <translation>Estado</translation>
     </message>
     <message>
-        <location filename="../gui/processes_tab.py" line="20"/>
+        <location filename="../gui/processes_tab.py" line="45"/>
         <source>Date</source>
         <translation>Fecha</translation>
     </message>
     <message>
-        <location filename="../gui/processes_tab.py" line="20"/>
+        <location filename="../gui/processes_tab.py" line="45"/>
         <source>Time</source>
         <translation>Hora</translation>
     </message>
     <message>
-        <location filename="../gui/processes_tab.py" line="20"/>
+        <location filename="../gui/processes_tab.py" line="45"/>
         <source>Action</source>
         <translation>Acción</translation>
     </message>
     <message>
-        <location filename="../gui/processes_tab.py" line="47"/>
+        <location filename="../gui/processes_tab.py" line="74"/>
         <source>Open</source>
         <translation>Abrir</translation>
     </message>
     <message>
-        <location filename="../gui/processes_tab.py" line="52"/>
+        <location filename="../gui/processes_tab.py" line="79"/>
         <source>Stop</source>
         <translation>Detener</translation>
     </message>
     <message>
-        <location filename="../gui/processes_tab.py" line="72"/>
+        <location filename="../gui/processes_tab.py" line="127"/>
         <source>No processes found</source>
         <translation>No se encontraron procesos</translation>
     </message>
     <message>
-        <location filename="../gui/processes_tab.py" line="121"/>
+        <location filename="../gui/processes_tab.py" line="187"/>
         <source>Error: File is not opening due to unknown operating system</source>
-        <translation>Error: el archivo no se está abriendo debido a un sistema operativo desconocido</translation>
+        <translation>Error: No pudo detectarse el sistema operativo, por tanto, el archivo no se abrirá</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="84"/>
+        <source>Interact</source>
+        <translation>Interactuar</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="89"/>
+        <source>Resolved</source>
+        <translation>Resuelto</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="31"/>
+        <source>Running</source>
+        <translation>En ejecución</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="32"/>
+        <source>Stopping...</source>
+        <translation>Deteniendo...</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="33"/>
+        <source>Finished</source>
+        <translation>Finalizado</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="34"/>
+        <source>Error</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="35"/>
+        <source>Requires interaction</source>
+        <translation>Requiere interacción</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="36"/>
+        <source>Interacting...</source>
+        <translation>Interactuando...</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="37"/>
+        <source>Stopped</source>
+        <translation>Detenido</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="38"/>
+        <source>Unknown</source>
+        <translation>Desconocido</translation>
     </message>
 </context>
 <context>
@@ -301,6 +351,16 @@
         <translation>Se ha eliminado el historial de procesos.</translation>
     </message>
     <message>
+        <location filename="../gui/settings_tab.py" line="301"/>
+        <source>No process history was found.</source>
+        <translation>No se encontró el historial de procesos.</translation>
+    </message>
+    <message>
+        <location filename="../gui/settings_tab.py" line="316"/>
+        <source>Information</source>
+        <translation>Información</translation>
+    </message>
+    <message>
         <location filename="../gui/settings_tab.py" line="113"/>
         <source>Template Manager:</source>
         <translation>Gestor de plantillas:</translation>
@@ -318,17 +378,7 @@
     <message>
         <location filename="../gui/settings_tab.py" line="213"/>
         <source>Language change will take effect after restart. Do you want to restart now?</source>
-        <translation>El cambio de idioma se aplicará después de reiniciar. ¿Desea reiniciar ahora?</translation>
-    </message>
-    <message>
-        <location filename="../gui/settings_tab.py" line="301"/>
-        <source>No process history was found.</source>
-        <translation>No se encontró historial de procesos.</translation>
-    </message>
-    <message>
-        <location filename="../gui/settings_tab.py" line="316"/>
-        <source>Information</source>
-        <translation>Información</translation>
+        <translation>El idioma se actualizará después de reiniciar. ¿Desea reiniciar ahora?</translation>
     </message>
 </context>
 </TS>

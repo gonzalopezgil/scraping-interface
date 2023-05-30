@@ -8,6 +8,7 @@ from utils.manager.signal_manager import SignalManager
 from utils.manager.process_manager import ProcessManager
 from gui.home_tab import HomeTab
 from utils.manager.template_manager import load_template
+from utils.manager.process_manager import ProcessStatus
 
 class MainWindow(QMainWindow):
     def __init__(self, app):
@@ -130,7 +131,7 @@ class MainWindow(QMainWindow):
                 self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.signal_manager, interaction, self.browser_tab.clean_html(html), stop, 1), daemon=True)
             self.thread.start()
         else:
-            self.signal_manager.process_signal.emit(row, "Stopped", "")
+            self.signal_manager.process_signal.emit(row, str(ProcessStatus.STOPPED.value), "")
 
     def thread_function(self, url, column_titles, file_name, row, process_manager, signal_manager, interaction, html=None, stop=None, max_pages=None):
         self.tabs.setCurrentIndex(2)
@@ -163,5 +164,5 @@ class MainWindow(QMainWindow):
     def stop_thread(self):
         if self.thread.is_alive():
             # Implement a method that stops the thread
-            self.signal_manager.process_signal.emit(self.processes_tab.table.rowCount()-1, "Stopped", "")
+            self.signal_manager.process_signal.emit(self.processes_tab.table.rowCount()-1, str(ProcessStatus.STOPPED.value), "")
             self.processes_tab.save_data()

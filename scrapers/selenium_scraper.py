@@ -24,6 +24,7 @@ from . scrapy_selenium_scraper import ScrapySeleniumScraper
 from exceptions.scraper_exceptions import ScraperStoppedException
 import time
 import random
+from utils.manager.process_manager import ProcessStatus
 
 TIMEOUT = 5
 XPATH_USERNAME = '//input[@type="text"]|//input[@type="email"]'
@@ -124,7 +125,7 @@ class SeleniumScraper(Scraper):
             else:
                 next_page = False
             pages+=1
-            self.update_progress(f"{10+(pages/max_pages)*80}%", stop, signal_manager, row)
+            self.update_progress(f"{int(10+(pages/max_pages)*80)}%", stop, signal_manager, row)
 
         if pagination_xpath:
             self.close_webpage(obj)
@@ -144,10 +145,10 @@ class SeleniumScraper(Scraper):
 
             if df is not None and file_name is not None:
                 self.save_file(df, file_name)
-                signal_manager.process_signal.emit(row, "Finished", file_name)
+                signal_manager.process_signal.emit(row, str(ProcessStatus.FINISHED.value), file_name)
         else:
             print("Error: No elements found")
-            signal_manager.process_signal.emit(row, "Error", "")
+            signal_manager.process_signal.emit(row, str(ProcessStatus.ERROR.value), "")
 
 
 
@@ -298,7 +299,7 @@ class SeleniumScraper(Scraper):
         # Quit the headless driver
         obj.quit()
 
-        self.update_progress("Requires interaction", stop, signal_manager, row)
+        self.update_progress(str(ProcessStatus.REQUIRES_INTERACTION.value), stop, signal_manager, row)
         # Wait for the user to open the Selenium window
         interaction.wait()
         interaction.clear()
@@ -346,7 +347,7 @@ class SeleniumScraper(Scraper):
     
     def update_progress(self, progress, stop, signal_manager, row):
         if stop.value:
-            signal_manager.process_signal.emit(row, "Stopped", "")
+            signal_manager.process_signal.emit(row, str(ProcessStatus.STOPPED.value), "")
             raise ScraperStoppedException("Scraper stopped by the user")
         signal_manager.process_signal.emit(row, progress, "")
 

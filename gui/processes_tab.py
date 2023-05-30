@@ -9,12 +9,25 @@ from static import background_path
 from utils.manager.file_manager import get_file_path
 import sys
 import threading
+from utils.manager.process_manager import ProcessStatus
 
 PROCESSES_FILE = get_file_path("processes.csv")
 
 class ProcessesTab(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        self.STATUS_STRINGS = {
+            ProcessStatus.RUNNING: self.tr("Running"),
+            ProcessStatus.STOPPING: self.tr("Stopping..."),
+            ProcessStatus.FINISHED: self.tr("Finished"),
+            ProcessStatus.ERROR: self.tr("Error"),
+            ProcessStatus.REQUIRES_INTERACTION: self.tr("Requires interaction"),
+            ProcessStatus.INTERACTING: self.tr("Interacting..."),
+            ProcessStatus.STOPPED: self.tr("Stopped"),
+            ProcessStatus.UNKNOWN: self.tr("Unknown")
+        }
+
         self.processes_tab_layout = QVBoxLayout(self)
         self.table = QTableWidget(self)
         self.table.setColumnCount(7)
@@ -32,6 +45,7 @@ class ProcessesTab(QWidget):
         self.no_data_label = QLabel(self) # Create label
         self.no_data_label.setAlignment(Qt.AlignCenter) # Center label
         self.processes_tab_layout.addWidget(self.no_data_label) # Add label to layout
+        self.status_codes = [] # Stores status codes for each process
         self.load_data()
 
         self.stop_variables = {}
@@ -64,6 +78,10 @@ class ProcessesTab(QWidget):
         resolved_button = QPushButton(self.tr('Resolved'))
         resolved_button.clicked.connect(lambda: self.on_resolved(row))
         return resolved_button
+    
+    def translate_status(self, status_code):
+        status = ProcessStatus(status_code)
+        return self.tr(self.STATUS_STRINGS.get(status, "Unknown"))
         
     def load_data(self):
         try:
@@ -73,11 +91,22 @@ class ProcessesTab(QWidget):
                 self.table.setRowCount(len(data))
                 for row, item in enumerate(data):
                     for col in range(len(item)):
-                        table_item = QTableWidgetItem(item[col])
+                        if col == 3:
+                            status = int(item[col])
+                            if status == ProcessStatus.FINISHED.value:
+                                self.table.setCellWidget(row, 6, self.create_open_file_button(item[1]))
+                            elif status in [ProcessStatus.RUNNING.value, ProcessStatus.STOPPING.value, ProcessStatus.REQUIRES_INTERACTION.value, ProcessStatus.INTERACTING.value]:
+                                status = ProcessStatus.STOPPED.value
+                            self.status_codes.append(status)
+                            status_str = self.translate_status(status)
+                            table_item = QTableWidgetItem(status_str)
+                        else:
+                            table_item = QTableWidgetItem(item[col])
                         table_item.setFlags(table_item.flags() & ~Qt.ItemIsEditable)  # Disable editing
                         self.table.setItem(row, col, table_item)
-                    if item[3] == "Finished":
-                        self.table.setCellWidget(row, 6, self.create_open_file_button(item[1]))
+                
+                self.save_data()
+
                 self.no_data_label.hide() # Hide label if data is found
                 self.table.show() # Show table if data is found
         except FileNotFoundError:
@@ -93,7 +122,9 @@ class ProcessesTab(QWidget):
         date = now.strftime("%d/%m/%Y")
         time = now.strftime("%H:%M:%S")
         
-        items = [scraped_web, file_name, ', '.join(column_titles), "Running", date, time]
+        status_code = ProcessStatus.RUNNING.value
+        items = [scraped_web, file_name, ', '.join(column_titles), self.translate_status(status_code), date, time]
+        self.status_codes.append(status_code)
         for col, text in enumerate(items):
             table_item = QTableWidgetItem(text)
             table_item.setFlags(table_item.flags() & ~Qt.ItemIsEditable)  # Disable editing
@@ -113,9 +144,16 @@ class ProcessesTab(QWidget):
     def get_table_data(self):
         table_data = []
         for row in range(self.table.rowCount()):
-            row_data = [self.table.item(row, col).text()
-                        for col in range(self.table.columnCount())
-                        if self.table.item(row, col)]
+            row_data = []
+            for col in range(self.table.columnCount()):
+                if self.table.item(row, col):
+                    if col == 3:
+                        status_code = self.status_codes[row]
+                        row_data.append(status_code)
+                    else:
+                        row_data.append(self.table.item(row, col).text())
+                else:
+                    row_data.append('')
             table_data.append(row_data)
         return table_data
     
@@ -138,29 +176,41 @@ class ProcessesTab(QWidget):
 
     @pyqtSlot(int, QVariant, QVariant)
     def update_status(self, row, status, file_name):
-        if status == "Finished":
-            self.table.setCellWidget(row, 6, self.create_open_file_button(file_name))
-        elif status == "Stopped" or status == "Error":
-            self.table.setCellWidget(row, 6, None)
-        elif status == "Requires interaction":
-            self.table.setCellWidget(row, 6, self.create_interaction_button(row))
+        if "%" in status:
+            status_code = ProcessStatus.RUNNING.value
+            self.table.setItem(row, 3, QTableWidgetItem(status))
+        else:
+            status_code = int(status)
+            self.table.setItem(row, 3, QTableWidgetItem(self.translate_status(status_code)))
+            if status_code == ProcessStatus.FINISHED.value:
+                self.table.setCellWidget(row, 6, self.create_open_file_button(file_name))
+            elif status_code == ProcessStatus.STOPPED.value or status_code == ProcessStatus.ERROR.value:
+                self.table.setCellWidget(row, 6, None)
+            elif status_code == ProcessStatus.REQUIRES_INTERACTION.value:
+                self.table.setCellWidget(row, 6, self.create_interaction_button(row))
+        self.status_codes[row] = status_code
         self.table.setItem(row, 1, QTableWidgetItem(file_name))
-        self.table.setItem(row, 3, QTableWidgetItem(status))
         self.save_data()
 
     def stop_process(self, row):
         self.stop_variables[row].value = True
-        self.table.setItem(row, 3, QTableWidgetItem("Stopping..."))
+        status_code = ProcessStatus.STOPPING.value
+        self.table.setItem(row, 3, QTableWidgetItem(self.translate_status(status_code)))
+        self.status_codes[row] = status_code
 
     def on_interaction(self, row):
         self.interaction_variables[row].set()
-        self.table.setItem(row, 3, QTableWidgetItem("Interacting..."))
+        status_code = ProcessStatus.INTERACTING.value
+        self.table.setItem(row, 3, QTableWidgetItem(self.translate_status(status_code)))
         self.table.setCellWidget(row, 6, self.create_resolved_button(row))
+        self.status_codes[row] = status_code
 
     def on_resolved(self, row):
         self.interaction_variables[row].set()
-        self.table.setItem(row, 3, QTableWidgetItem("Running"))
+        status_code = ProcessStatus.RUNNING.value
+        self.table.setItem(row, 3, QTableWidgetItem(self.translate_status(status_code)))
         self.table.setCellWidget(row, 6, self.create_stop_button(row))
+        self.status_codes[row] = status_code
 
     def paintEvent(self, _):
         option = QStyleOption()

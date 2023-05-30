@@ -1,6 +1,17 @@
 import os
 from utils.manager.file_manager import get_file_path
 from exceptions.file_exceptions import FileDeletionException
+from enum import Enum
+
+class ProcessStatus(Enum):
+    RUNNING = 1
+    STOPPING = 2
+    FINISHED = 3
+    ERROR = 4
+    REQUIRES_INTERACTION = 5
+    INTERACTING = 6
+    STOPPED = 7
+    UNKNOWN = 8
 
 def clear_process_history():
     try:
