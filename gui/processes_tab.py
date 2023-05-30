@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QPushButton, QStyle, QStyleOption
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QPushButton, QStyle, QStyleOption, QProgressBar
 from PyQt5.QtCore import Qt, QVariant, pyqtSlot
 from PyQt5.QtGui import QPainter
 import csv
@@ -177,9 +177,16 @@ class ProcessesTab(QWidget):
     @pyqtSlot(int, QVariant, QVariant)
     def update_status(self, row, status, file_name):
         if "%" in status:
+            progress = QProgressBar()
+            progress.setValue(int(status.replace("%", ""))) # Remove '%' character
+            self.table.setItem(row, 3, None)
+            self.table.setCellWidget(row, 3, progress)
+
             status_code = ProcessStatus.RUNNING.value
-            self.table.setItem(row, 3, QTableWidgetItem(status))
         else:
+            # Remove QProgressBar from the cell
+            self.table.setCellWidget(row, 3, None)
+
             status_code = int(status)
             self.table.setItem(row, 3, QTableWidgetItem(self.translate_status(status_code)))
             if status_code == ProcessStatus.FINISHED.value:
