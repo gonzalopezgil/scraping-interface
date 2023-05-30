@@ -92,7 +92,7 @@ class ProcessesTab(QWidget):
                 for row, item in enumerate(data):
                     for col in range(len(item)):
                         if col == 3:
-                            status = int(item[col])
+                            status = int(item[col]) if item[col] else ProcessStatus.ERROR.value
                             if status == ProcessStatus.FINISHED.value:
                                 self.table.setCellWidget(row, 6, self.create_open_file_button(item[1]))
                             elif status in [ProcessStatus.RUNNING.value, ProcessStatus.STOPPING.value, ProcessStatus.REQUIRES_INTERACTION.value, ProcessStatus.INTERACTING.value]:
