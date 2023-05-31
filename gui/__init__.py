@@ -9,8 +9,27 @@ from PyQt5.QtCore import QTranslator, QLocale
 import os
 import json
 from . constants import SETTINGS_FILE, LANGUAGES, RESTART_CODE
+import logging
+from utils.manager.file_manager import get_file_path
 
 def main():
+
+    # Set up logging
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
+    # Create a console handler to print logs in the console
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    # Create a file handler to write logs to a file
+    file_handler = logging.FileHandler(get_file_path('application.log'))
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
 
     # Password manager key
     create_key()
@@ -19,7 +38,7 @@ def main():
     try:
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     except Exception as e:
-        print(f"Warning: Error setting the 'utf-8' encoding. {e}")
+        logger.warning(f"Warning: Error setting the 'utf-8' encoding. {e}")
 
     # Run the application
     app = QApplication([])
