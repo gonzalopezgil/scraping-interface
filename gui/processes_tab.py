@@ -10,6 +10,8 @@ from utils.manager.file_manager import get_file_path
 import sys
 import threading
 from utils.manager.process_manager import ProcessStatus
+from plyer import notification
+from static import icon_path
 
 PROCESSES_FILE = get_file_path("processes.csv")
 
@@ -172,7 +174,17 @@ class ProcessesTab(QWidget):
                 os.system(f"xdg-open '{file_name}'")
         else:
             print(self.tr('Error: File is not opening due to unknown operating system'))
-        
+
+    def show_notification(self, title, message):
+        try:
+            notification.notify(
+                title=title,
+                message=message,
+                app_icon=icon_path,
+                timeout=10,
+            )
+        except Exception:
+            print(self.tr("Error showing notification"))
 
     @pyqtSlot(int, QVariant, QVariant)
     def update_status(self, row, status, file_name):
@@ -191,10 +203,12 @@ class ProcessesTab(QWidget):
             self.table.setItem(row, 3, QTableWidgetItem(self.translate_status(status_code)))
             if status_code == ProcessStatus.FINISHED.value:
                 self.table.setCellWidget(row, 6, self.create_open_file_button(file_name))
+                self.show_notification(self.tr("Process finished"), self.tr("A process has finished successfully"))
             elif status_code == ProcessStatus.STOPPED.value or status_code == ProcessStatus.ERROR.value:
                 self.table.setCellWidget(row, 6, None)
             elif status_code == ProcessStatus.REQUIRES_INTERACTION.value:
                 self.table.setCellWidget(row, 6, self.create_interaction_button(row))
+                self.show_notification(self.tr("Interaction required"), self.tr("Please interact with the browser to continue the process"))
         self.status_codes[row] = status_code
         self.table.setItem(row, 1, QTableWidgetItem(file_name))
         self.save_data()
