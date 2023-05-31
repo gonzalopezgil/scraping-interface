@@ -14,7 +14,7 @@ from . constants import SETTINGS_FILE, LANGUAGES, RESTART_CODE
 
 SEARCH_ENGINES = {
     "Google": ["https://www.google.com/search?q=", "https://www.google.com"],
-    "Bing": ["https://www.bing.com/search?q=", "https://www.bing.com"],
+    "Ecosia": ["https://www.ecosia.org/search?q=", "https://www.ecosia.org"],
     "DuckDuckGo": ["https://duckduckgo.com/?q=", "https://duckduckgo.com/"]
 }
 

@@ -1,7 +1,9 @@
 ENABLE_LINKS_JS = """
-    var links = document.getElementsByTagName("a");
-    for (var i = 0; i < links.length; i++) {
-        links[i].removeEventListener("click", disableLink);
+    document.body.removeEventListener("click", disableLink);
+
+    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
+    for (var i = 0; i < textElements.length; i++) {
+        textElements[i].removeEventListener("click", scrapeData);
     }
 
     // Remove red background from previously painted elements
@@ -24,10 +26,7 @@ ENABLE_LINKS_JS = """
 """
 
 DISABLE_LINKS_JS = """
-    var links = document.getElementsByTagName("a");
-    for (var i = 0; i < links.length; i++) {
-        links[i].addEventListener("click", disableLink);
-    }
+    document.body.addEventListener("click", disableLink);
 
     function disableLink(event) {
         event.preventDefault();
@@ -199,8 +198,6 @@ START_JS = """
         }
         console.log(consoleMessage + "xpath>" + xpath);
         console.log(consoleMessage + "selectedText>" + message + ">" + 1);
-
-        paintRedBackground(xpath);
     }
 """
 

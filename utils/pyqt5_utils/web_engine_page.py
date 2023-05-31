@@ -45,27 +45,28 @@ class WebEnginePage(QWebEnginePage):
                             msg.exec_()
                     else:
                         print("User chose not to save the credentials.")
-            elif message_type == "selectedText" and not self.pagination_clicked:
-                row = int(text[3])
-                col = self.process_manager.get_column_count() - 1
-                if row == 1:
-                    self.process_manager.get_column(col).set_first_text(value)
-                if self.table_widget.rowCount() < row:
-                    self.table_widget.setRowCount(row)
-                self.table_widget.setItem(row-1, col, QTableWidgetItem(value))
-            elif message_type == "xpath" and not self.pagination_clicked:
-                self.process_manager.create_column(value)
-                if self.table_xpath.rowCount() < 1:
-                    self.table_xpath.setRowCount(1)
-                count = self.process_manager.get_column_count()
-                if self.table_widget.columnCount() < count:
-                    self.table_widget.setColumnCount(count)
-                    self.table_xpath.setColumnCount(count)
-                col = count - 1
-                self.table_xpath.setItem(0, col, QTableWidgetItem(value))
-            elif message_type == "xpathRel" and self.pagination_clicked:
-                self.process_manager.pagination_xpath = value
-                self.pagination_xpath_label.setText(value)
+            elif self.table_widget.isVisible():
+                if message_type == "selectedText" and not self.pagination_clicked:
+                    row = int(text[3])
+                    col = self.process_manager.get_column_count() - 1
+                    if row == 1:
+                        self.process_manager.get_column(col).set_first_text(value)
+                    if self.table_widget.rowCount() < row:
+                        self.table_widget.setRowCount(row)
+                    self.table_widget.setItem(row-1, col, QTableWidgetItem(value))
+                elif message_type == "xpath" and not self.pagination_clicked:
+                    self.process_manager.create_column(value)
+                    if self.table_xpath.rowCount() < 1:
+                        self.table_xpath.setRowCount(1)
+                    count = self.process_manager.get_column_count()
+                    if self.table_widget.columnCount() < count:
+                        self.table_widget.setColumnCount(count)
+                        self.table_xpath.setColumnCount(count)
+                    col = count - 1
+                    self.table_xpath.setItem(0, col, QTableWidgetItem(value))
+                elif message_type == "xpathRel" and self.pagination_clicked:
+                    self.process_manager.pagination_xpath = value
+                    self.pagination_xpath_label.setText(value)
 
     @pyqtSlot(bool)
     def on_pagination_button_clicked(self, clicked):
