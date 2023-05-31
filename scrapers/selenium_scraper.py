@@ -97,30 +97,29 @@ class SeleniumScraper(Scraper):
         max_pages = max_pages if max_pages else 100
         next_page = True
         results = []
+        actual_percentage = 10
+        increment = 10/max_pages
 
         while next_page and pages < max_pages:
-            max_percentage_page = int(10+((pages+1)/max_pages)*80)
-            decrement = max_pages * 10 if max_pages > 1 else 100
-
             actual_html = ""
             if not pagination_xpath:
                 actual_html = html
             else:
-                decrement -= max_pages * 10 if max_pages > 1 else 90
-                self.update_progress(f"{int(max_percentage_page - decrement/10)}%", stop, signal_manager, row)
+                actual_percentage += increment
+                self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
                 self.infinite_scroll(obj)
-                decrement -= max_pages * 10 if max_pages > 1 else 80
-                self.update_progress(f"{int(max_percentage_page - decrement/10)}%", stop, signal_manager, row)
+                actual_percentage += increment
+                self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
                 # Wait for the document to be complete (fully loaded)
                 time.sleep(2)
-                decrement -= max_pages * 10 if max_pages > 1 else 70
-                self.update_progress(f"{int(max_percentage_page - decrement/10)}%", stop, signal_manager, row)
+                actual_percentage += increment
+                self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
                 actual_html = obj.page_source
             
             # html, prefix, labels, xpath_suffixes, selected_text, file_name, row, signal_manager
             dictionary = self.scrape(actual_html, prefix, labels, xpath_suffixes)
-            decrement -= max_pages * 10 if max_pages > 1 else 20
-            self.update_progress(f"{int(max_percentage_page - decrement/10)}%", stop, signal_manager, row)
+            actual_percentage += increment * 2
+            self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
             results.append(dictionary)
 
             if pagination_xpath:
@@ -128,15 +127,16 @@ class SeleniumScraper(Scraper):
                     WebDriverWait(obj, TIMEOUT).until(EC.presence_of_element_located((By.XPATH, pagination_xpath)))
                     next_button = obj.find_element(By.XPATH, pagination_xpath)
                     next_button.click()
-                    decrement -= max_pages * 10 if max_pages > 1 else 10
-                    self.update_progress(f"{int(max_percentage_page - decrement/10)}%", stop, signal_manager, row)
+                    actual_percentage += increment * 2
+                    self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
                 except Exception:
                     print("Error: Pagination button not found")
                     next_page = False
             else:
                 next_page = False
             pages+=1
-            self.update_progress(f"{max_percentage_page}%", stop, signal_manager, row)
+            actual_percentage += increment
+            self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
 
         if pagination_xpath:
             self.close_webpage(obj)
