@@ -86,7 +86,6 @@ def main():
         try:
             app.setWindowIcon(QIcon(icon_path))
             window = MainWindow(app)
-            window.setMinimumSize(650, 850)
             window.show()
             logger.info("Main window created successfully.")
             exit_code = app.exec_()

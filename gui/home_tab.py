@@ -72,7 +72,6 @@ class HomeTab(QWidget):
         self.next_button.setStyleSheet(STYLE_SHEET)
 
         self.templates = []
-        self.previous_width = self.width()
 
         templates_list = list_templates()
 
@@ -125,36 +124,6 @@ class HomeTab(QWidget):
         if isinstance(sender, TemplateThumbnail):
             self.template_clicked.emit(str(sender.template["id"]))
 
-    def hide_templates(self):
-        width = self.width()
-        num_templates = len(self.templates)
-        if width < 1750 and num_templates > 7:
-            self.templates[7].hide()
-        if width < 1500 and num_templates > 6:
-            self.templates[6].hide()
-        if width < 1200 and num_templates > 5:
-            self.templates[5].hide()
-        if width < 900 and num_templates > 4:
-            self.templates[4].hide()
-
-    def show_templates(self):
-        width = self.width()
-        num_templates = len(self.templates)
-        if width >= 1750 and num_templates > 7:
-            self.templates[7].show()
-        if width >= 1500 and num_templates > 6:
-            self.templates[6].show()
-        if width >= 1200 and num_templates > 5:
-            self.templates[5].show()
-        if width >= 900 and num_templates > 4:
-            self.templates[4].show()
-
-    def update_templates(self):
-        if self.width() > self.previous_width:
-            self.show_templates()
-        else:
-            self.hide_templates()
-
     def change_page(self):
         num_shown_templates = self.get_num_shown_templates()
         start_index = self.current_page * num_shown_templates
@@ -193,8 +162,7 @@ class HomeTab(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.update_templates()
-        self.previous_width = self.width()
+        self.change_page()
 
     def paintEvent(self, event):
         option = QStyleOption()
