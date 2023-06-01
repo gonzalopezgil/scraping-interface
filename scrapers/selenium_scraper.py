@@ -250,22 +250,16 @@ class SeleniumScraper(Scraper):
             driver.get(login_url)
 
             # Find and fill in the email or username input
-
-            if not self.find_login_input(driver, XPATH_USERNAME):
-                logger.warning("No login form found")
-                return False
             
             driver = self.require_user_interaction(driver, login_url, stop, signal_manager, row, interaction)
 
-            if self.find_login_input(driver, XPATH_USERNAME):
-
-                if login_info:
+            if self.find_login_input(driver, XPATH_USERNAME) and login_info:
                     self.fill_input(driver, XPATH_USERNAME, login_info["username"])
                     self.fill_input(driver, XPATH_PASSWORD, login_info["password"])
 
-                # Wait for the user to login
-                interaction.wait()
-                interaction.clear()
+            # Wait for the user to login
+            interaction.wait()
+            interaction.clear()
 
             cookies = driver.get_cookies()
                 
