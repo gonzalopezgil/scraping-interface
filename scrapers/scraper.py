@@ -3,6 +3,11 @@ import pandas as pd
 from os.path import commonprefix
 import xml.etree.ElementTree as ET
 import os
+import logging
+from scrapy.item import Item, Field
+from utils.manager.file_manager import get_folder_path
+
+logger = logging.getLogger(__name__)
 
 class Scraper(ABC):
 
@@ -14,37 +19,10 @@ class Scraper(ABC):
     def get_elements(self, xpath, obj, text=None):
         pass
 
-    @abstractmethod
-    def close_webpage(self, obj):
-        pass
-
-    def scrape(self, url, labels, selected_text, xpaths, file_name, default_encoding=True):
-        obj = self.get_webpage(url, default_encoding)
-
-        my_dict = {}
-        for xpath,label,text in zip(xpaths,labels,selected_text):
-            text = self.clean_text(text)
-            elements = self.get_elements(self.generalise_xpath(xpath), obj, text)
-            if elements is not None and len(elements) > 0:
-                elements = self.clean_list(elements)
-                elements = self.find_text_in_data(elements, text)
-                if elements is None:
-                    if default_encoding:
-                        # Check with other encoding
-                        return self.scrape(url, labels, selected_text, xpaths, file_name, False)
-                    else:
-                        print("Error: Text selected by the user not found in elements")
-                        return None
-                my_dict[label] = elements
-
-        self.close_webpage(obj)
-
-        if len(my_dict) > 0:
-            df = self.dict_to_df(my_dict)
-            if df is not None and file_name is not None:
-                self.save_file(df, file_name)
-        else:
-            print("Error: No data found")
+    def create_class(self, fields):
+        my_dict = {field: Field() for field in fields}
+        new_class = type("Element", (Item,), my_dict)
+        return new_class
 
     def find_text_in_data(self, elements, text):
         if text not in elements:
@@ -80,15 +58,7 @@ class Scraper(ABC):
             tree = ET.ElementTree(root)
             tree.write(file_name, encoding="utf-8", xml_declaration=True)
         else:
-            print(f"Error: unsupported file format: {file_extension}")
-
-    # Unused
-    def check_encoding(self, obj, text):
-        xpath = f"//*[text()='{text}']"
-        if self.get_elements(xpath, obj):
-            print("Encoding is correct")
-        else:
-            print("Encoding is not correct")
+            logger.error(f"Error: unsupported file format: {file_extension}")
 
     def generalise_xpath(self, xpath):
         final_xpath = ""
@@ -145,7 +115,7 @@ class Scraper(ABC):
             df.index += 1
             return df
         except ValueError as e:
-            print(f"Error creating dataframe: {e}")
+            logger.error(f"Error creating dataframe: {e}")
             return None
         
     def __get_pattern(self, index, elem, elements, selected_text):
@@ -213,3 +183,13 @@ class Scraper(ABC):
                     else:
                         result[k] = item
         return result
+    
+    def set_logs(self, file_name):
+        # Set up root logger
+        scrapy_logger = logging.getLogger()
+        scrapy_logger.setLevel(logging.DEBUG)
+        file_handler = logging.FileHandler(f"{get_folder_path('logs')}/{file_name}.log")
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+        scrapy_logger.addHandler(file_handler)
+
