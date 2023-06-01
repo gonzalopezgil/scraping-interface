@@ -9,6 +9,9 @@ from utils.manager.process_manager import ProcessManager
 from gui.home_tab import HomeTab
 from utils.manager.template_manager import load_template
 from utils.manager.process_manager import ProcessStatus
+import logging
+
+logger = logging.getLogger(__name__)
 
 class MainWindow(QMainWindow):
     def __init__(self, app):

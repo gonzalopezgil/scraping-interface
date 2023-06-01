@@ -7,6 +7,8 @@ from scrapy.crawler import CrawlerRunner
 import scrapy
 from twisted.internet import reactor
 from multiprocessing import Process, Queue
+from utils.manager.file_manager import get_folder_path
+import logging
 
 class ScrapyScraper(Scraper, Spider):
     name = "ScrapyScraper"
@@ -112,12 +114,10 @@ class ScrapyScraper(Scraper, Spider):
         return new_class
     
     def run_scraper(self, q, url, labels, xpaths, html, max_items):
-        import logging
-
         # Set up root logger
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
-        file_handler = logging.FileHandler('scrapy_scraper.log')
+        file_handler = logging.FileHandler(f"{get_folder_path('logs')}/scrapy_scraper.log")
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)

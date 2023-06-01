@@ -35,7 +35,7 @@ def get_folder_path(folder_name):
         folder_path = os.path.join(app_data_folder, folder_name) if app_data_folder else folder_name
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-            print(f"Templates folder created: {folder_path}")
+            print(f"Folder created: {folder_path}")
         return folder_path
     except Exception as e:
         print(f"Error getting the folder path: {e}")

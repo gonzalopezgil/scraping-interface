@@ -10,7 +10,7 @@ import os
 import json
 from . constants import SETTINGS_FILE, LANGUAGES, RESTART_CODE
 import logging
-from utils.manager.file_manager import get_file_path
+from utils.manager.file_manager import get_folder_path
 
 def main():
 
@@ -26,7 +26,7 @@ def main():
     logger.addHandler(console_handler)
 
     # Create a file handler to write logs to a file
-    file_handler = logging.FileHandler(get_file_path('application.log'))
+    file_handler = logging.FileHandler(f"{get_folder_path('logs')}/application.log")
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
