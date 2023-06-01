@@ -389,6 +389,9 @@ class BrowserTab(QWidget):
 
     def handle_cell_changed(self, row, column):
         if self.scrape_widget.isVisible():
+            last_xpath = self.process_manager.get_column(column).get_xpath()
+            if last_xpath:
+                self.remove_background(last_xpath, "red")
             xpath = self.table_xpath.item(row, column).text()
             self.process_manager.get_column(column).set_xpath(xpath)
             self.paint_background(xpath, "red")
