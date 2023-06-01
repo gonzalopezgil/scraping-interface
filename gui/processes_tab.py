@@ -12,8 +12,10 @@ import threading
 from utils.manager.process_manager import ProcessStatus
 from plyer import notification
 from static import icon_path
+import logging
 
 PROCESSES_FILE = get_file_path("processes.csv")
+logger = logging.getLogger(__name__)
 
 class ProcessesTab(QWidget):
     def __init__(self, parent=None):
@@ -160,20 +162,25 @@ class ProcessesTab(QWidget):
         return table_data
     
     def save_data(self):
-        with open(PROCESSES_FILE, 'w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerows(self.get_table_data())
+        try:
+            with open(PROCESSES_FILE, 'w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows(self.get_table_data())
+        except Exception as e:
+            logger.error(f"Error saving processes: {e}")
 
     def open_file(self, file_name):
         if os.name == 'nt':
             os.system(f'start {file_name}')
+            logger.info(f"Opening file '{file_name}'")
         elif os.name == 'posix':
             if sys.platform.startswith('darwin'):
                 os.system(f"open '{file_name}'")
             else:
                 os.system(f"xdg-open '{file_name}'")
+            logger.info(f"Opening file '{file_name}'")
         else:
-            print(self.tr('Error: File is not opening due to unknown operating system'))
+            logger.error("Error: File is not opening due to unknown operating system")
 
     def show_notification(self, title, message):
         try:
@@ -183,8 +190,9 @@ class ProcessesTab(QWidget):
                 app_icon=icon_path,
                 timeout=10,
             )
+            logger.info(f"Notification shown: {title} - {message}")
         except Exception:
-            print(self.tr("Error showing notification"))
+            logger.error("Error showing notification")
 
     @pyqtSlot(int, QVariant, QVariant)
     def update_status(self, row, status, file_name):

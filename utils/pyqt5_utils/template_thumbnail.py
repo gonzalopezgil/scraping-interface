@@ -4,6 +4,9 @@ from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkRepl
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QFrame
 from utils.manager.template_manager import get_domain
 from PyQt5.QtWidgets import QMenu, QAction
+import logging
+
+logger = logging.getLogger(__name__)
 
 class TemplateThumbnail(QFrame):
     clicked = pyqtSignal()
@@ -58,7 +61,7 @@ class TemplateThumbnail(QFrame):
             else:
                 self.load_default_favicon()
         except Exception as e:
-            print(f"Warning: Error getting the favicon of a template. {e}")
+            logger.warning(f"Warning: Error getting the favicon of a template. {e}")
             self.load_default_favicon()
 
     def load_default_favicon(self):
@@ -68,7 +71,7 @@ class TemplateThumbnail(QFrame):
                 pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio, Qt.SmoothTransformation)
                 self.logo.setPixmap(pixmap)
         except Exception as e:
-            print(f"Warning: Error loading default favicon: {e}")
+            logger.warning(f"Warning: Error loading default favicon: {e}")
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:

@@ -15,7 +15,6 @@ from scrapy.crawler import CrawlerRunner
 from twisted.internet import reactor
 from multiprocessing import Process, Queue
 from selenium.webdriver.support import expected_conditions as EC
-import web.javascript_strings as jss
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -25,10 +24,12 @@ from exceptions.scraper_exceptions import ScraperStoppedException
 import time
 import random
 from utils.manager.process_manager import ProcessStatus
+import logging
 
 TIMEOUT = 5
 XPATH_USERNAME = '//input[@type="text"]|//input[@type="email"]'
 XPATH_PASSWORD = '//input[@type="password"]'
+logger = logging.getLogger(__name__)
 
 class SeleniumScraper(Scraper):
 
@@ -52,6 +53,8 @@ class SeleniumScraper(Scraper):
         # Changing the property of the navigator value for webdriver to undefined 
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
+        logger.info("Driver created")
+
         return driver
     
     def get_webpage(self, url, headless=True):
@@ -60,6 +63,7 @@ class SeleniumScraper(Scraper):
         user_agent = self.get_random_chrome_ua()
         driver.execute_cdp_cmd("Network.setUserAgentOverride", {"userAgent": user_agent})
         driver.get(url)
+        logger.info(f"Webpage {url} opened")
         return driver
 
     def get_elements(self, xpath, obj, text=None):
@@ -72,7 +76,7 @@ class SeleniumScraper(Scraper):
                 elements = [element.text for element in elements]
             return elements
         except TimeoutException:
-            print("Error: Text selected by the user not found in elements")
+            logger.warning(f"Elements not found for xpath: {xpath}")
             return None
     
     def close_webpage(self, obj):
@@ -130,7 +134,7 @@ class SeleniumScraper(Scraper):
                     actual_percentage += increment * 2
                     self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
                 except Exception:
-                    print("Error: Pagination button not found")
+                    logger.error("Error: Pagination button not found")
                     next_page = False
             else:
                 next_page = False
@@ -162,7 +166,7 @@ class SeleniumScraper(Scraper):
                 self.save_file(df, file_name)
                 signal_manager.process_signal.emit(row, str(ProcessStatus.FINISHED.value), file_name)
         else:
-            print("Error: No elements found")
+            logger.error("Error: No elements found")
             signal_manager.process_signal.emit(row, str(ProcessStatus.ERROR.value), "")
 
 
@@ -186,7 +190,7 @@ class SeleniumScraper(Scraper):
             q.put(None)
 
         except Exception as e:
-            print(f"Error: {e}")
+            logger.error(f"Error: {e}")
             q.put(None)
     
     def scrape(self, html, prefix, labels, xpath_suffixes):
@@ -220,7 +224,7 @@ class SeleniumScraper(Scraper):
             )
             return login_input != None
         except Exception:
-            print("Couldn't find the email or username input.")
+            logger.error("Error: Couldn't find the email or username input.")
 
     def fill_input(self, obj, xpath, text):
         try:
@@ -229,13 +233,13 @@ class SeleniumScraper(Scraper):
             )
             if login_input:
                 login_input.send_keys(text)
-                print("Login input filled")
+                logger.info("Login input filled")
                 return True
             else:
-                print("Error: Login input not found")
+                logger.warning("Error: Login input not found")
                 return False
         except Exception:
-            print("Error: Login input not filled")
+            logger.error("Error: Login input not filled")
             return False
     
     def login_using_stored_credentials(self, driver, url, stop, signal_manager, row, interaction, login_info=None):
@@ -248,7 +252,7 @@ class SeleniumScraper(Scraper):
             # Find and fill in the email or username input
 
             if not self.find_login_input(driver, XPATH_USERNAME):
-                print("Not login form found")
+                logger.warning("No login form found")
                 return False
             
             driver = self.require_user_interaction(driver, login_url, stop, signal_manager, row, interaction)
@@ -273,24 +277,8 @@ class SeleniumScraper(Scraper):
             return driver
 
         except Exception:
-            print("Couldn't find the email or username input or the password input.")
+            logger.error("Error: Couldn't find the email or username input or the password input.")
             return None
-
-    def click_form_button(self, driver):
-        try:
-            print("looking for form button")
-            button_xpath = driver.execute_script(jss.FIND_RELATED_BUTTON_JS)
-            print(button_xpath)
-
-            if button_xpath:
-                print("Button found")
-                # Find the button using its XPath and click it
-                button = driver.find_element(By.XPATH, button_xpath)
-                button.click()
-            else:
-                print("Couldn't find a related button to click.")
-        except Exception:
-            print("Couldn't find a related button to click.")
 
     def check_for_captcha(self, obj):
         # Look for CAPTCHA in iframes
@@ -335,7 +323,7 @@ class SeleniumScraper(Scraper):
     def check_elements(self, stop, signal_manager, row, xpaths, selected_text, url, obj, interaction):
         if not self._check_elements(xpaths, selected_text, obj) and self.check_for_captcha(obj):
             self.update_progress("3%", stop, signal_manager, row)
-            print("CAPTCHA found")
+            logger.info("CAPTCHA found")
             
             obj = self.require_user_interaction(obj, url, stop, signal_manager, row, interaction, True)
 
@@ -344,7 +332,7 @@ class SeleniumScraper(Scraper):
                 interaction.wait()
                 interaction.clear()
         else:
-            print("No CAPTCHA found")
+            logger.info("No CAPTCHA found")
         
         self.update_progress("5%", stop, signal_manager, row)
 
@@ -361,13 +349,14 @@ class SeleniumScraper(Scraper):
                         elements = self.clean_list(elements)
                         elements = self.find_text_in_data(elements, text)
                         if elements is None:
-                            print("Error: Text selected by the user not found in elements")
+                            logger.error("Error: Text selected by the user not found in elements")
                             return None
         return obj
     
     def update_progress(self, progress, stop, signal_manager, row):
         if stop.value:
             signal_manager.process_signal.emit(row, str(ProcessStatus.STOPPED.value), "")
+            logger.info("Scraper stopped by the user")
             raise ScraperStoppedException("Scraper stopped by the user")
         signal_manager.process_signal.emit(row, progress, "")
 

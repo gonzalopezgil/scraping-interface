@@ -4,8 +4,10 @@ from utils.manager.file_manager import get_folder_path
 from exceptions.file_exceptions import FileDeletionException
 import uuid
 from urllib.parse import urlparse
+import logging
 
 TEMPLATE_FOLDER = get_folder_path("templates")
+logger = logging.getLogger(__name__)
 
 def save_template(url, process_manager, column_titles):
     try:
@@ -37,7 +39,7 @@ def save_template(url, process_manager, column_titles):
             
         return template_id
     except Exception as e:
-        print(f"Error saving template: {e}")
+        logger.error(f"Error saving template: {e}")
         return None
 
 def create_folder():
@@ -71,7 +73,7 @@ def get_column_data_from_template(template, key):
             result.append(column[key])
         return result
     except Exception as e:
-        print(f"Error getting data from template: {e}")
+        logger.error(f"Error getting data from template: {e}")
         return None
 
 def get_domain(url):
@@ -92,7 +94,7 @@ def clear_stored_templates():
         return False
     except Exception as e:
         exception_text = "Error deleting stored templates"
-        print(f"{exception_text}: {e}")
+        logger.error(f"{exception_text}: {e}")
         raise FileDeletionException(exception_text)
 
 def delete_template(template_id):
@@ -104,5 +106,5 @@ def delete_template(template_id):
         return False
     except Exception as e:
         exception_text = f"Error deleting template: {template_id}"
-        print(f"{exception_text}: {e}")
+        logger.error(f"{exception_text}: {e}")
         raise FileDeletionException(exception_text)

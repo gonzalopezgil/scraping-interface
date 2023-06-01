@@ -66,7 +66,7 @@ class MainWindow(QMainWindow):
 
     def export_data(self, action):
         file_format = action.text().split(" ")[-1].lower()
-        print(self.tr("Exporting data to"), file_format)
+        logger.info(f"Exporting data to {file_format}")
 
         self.browser_tab.browser.page().toHtml(lambda html: self.start_thread(html, file_format))
 
@@ -114,7 +114,7 @@ class MainWindow(QMainWindow):
                 i += 1
             return filename
         else:
-            print(self.tr("Error: no file name entered"))
+            logger.error("Error: no file name entered")
             return None
 
     def start_thread(self, html, file_format):

@@ -16,23 +16,26 @@ def main():
 
     # Set up logging
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     # Create a console handler to print logs in the console
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
+    console_handler.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 
     # Create a file handler to write logs to a file
     file_handler = logging.FileHandler(f"{get_folder_path('logs')}/application.log")
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
     # Password manager key
-    create_key()
+    try:
+        create_key()
+    except Exception as e:
+        logger.error(f"Error creating password manager key: {e}")
 
     # Set 'utf-8' encoding
     try:
@@ -46,13 +49,20 @@ def main():
     translator = QTranslator(app)
 
     while exit_code == RESTART_CODE:
+        logger.info("Application started.")
+
         app.removeTranslator(translator)
 
         # Load settings
         try:
             with open(SETTINGS_FILE, 'r') as f:
                 settings = json.load(f)
+            logger.info("Settings loaded successfully.")
         except FileNotFoundError:
+            logger.warning("Settings file not found. Creating a new one.")
+            settings = {}
+        except Exception as e:
+            logger.error(f"Error loading settings: {e}")
             settings = {}
 
         # Translate the app
@@ -70,9 +80,18 @@ def main():
             translation_file = os.path.abspath(f"translations/translations_{locale}.qm")
             if translator.load(QLocale(locale), translation_file):  # Load the specified locale (if not found, don't translate)
                 app.installTranslator(translator)
+                logger.info(f"Translator loaded successfully: {locale}")
 
-        app.setWindowIcon(QIcon(icon_path))
-        window = MainWindow(app)
-        window.setMinimumSize(650, 850)
-        window.show()
-        exit_code = app.exec_()
+        # Create the main window
+        try:
+            app.setWindowIcon(QIcon(icon_path))
+            window = MainWindow(app)
+            window.setMinimumSize(650, 850)
+            window.show()
+            logger.info("Main window created successfully.")
+            exit_code = app.exec_()
+        except Exception as e:
+            logger.error(f"Error creating main window: {e}")
+            exit_code = RESTART_CODE
+
+    sys.exit(exit_code)

@@ -1,14 +1,15 @@
 from scrapy.spiders import Spider
 from scrapy.selector import Selector
-from scrapy.item import Item, Field
 from scrapy.loader import ItemLoader
 from .scraper import Scraper
 from scrapy.crawler import CrawlerRunner
 import scrapy
 from twisted.internet import reactor
 from multiprocessing import Process, Queue
-from utils.manager.file_manager import get_folder_path
 import logging
+from scrapers.middlewares import DOWNLOADER_MIDDLEWARES
+
+logger = logging.getLogger(__name__)
 
 class ScrapyScraper(Scraper, Spider):
     name = "ScrapyScraper"
@@ -25,24 +26,9 @@ class ScrapyScraper(Scraper, Spider):
         'CLOSESPIDER_ITEMCOUNT': 5,
         'REQUEST_FINGERPRINTER_IMPLEMENTATION': '2.7',
         'LOG_ENABLED': True,
-        'LOG_LEVEL': 'DEBUG',
+        'LOG_LEVEL': 'INFO',
         'LOG_FORMATTER': 'scrapy.logformatter.LogFormatter',
-        'DOWNLOADER_MIDDLEWARES': {
-            'scrapers.middlewares.NoInternetMiddleware': 1,
-            'scrapy.downloadermiddlewares.robotstxt.RobotsTxtMiddleware': None,
-            'scrapy.downloadermiddlewares.httpauth.HttpAuthMiddleware': None,
-            'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware': None,
-            'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware': None,
-            'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
-            'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
-            'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware': None,
-            'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': None,
-            'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': None,
-            'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
-            'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': None,
-            'scrapy.downloadermiddlewares.stats.DownloaderStats': None,
-            'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': None,
-        },
+        'DOWNLOADER_MIDDLEWARES': DOWNLOADER_MIDDLEWARES,
     }
 
     def get_webpage(self, response):
@@ -50,10 +36,6 @@ class ScrapyScraper(Scraper, Spider):
 
     def get_elements(self, xpath, obj, _=None):
         return obj.xpath(xpath)
-
-    def close_webpage(self, _):
-        # No need to close webpage with scrapy
-        pass
 
     def parse(self, response):
         obj = Selector(text=self.html)
@@ -64,7 +46,7 @@ class ScrapyScraper(Scraper, Spider):
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
 
         if elements is None or len(elements) == 0:
-            print("Error: No elements found")
+            logger.error("Error: No elements found")
 
         count = 0
         node = {label: "" for label in self.labels}
@@ -105,22 +87,9 @@ class ScrapyScraper(Scraper, Spider):
             
             if self.max_items and count == self.max_items:
                 break
-
-        self.close_webpage(obj)
-
-    def create_class(self, fields):
-        my_dict = {field: Field() for field in fields}
-        new_class = type("Element", (Item,), my_dict)
-        return new_class
     
     def run_scraper(self, q, url, labels, xpaths, html, max_items):
-        # Set up root logger
-        logger = logging.getLogger()
-        logger.setLevel(logging.DEBUG)
-        file_handler = logging.FileHandler(f"{get_folder_path('logs')}/scrapy_scraper.log")
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+        self.set_logs("scrapy_scraper")
 
         try:
             runner = CrawlerRunner()
@@ -147,7 +116,7 @@ class ScrapyScraper(Scraper, Spider):
             
             q.put(dict_results)
         except Exception as e:
-            logger.error("Exception occurred", exc_info=True)
+            logger.error(f"Exception occurred: {e}")
             q.put(e)
 
     def scrape(self, url, labels, xpaths, html, max_items=None):
