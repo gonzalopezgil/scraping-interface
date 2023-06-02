@@ -1,6 +1,6 @@
 from . scraper import Scraper
 from selenium.common.exceptions import TimeoutException
-from fake_useragent import UserAgent
+from latest_user_agents import get_random_user_agent
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -22,7 +22,6 @@ from utils.manager.password_manager import get_login_info
 from . scrapy_selenium_scraper import ScrapySeleniumScraper
 from exceptions.scraper_exceptions import ScraperStoppedException
 import time
-import random
 from utils.manager.process_manager import ProcessStatus
 import logging
 
@@ -59,8 +58,7 @@ class SeleniumScraper(Scraper):
     
     def get_webpage(self, url, headless=True):
         driver = self.get_driver(headless)
-        #user_agent = UserAgent().random
-        user_agent = self.get_random_chrome_ua()
+        user_agent = get_random_user_agent()
         driver.execute_cdp_cmd("Network.setUserAgentOverride", {"userAgent": user_agent})
         driver.get(url)
         logger.info(f"Webpage {url} opened")
@@ -315,23 +313,27 @@ class SeleniumScraper(Scraper):
         return obj
     
     def check_elements(self, stop, signal_manager, row, xpaths, selected_text, url, obj, interaction):
-        if not self._check_elements(xpaths, selected_text, obj) and self.check_for_captcha(obj):
-            self.update_progress("3%", stop, signal_manager, row)
-            logger.info("CAPTCHA found")
-            
-            obj = self.require_user_interaction(obj, url, stop, signal_manager, row, interaction, True)
-
-            if self.check_for_captcha(obj):
-                # Wait for the user to solve the CAPTCHA
-                interaction.wait()
-                interaction.clear()
+        found = False
+        if self._check_elements(xpaths, selected_text, obj):
+            found = True
+            logger.info(f"Elements found with the selected text: {selected_text}")
         else:
-            logger.info("No CAPTCHA found")
+            if self.check_for_captcha(obj):
+                self.update_progress("3%", stop, signal_manager, row)
+                logger.info("CAPTCHA found")
+                
+                obj = self.require_user_interaction(obj, url, stop, signal_manager, row, interaction, True)
+
+                if self.check_for_captcha(obj):
+                    logger.info("Waiting for the user to solve the CAPTCHA")
+                    interaction.wait()
+                    interaction.clear()
+            
         
         self.update_progress("5%", stop, signal_manager, row)
 
         # Check if login is required
-        if not self._check_elements(xpaths, selected_text, obj):
+        if not found and not self._check_elements(xpaths, selected_text, obj):
             self.update_progress("6%", stop, signal_manager, row)
             obj = self.login_using_stored_credentials(obj, url, stop, signal_manager, row, interaction, get_login_info(url))
             if obj:
@@ -367,18 +369,6 @@ class SeleniumScraper(Scraper):
             end_of_page = obj.execute_script('return window.pageYOffset + window.innerHeight >= document.body.scrollHeight;')
             if end_of_page:
                 break
-
-    def get_random_chrome_ua(self):
-        version = str(random.randint(80, 90))
-        platforms = [
-            '(Windows NT 10.0; Win64; x64)',  # Windows 10
-            '(Macintosh; Intel Mac OS X 10_15_4)',  # Mac OS X
-            '(X11; Linux x86_64)',  # Linux
-            '(Android 10; Mobile)',  # Android
-            '(iPhone; CPU iPhone OS 13_3 like Mac OS X)',  # iPhone
-        ]
-        platform = random.choice(platforms)
-        return f"Mozilla/5.0 {platform} AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version}.0.0.0 Safari/537.36"
     
     def check_for_captcha(self, obj):
         # Look for CAPTCHA in iframes
