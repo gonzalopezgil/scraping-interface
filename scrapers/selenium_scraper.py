@@ -6,18 +6,12 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from . scraper import Scraper
 import scrapy
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from scrapy.crawler import CrawlerRunner
 from twisted.internet import reactor
 from multiprocessing import Process, Queue
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from utils.manager.password_manager import get_login_info
 from . scrapy_selenium_scraper import ScrapySeleniumScraper
 from exceptions.scraper_exceptions import ScraperStoppedException
