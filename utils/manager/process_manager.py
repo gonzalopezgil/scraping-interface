@@ -1,6 +1,20 @@
 import os
 from utils.manager.file_manager import get_file_path
 from exceptions.file_exceptions import FileDeletionException
+from enum import Enum
+import logging
+
+logger = logging.getLogger(__name__)
+
+class ProcessStatus(Enum):
+    RUNNING = 1
+    STOPPING = 2
+    FINISHED = 3
+    ERROR = 4
+    REQUIRES_INTERACTION = 5
+    INTERACTING = 6
+    STOPPED = 7
+    UNKNOWN = 8
 
 def clear_process_history():
     try:
@@ -11,7 +25,7 @@ def clear_process_history():
         return False
     except Exception as e:
         exception_text = "Error deleting process history"
-        print(f"{exception_text}: {e}")
+        logger.error(f"{exception_text}: {e}")
         raise FileDeletionException(exception_text)
 
 class Column:

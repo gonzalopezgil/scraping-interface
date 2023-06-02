@@ -5,10 +5,13 @@ import json
 from urllib.parse import urlparse
 from exceptions.file_exceptions import FileDeletionException
 from utils.manager.file_manager import get_file_path
+import logging
 
 KEY_NAME = "scraping_interface_password_manager_key"
 SERVICE_NAME = "scraping_interface"
 FILE_NAME = "login.txt"
+
+logger = logging.getLogger(__name__)
 
 def create_key():
     try:
@@ -18,9 +21,9 @@ def create_key():
         if stored_key is None:
             key = Fernet.generate_key()
             keyring.set_password(SERVICE_NAME, KEY_NAME, key.decode("utf-8"))
-            print("Key generated and stored.")
+            logger.info("Key generated and stored.")
     except Exception as e:
-        print(f"Warning: Error creating the key to encript the passwords: {e}\nYou won't be able to use the Password Manager.")
+        logger.warning(f"Warning: Error creating the key to encript the passwords: {e}\nYou won't be able to use the Password Manager.")
 
 def get_key():
     try:
@@ -30,7 +33,7 @@ def get_key():
             stored_key = keyring.get_password(SERVICE_NAME, KEY_NAME)
         return stored_key.encode("utf-8")
     except Exception as e:
-        print(f"Error getting the key to encrypt the passwords: {e}")
+        logger.error(f"Error getting the key to encrypt the passwords: {e}")
         return None
 
 def save_login_file(login_info):
@@ -87,13 +90,13 @@ def save_login_file(login_info):
         # Set file permissions to read and write for the owner only (chmod 600)
         os.chmod(file_path, 0o600)
 
-        print("Credentials stored successfully.")
+        logger.info("Credentials stored successfully.")
         return True
     except Exception as e:
-        print(f"Error saving the credentials: {e}")
+        logger.error(f"Error saving the credentials: {e}")
         return False
 
-def get_login_info_for_url(url):
+def get_login_info(url):
     try:
         # Use the key to create a Fernet object
         cipher_suite = Fernet(get_key())
@@ -126,11 +129,11 @@ def get_login_info_for_url(url):
             if domain_name == stored_domain_name:
                 return login_info
 
-        print("No login credentials were found.")
+        logger.info("No login credentials were found.")
         # If no match is found, return None
         return None
     except Exception as e:
-        print(f"Error getting the login info: {e}")
+        logger.error(f"Error getting the login info: {e}")
         return None
 
 def clear_stored_passwords():
@@ -142,7 +145,7 @@ def clear_stored_passwords():
         return False
     except Exception as e:
         exception_text = "Error deleting stored passwords"
-        print(f"{exception_text}: {e}")
+        logger.error(f"{exception_text}: {e}")
         raise FileDeletionException(exception_text)
 
 def get_domain_name(url):
@@ -156,5 +159,5 @@ def get_domain_name(url):
 
         return domain_name
     except Exception as e:
-        print(f"Error getting domain name: {e}")
+        logger.error(f"Error getting domain name: {e}")
         return None

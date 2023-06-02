@@ -1,7 +1,9 @@
 ENABLE_LINKS_JS = """
-    var links = document.getElementsByTagName("a");
-    for (var i = 0; i < links.length; i++) {
-        links[i].removeEventListener("click", disableLink);
+    document.body.removeEventListener("click", disableLink);
+
+    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
+    for (var i = 0; i < textElements.length; i++) {
+        textElements[i].removeEventListener("click", scrapeData);
     }
 
     // Remove red background from previously painted elements
@@ -24,10 +26,7 @@ ENABLE_LINKS_JS = """
 """
 
 DISABLE_LINKS_JS = """
-    var links = document.getElementsByTagName("a");
-    for (var i = 0; i < links.length; i++) {
-        links[i].addEventListener("click", disableLink);
-    }
+    document.body.addEventListener("click", disableLink);
 
     function disableLink(event) {
         event.preventDefault();
@@ -38,6 +37,26 @@ DISABLE_LINKS_JS = """
     for (var i = 0; i < textElements.length; i++) {
         textElements[i].addEventListener("click", scrapeData);
     }
+
+    var style = document.createElement('style');
+    style.innerHTML = `
+        ::selection {
+            background: #E7d5ff; /* WebKit/Blink Browsers */
+            color: black;
+        }
+        ::-moz-selection {
+            background: #E7d5ff; /* Gecko Browsers */
+            color: black;
+        }
+    `;
+    document.head.appendChild(style);
+    var range = document.createRange();
+    range.selectNodeContents(document.body);
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    document.addEventListener('mousedown', preventMousedown);
 """
 
 START_JS = """
@@ -179,8 +198,6 @@ START_JS = """
         }
         console.log(consoleMessage + "xpath>" + xpath);
         console.log(consoleMessage + "selectedText>" + message + ">" + 1);
-
-        paintRedBackground(xpath);
     }
 """
 
@@ -200,28 +217,6 @@ DISABLE_PAGINATION_JS = """
     }
 """
 
-HIGHLIGHT_TEXT_JS = """
-    var style = document.createElement('style');
-    style.innerHTML = `
-        ::selection {
-            background: #E7d5ff; /* WebKit/Blink Browsers */
-            color: black;
-        }
-        ::-moz-selection {
-            background: #E7d5ff; /* Gecko Browsers */
-            color: black;
-        }
-    `;
-    document.head.appendChild(style);
-    var range = document.createRange();
-    range.selectNodeContents(document.body);
-    var selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    document.addEventListener('mousedown', preventMousedown);
-"""
-
 UNHIGHLIGHT_TEXT_JS = """
     var selection = window.getSelection();
     selection.removeAllRanges();
@@ -229,7 +224,7 @@ UNHIGHLIGHT_TEXT_JS = """
 """
 
 # xpath variable must be defined before calling this function
-REMOVE_RED_BACKGROUND_JS = """
+REMOVE_BACKGROUND_JS = """
     var lastMessage = "";
 
     function removeRedBackground(xpath) {
@@ -243,15 +238,15 @@ REMOVE_RED_BACKGROUND_JS = """
     removeRedBackground(xpath);
 """
 
-# xpath variable must be defined before calling this function
-PAINT_RED_BACKGROUND_JS = """
+# xpath and color variables must be defined before calling this function
+PAINT_BACKGROUND_JS = """
     var lastMessage = "";
 
     function paintRedBackground(xpath) {
         var elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
         var element = elements.iterateNext();
         while (element) {
-            element.style.backgroundColor = 'red';
+            element.style.backgroundColor = color;
             redElements.push(element);
             element = elements.iterateNext();
         }

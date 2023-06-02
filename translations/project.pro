@@ -18,6 +18,7 @@ SOURCES = \
         ../static/__init__.py \
         ../gui/browser_tab.py \
         ../gui/main_window.py \
+        ../gui/constants.py \
         ../gui/__init__.py \
         ../gui/settings_tab.py \
         ../gui/processes_tab.py \
@@ -26,6 +27,8 @@ SOURCES = \
         ../scrapers/scraper.py \
         ../scrapers/scrapy_scraper.py \
         ../scrapers/__init__.py \
+        ../scrapers/middlewares.py \
+        ../scrapers/selenium_scraper.py \
         ../main.py \
 
 TRANSLATIONS = translations_es.ts

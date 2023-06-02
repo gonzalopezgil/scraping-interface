@@ -1,11 +1,13 @@
 import os
 import json
-from collections import defaultdict
-from utils.manager.password_manager import get_domain_name
 from utils.manager.file_manager import get_folder_path
 from exceptions.file_exceptions import FileDeletionException
+import uuid
+from urllib.parse import urlparse
+import logging
 
 TEMPLATE_FOLDER = get_folder_path("templates")
+logger = logging.getLogger(__name__)
 
 def save_template(url, process_manager, column_titles):
     try:
@@ -20,57 +22,46 @@ def save_template(url, process_manager, column_titles):
                 "column_title": column_titles[i]
             })
 
+        # Generate a unique id for the template and use it as the filename
+        template_id = str(uuid.uuid4())
+
         template = {
             "url": url,
             "pagination_xpath": process_manager.pagination_xpath,
+            "id": template_id,
             "columns": columns
         }
 
-        domain = get_domain_name(url)
-        count = 1
-        while os.path.exists(_get_template_path(domain, count)):
-            count += 1
+        template_path = _get_template_path(template_id)
 
-        with open(_get_template_path(domain, count), "w") as f:
+        with open(template_path, "w") as f:
             json.dump(template, f)
             
-        return True
+        return template_id
     except Exception as e:
-        print(f"Error saving template: {e}")
-        return False
+        logger.error(f"Error saving template: {e}")
+        return None
 
 def create_folder():
     if not os.path.exists(TEMPLATE_FOLDER):
         os.makedirs(TEMPLATE_FOLDER)
 
-def _get_template_path(domain, count):
-    suffix = f"_({count})" if count > 1 else ""
-    filename = f"{domain}{suffix}.json"
-    return os.path.join(TEMPLATE_FOLDER, filename)
+def _get_template_path(template_id):
+    return os.path.join(TEMPLATE_FOLDER, f"{template_id}.json")
 
 def list_templates():
     files = os.listdir(TEMPLATE_FOLDER)
-    domains = defaultdict(int)
-    for file in files:
-        if file.endswith(".json"):
-            domain = file[:-5]
-            domains[domain] += 1
+    ids = [file[:-5] for file in files if file.endswith(".json")]
+    return ids
 
-    domain_list = []
-    for domain, count in domains.items():
-        for i in range(1, count + 1):
-            suffix = f"_({i})" if i > 1 else ""
-            domain_list.append(f"{domain}{suffix}")
-
-    return domain_list
-
-def load_template(index):
-    domain_list = list_templates()
-    if index < 0 or index >= len(domain_list):
+def load_template(template_id):
+    # Check if the provided id exists in the list of templates
+    template_ids = list_templates()
+    if template_id not in template_ids:
         return None
 
-    domain = domain_list[index]
-    with open(_get_template_path(domain, 0), "r") as f:
+    # Load the template using the id
+    with open(_get_template_path(template_id), "r") as f:
         template = json.load(f)
 
     return template
@@ -82,14 +73,15 @@ def get_column_data_from_template(template, key):
             result.append(column[key])
         return result
     except Exception as e:
-        print(f"Error getting data from template: {e}")
+        logger.error(f"Error getting data from template: {e}")
         return None
 
-def get_domain(name):
-    if "_" in name:
-        return name.split("_")[0]
-    else:
-        return name
+def get_domain(url):
+    result = urlparse(url)
+    domain = result.netloc
+    if domain.startswith('www.'):
+        domain = domain[4:]
+    return domain
     
 def clear_stored_templates():
     try:
@@ -102,22 +94,17 @@ def clear_stored_templates():
         return False
     except Exception as e:
         exception_text = "Error deleting stored templates"
-        print(f"{exception_text}: {e}")
+        logger.error(f"{exception_text}: {e}")
         raise FileDeletionException(exception_text)
 
-def delete_template(index):
+def delete_template(template_id):
     try:
-        domain_list = list_templates()
-        if index < 0 or index >= len(domain_list):
-            return False
-
-        template_path = _get_template_path(get_domain(domain_list[index]), 0)
+        template_path = _get_template_path(template_id)
         if os.path.exists(template_path):
             os.remove(template_path)
             return True
-
         return False
     except Exception as e:
-        exception_text = f"Error deleting template: {domain_list[index]}"
-        print(f"{exception_text}: {e}")
+        exception_text = f"Error deleting template: {template_id}"
+        logger.error(f"{exception_text}: {e}")
         raise FileDeletionException(exception_text)

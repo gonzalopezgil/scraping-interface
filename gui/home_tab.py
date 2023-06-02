@@ -2,13 +2,13 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QStyle, QSt
 from PyQt5.QtGui import QPainter, QIcon
 from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from utils.pyqt5_utils.template_thumbnail import TemplateThumbnail
-from utils.manager.template_manager import list_templates, delete_template
+from utils.manager.template_manager import list_templates, delete_template, load_template
 from static import back_path, forward_path, background_path, logo_path
 
 STYLE_SHEET = "background-color: transparent; border: none;"
 
 class HomeTab(QWidget):
-    template_clicked = pyqtSignal(int)
+    template_clicked = pyqtSignal(str)
 
     def __init__(self, parent=None, templates_per_page=8):
         super().__init__(parent)
@@ -72,13 +72,12 @@ class HomeTab(QWidget):
         self.next_button.setStyleSheet(STYLE_SHEET)
 
         self.templates = []
-        self.previous_width = self.width()
 
         templates_list = list_templates()
 
         if not self.templates:
-            for i, domain in enumerate(templates_list):
-                template_thumbnail = TemplateThumbnail(domain, i)
+            for i, template_id in enumerate(templates_list):
+                template_thumbnail = TemplateThumbnail(load_template(template_id), i)
                 self.templates.append(template_thumbnail)
                 self.templates_grid.addWidget(template_thumbnail)
                 template_thumbnail.clicked.connect(self.template_thumbnail_clicked)
@@ -102,11 +101,12 @@ class HomeTab(QWidget):
                 widget.deleteLater()
 
         if not self.templates:
-            for i, domain in enumerate(templates_list):
-                template_thumbnail = TemplateThumbnail(domain, i)
+            for i, template_id in enumerate(templates_list):
+                template_thumbnail = TemplateThumbnail(load_template(template_id), i)
                 self.templates.append(template_thumbnail)
                 self.templates_grid.addWidget(template_thumbnail)
                 template_thumbnail.clicked.connect(self.template_thumbnail_clicked)
+                template_thumbnail.deleted.connect(self.template_thumbnail_deleted)
 
         if not self.templates:
             self.templates_scroll_area.hide()
@@ -122,37 +122,7 @@ class HomeTab(QWidget):
     def template_thumbnail_clicked(self):
         sender = self.sender()
         if isinstance(sender, TemplateThumbnail):
-            self.template_clicked.emit(sender.index)
-
-    def hide_templates(self):
-        width = self.width()
-        num_templates = len(self.templates)
-        if width < 1750 and num_templates > 7:
-            self.templates[7].hide()
-        if width < 1500 and num_templates > 6:
-            self.templates[6].hide()
-        if width < 1200 and num_templates > 5:
-            self.templates[5].hide()
-        if width < 900 and num_templates > 4:
-            self.templates[4].hide()
-
-    def show_templates(self):
-        width = self.width()
-        num_templates = len(self.templates)
-        if width >= 1750 and num_templates > 7:
-            self.templates[7].show()
-        if width >= 1500 and num_templates > 6:
-            self.templates[6].show()
-        if width >= 1200 and num_templates > 5:
-            self.templates[5].show()
-        if width >= 900 and num_templates > 4:
-            self.templates[4].show()
-
-    def update_templates(self):
-        if self.width() > self.previous_width:
-            self.show_templates()
-        else:
-            self.hide_templates()
+            self.template_clicked.emit(str(sender.template["id"]))
 
     def change_page(self):
         num_shown_templates = self.get_num_shown_templates()
@@ -192,8 +162,7 @@ class HomeTab(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.update_templates()
-        self.previous_width = self.width()
+        self.change_page()
 
     def paintEvent(self, event):
         option = QStyleOption()
@@ -201,19 +170,23 @@ class HomeTab(QWidget):
         painter = QPainter(self)
         self.style().drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
-    def template_thumbnail_deleted(self, index):
-        delete_template(index)
+    def template_thumbnail_deleted(self, template_id):
+        template = delete_template(template_id)
+        if template:
+            # Remove the template from the list of templates
+            for i, t in enumerate(self.templates):
+                if t.template["id"] == template_id:
+                    del self.templates[i]
+                    break
 
-        # Remove the template from the list of templates
-        del self.templates[index]
-
-        # Also remove it from the layout
-        for i in reversed(range(self.templates_grid.count())): 
-            if i == index:
+            # Also remove it from the layout
+            for i in reversed(range(self.templates_grid.count())): 
                 widget_to_remove = self.templates_grid.itemAt(i).widget()
-                # remove it from the layout list
-                self.templates_grid.removeWidget(widget_to_remove)
-                # remove it from the gui
-                widget_to_remove.setParent(None)
+                if widget_to_remove and widget_to_remove.template["id"] == template_id:
+                    # remove it from the layout list
+                    self.templates_grid.removeWidget(widget_to_remove)
+                    # remove it from the gui
+                    widget_to_remove.setParent(None)
+                    break
 
         self.update_templates_list()

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox, QStyle, QStyleOption, QToolButton, QLabel, QSpinBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox, QStyle, QStyleOption, QLabel, QSpinBox
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QTimer, pyqtSlot
@@ -7,7 +7,6 @@ import web.javascript_strings as jss
 from utils.pyqt5_utils.web_engine_page import WebEnginePage
 from scrapers.scrapy_scraper import ScrapyScraper
 import threading
-from bs4 import BeautifulSoup
 from utils.pyqt5_utils.custom_table_widget import CustomTableWidget
 from utils.manager.template_manager import save_template, get_column_data_from_template
 import static
@@ -54,6 +53,7 @@ class BrowserTab(QWidget):
         self.pagination_xpath_input = QLineEdit(self)
         self.pagination_xpath_input.setPlaceholderText(self.tr("Click on the pagination button or enter an XPath"))
         self.pagination_xpath_input.setEnabled(False)
+        self.pagination_xpath_input.editingFinished.connect(self.handle_pagination_changed)
         self.pagination_layout.addWidget(self.pagination_xpath_input)
 
         # Add a label and a spin box to enter the maximum pages to be scraped
@@ -167,7 +167,7 @@ class BrowserTab(QWidget):
         self.navigation_bar_layout.addWidget(self.forward_button)
 
         self.refresh_button = QPushButton(self.navigation_bar)
-        self.refresh_button.clicked.connect(self.browser.reload)
+        self.refresh_button.clicked.connect(self.refresh_browser)
         self.navigation_bar_layout.addWidget(self.refresh_button)
 
         refresh_icon = QIcon(static.refresh_path)
@@ -249,6 +249,9 @@ class BrowserTab(QWidget):
             }
         """)
 
+    def refresh_browser(self):
+        self.browser.reload()
+        self.browser.loadFinished.connect(lambda _: self.update_url_field(self.browser.url()))
 
     def export_data(self, action):
         self.process_manager.file_format = action.text().split(" ")[-1].lower()
@@ -340,7 +343,6 @@ class BrowserTab(QWidget):
             self.table_widget.setColumnCount(COLUMN_COUNT)
             self.table_xpath.setColumnCount(COLUMN_COUNT)
             self.timer.singleShot(100, self.disable_links)
-            page.runJavaScript(jss.HIGHLIGHT_TEXT_JS)
         # Enable links if the scrape widget is not visible
         else:
             self.timer.stop()
@@ -375,8 +377,6 @@ class BrowserTab(QWidget):
                 self.table_widget.setItem(j, i, QTableWidgetItem(item))
     
     def preview_scrape(self, html):
-        html = self.clean_html(html)
-    
         thread = threading.Thread(target=self.thread_preview_scrape, args=(self.browser.url().toString(), self.get_column_titles(), self.process_manager.get_all_xpaths(), html), daemon=True)
         thread.start()
 
@@ -388,58 +388,26 @@ class BrowserTab(QWidget):
             self.signal_manager.table_items_signal.emit(items)
 
     def handle_cell_changed(self, row, column):
-        xpath = self.table_xpath.item(row, column).text()
-        self.process_manager.get_column(column).set_xpath(xpath)
-        self.paint_red_background(xpath)
-        self.browser.page().toHtml(self.preview_scrape)
+        if self.scrape_widget.isVisible():
+            last_xpath = self.process_manager.get_column(column).get_xpath()
+            if last_xpath:
+                self.remove_background(last_xpath, "red")
+            xpath = self.table_xpath.item(row, column).text()
+            self.process_manager.get_column(column).set_xpath(xpath)
+            self.paint_background(xpath, "red")
+            self.browser.page().toHtml(self.preview_scrape)
 
-    def clean_html(self, html):
-        soup = BeautifulSoup(html, 'html.parser')
+    def handle_pagination_changed(self):
+        pagination_xpath = self.pagination_xpath_input.text()
+        self.process_manager.pagination_xpath = pagination_xpath
+        self.paint_background(pagination_xpath, "green")
 
-        # Remove the head tag
-        if soup.head:
-            soup.head.decompose()
-
-        # Remove script tags (JavaScript)
-        for script_tag in soup.find_all('script'):
-            script_tag.decompose()
-
-        # Remove style tags (CSS)
-        for style_tag in soup.find_all('style'):
-            style_tag.decompose()
-
-        # Remove link tags (external CSS)
-        for link_tag in soup.find_all('link', rel='stylesheet'):
-            link_tag.decompose()
-
-        # Remove iframe tags
-        for iframe_tag in soup.find_all('iframe'):
-            iframe_tag.decompose()
-
-        # Remove img tags (images)
-        for img_tag in soup.find_all('img'):
-            img_tag.decompose()
-
-        # Remove video tags
-        for video_tag in soup.find_all('video'):
-            video_tag.decompose()
-
-        # Remove audio tags
-        for audio_tag in soup.find_all('audio'):
-            audio_tag.decompose()
-
-        # Remove input tags (form elements)
-        for input_tag in soup.find_all('input'):
-            input_tag.decompose()
-
-        return str(soup)
-    
-    def remove_red_background(self, xpath):
-        js_code = f"var xpath = '{xpath}'; {jss.REMOVE_RED_BACKGROUND_JS}"
+    def remove_background(self, xpath, color):
+        js_code = f"var xpath = '{xpath}'; var color = '{color}'; {jss.REMOVE_BACKGROUND_JS}"
         self.browser.page().runJavaScript(js_code)
 
-    def paint_red_background(self, xpath):
-        js_code = f"var xpath = '{xpath}'; {jss.PAINT_RED_BACKGROUND_JS}"
+    def paint_background(self, xpath, color):
+        js_code = f"var xpath = '{xpath}'; var color = '{color}'; {jss.PAINT_BACKGROUND_JS}"
         self.browser.page().runJavaScript(js_code)
     
     def remove_column(self, column):
@@ -447,7 +415,7 @@ class BrowserTab(QWidget):
         self.table_widget.removeColumn(column)
         self.table_xpath.removeColumn(column)
         self.process_manager.remove_column(column)
-        self.remove_red_background(xpath)
+        self.remove_background(xpath, "red")
 
         self.browser.page().toHtml(self.preview_scrape)
 
@@ -494,11 +462,17 @@ class BrowserTab(QWidget):
 
         self.selected_template = template
 
-        self.browser.loadFinished.connect(self.set_template)
+        QTimer.singleShot(4000, self.set_template)
 
     def set_template(self):
+        self.browser.page().runJavaScript(jss.START_JS)
         self.scrape_widget.setVisible(False)
         self.toggle_scrape_widget()
+
+        if self.selected_template and self.selected_template['pagination_xpath']:
+            self.toggle_pagination()
+            self.pagination_xpath_input.setText(self.selected_template['pagination_xpath'])
+            self.handle_pagination_changed()
 
         # Save all this information in the current process manager (including the pagination xpath if it exists)
         self.update_process_manager(self.selected_template)
@@ -511,8 +485,6 @@ class BrowserTab(QWidget):
 
         # Set the xpaths in the xpath table
         self.set_xpaths(get_column_data_from_template(self.selected_template, "xpath"))
-
-        self.browser.loadFinished.disconnect(self.set_template)
 
     def set_column_titles(self, column_titles):
         self.table_widget.setColumnCount(len(column_titles))
@@ -539,7 +511,7 @@ class BrowserTab(QWidget):
             self.process_manager.create_column(xpath)
             self.process_manager.set_first_text(i, text)
         if 'pagination_xpath' in template and template['pagination_xpath'] is not None:
-            self.process_manager.pagination_xpath(template['pagination_xpath'])
+            self.process_manager.pagination_xpath = template['pagination_xpath']
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

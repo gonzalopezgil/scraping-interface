@@ -4,14 +4,17 @@ from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkRepl
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QFrame
 from utils.manager.template_manager import get_domain
 from PyQt5.QtWidgets import QMenu, QAction
+import logging
+
+logger = logging.getLogger(__name__)
 
 class TemplateThumbnail(QFrame):
     clicked = pyqtSignal()
-    deleted = pyqtSignal(int)
+    deleted = pyqtSignal(str)
 
-    def __init__(self, name, index, parent=None):
+    def __init__(self, template, index, parent=None):
         super().__init__(parent)
-        self.name = name
+        self.template = template
         self.index = index
 
         self.setFixedSize(QSize(100, 100))
@@ -25,7 +28,7 @@ class TemplateThumbnail(QFrame):
         layout.addWidget(self.logo)
 
         # Add domain name
-        domain = get_domain(name)
+        domain = get_domain(template["url"])
         domain_label = QLabel(domain, self)
         domain_label.setAlignment(Qt.AlignCenter)
 
@@ -58,7 +61,7 @@ class TemplateThumbnail(QFrame):
             else:
                 self.load_default_favicon()
         except Exception as e:
-            print(f"Warning: Error getting the favicon of a template. {e}")
+            logger.warning(f"Warning: Error getting the favicon of a template. {e}")
             self.load_default_favicon()
 
     def load_default_favicon(self):
@@ -68,7 +71,7 @@ class TemplateThumbnail(QFrame):
                 pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio, Qt.SmoothTransformation)
                 self.logo.setPixmap(pixmap)
         except Exception as e:
-            print(f"Warning: Error loading default favicon: {e}")
+            logger.warning(f"Warning: Error loading default favicon: {e}")
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -91,4 +94,4 @@ class TemplateThumbnail(QFrame):
         context_menu.exec_(event.globalPos())
 
     def delete_template(self):
-        self.deleted.emit(self.index)
+        self.deleted.emit(str(self.template["id"]))

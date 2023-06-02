@@ -2,12 +2,16 @@ from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, Q
 from gui.browser_tab import BrowserTab
 from gui.processes_tab import ProcessesTab
 from gui.settings_tab import SettingsTab
-from scrapers.scrapy_selenium_scraper import ScrapySeleniumScraper
+from scrapers.selenium_scraper import SeleniumScraper
 import threading
 from utils.manager.signal_manager import SignalManager
 from utils.manager.process_manager import ProcessManager
 from gui.home_tab import HomeTab
 from utils.manager.template_manager import load_template
+from utils.manager.process_manager import ProcessStatus
+import logging
+
+logger = logging.getLogger(__name__)
 
 class MainWindow(QMainWindow):
     def __init__(self, app):
@@ -16,6 +20,7 @@ class MainWindow(QMainWindow):
         self.app = app
 
         self.setWindowTitle("Scraping Interface")
+        self.setMinimumSize(650, 850)
         self.resize(1800, 1000)
 
         # Create a QTabWidget to hold the tabs
@@ -62,16 +67,16 @@ class MainWindow(QMainWindow):
 
     def export_data(self, action):
         file_format = action.text().split(" ")[-1].lower()
-        print(self.tr("Exporting data to"), file_format)
+        logger.info(f"Exporting data to {file_format}")
 
         self.browser_tab.browser.page().toHtml(lambda html: self.start_thread(html, file_format))
 
-    def handle_template_click(self, index):
+    def handle_template_click(self, template_id):
         # Change the tab to the BrowserTab
         self.tabs.setCurrentWidget(self.browser_tab)
 
         # Load the template data
-        template = load_template(index)
+        template = load_template(template_id)
 
         # Call the function to update the BrowserTab with the template data
         self.browser_tab.load_template(template)
@@ -110,14 +115,14 @@ class MainWindow(QMainWindow):
                 i += 1
             return filename
         else:
-            print(self.tr("Error: no file name entered"))
+            logger.error("Error: no file name entered")
             return None
 
     def start_thread(self, html, file_format):
         url = self.browser_tab.browser.url().toString()
         column_titles = self.browser_tab.get_column_titles()
         process_manager = self.process_manager
-        stop = self.processes_tab.add_row(url, "", column_titles)
+        stop, interaction = self.processes_tab.add_row(url, "", column_titles)
         row = self.processes_tab.table.rowCount()-1
         file_name = self.enter_file_name(file_format)
         if file_name:
@@ -125,18 +130,18 @@ class MainWindow(QMainWindow):
                 max_pages = self.browser_tab.max_pages_input.value()
                 if not max_pages or max_pages == 0:
                     max_pages = None
-                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.browser_tab.clean_html(html), stop, max_pages), daemon=True)
+                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.signal_manager, interaction, html, stop, max_pages), daemon=True)
             else:
-                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.browser_tab.clean_html(html), stop), daemon=True)
+                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.signal_manager, interaction, html, stop, 1), daemon=True)
             self.thread.start()
         else:
-            self.signal_manager.process_signal.emit(row, "Stopped", "")
+            self.signal_manager.process_signal.emit(row, str(ProcessStatus.STOPPED.value), "")
 
-    def thread_function(self, url, column_titles, file_name, row, process_manager, html=None, stop=None, max_pages=None):
+    def thread_function(self, url, column_titles, file_name, row, process_manager, signal_manager, interaction, html=None, stop=None, max_pages=None):
         self.tabs.setCurrentIndex(2)
 
-        scraper = ScrapySeleniumScraper()
-        scraper.scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), process_manager.pagination_xpath, file_name, self.signal_manager, row, html, stop, max_pages)
+        scraper = SeleniumScraper()
+        scraper.before_scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), process_manager.pagination_xpath, file_name, signal_manager, row, html, stop, interaction, max_pages)
 
     def show_no_preview_results(self):
         QMessageBox.warning(self, self.tr("Warning"), self.tr("No preview results to show"), QMessageBox.Ok)
@@ -163,5 +168,5 @@ class MainWindow(QMainWindow):
     def stop_thread(self):
         if self.thread.is_alive():
             # Implement a method that stops the thread
-            self.signal_manager.process_signal.emit(self.processes_tab.table.rowCount()-1, "Stopped", "")
+            self.signal_manager.process_signal.emit(self.processes_tab.table.rowCount()-1, str(ProcessStatus.STOPPED.value), "")
             self.processes_tab.save_data()

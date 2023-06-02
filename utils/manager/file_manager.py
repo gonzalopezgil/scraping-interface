@@ -1,5 +1,8 @@
 import platform
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_app_data_folder():
     try:
@@ -14,11 +17,11 @@ def get_app_data_folder():
 
         if not os.path.exists(app_data_folder):
             os.makedirs(app_data_folder)
-            print(f"Created default folder: {app_data_folder}")
+            logger.info(f"Created default folder: {app_data_folder}")
 
         return app_data_folder
     except Exception as e:
-        print(f"Error getting the App Data folder of the system: {e}")
+        logger.error(f"Error getting the App Data folder of the system: {e}")
         return None
 
 def get_file_path(file_name):
@@ -26,7 +29,7 @@ def get_file_path(file_name):
         app_data_folder = get_app_data_folder()
         return os.path.join(app_data_folder, file_name) if app_data_folder else file_name
     except Exception as e:
-        print(f"Error getting the file path: {e}")
+        logger.error(f"Error getting the file path: {e}")
         return file_name
     
 def get_folder_path(folder_name):
@@ -35,8 +38,8 @@ def get_folder_path(folder_name):
         folder_path = os.path.join(app_data_folder, folder_name) if app_data_folder else folder_name
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-            print(f"Templates folder created: {folder_path}")
+            logger.info(f"Folder created: {folder_path}")
         return folder_path
     except Exception as e:
-        print(f"Error getting the folder path: {e}")
+        logger.error(f"Error getting the folder path: {e}")
         return folder_name
