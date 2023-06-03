@@ -227,6 +227,7 @@ class ProcessesTab(QWidget):
         self.table.setCellWidget(row, 3, None)
         self.table.setItem(row, 3, QTableWidgetItem(self.translate_status(status_code)))
         self.status_codes[row] = status_code
+        self.table.setCellWidget(row, 6, None)
 
     def on_interaction(self, row):
         self.interaction_variables[row].set()
