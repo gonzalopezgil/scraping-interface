@@ -258,7 +258,10 @@ class SeleniumScraper(Scraper):
             driver.quit()
             driver = self.get_webpage(url)
             for cookie in cookies:
-                driver.add_cookie(cookie)
+                try:
+                    driver.add_cookie(cookie)
+                except Exception as e:
+                    logger.warning(f"Warning: Error adding cookie: {e}")
             driver.get(url)
             return driver
 
@@ -299,7 +302,10 @@ class SeleniumScraper(Scraper):
         if captcha:
             # Add the cookies to the new driver
             for cookie in cookies:
-                obj.add_cookie(cookie)
+                try:
+                    obj.add_cookie(cookie)
+                except Exception as e:
+                    logger.warning(f"Warning: Error adding cookie: {e}")
 
         # Refresh to apply the cookies
         obj.refresh()
@@ -363,13 +369,3 @@ class SeleniumScraper(Scraper):
             end_of_page = obj.execute_script('return window.pageYOffset + window.innerHeight >= document.body.scrollHeight;')
             if end_of_page:
                 break
-    
-    def check_for_captcha(self, obj):
-        # Look for CAPTCHA in iframes
-        iframes = self.get_elements("//iframe[@title='reCAPTCHA']", obj)
-        if iframes is not None and len(iframes) > 0:
-            # Display the Selenium window for user interaction
-            obj.set_window_position(0, 0)
-            obj.set_window_size(800, 600)
-            return True
-        return False
