@@ -139,7 +139,6 @@ class IntegrationTest(unittest.TestCase):
 
         # Test parameters
         file_name = 'test_file.csv'
-        self.main_window.processes_tab.add_row(url, file_name, column_titles)
         row = 0
         process_manager = self.main_window.process_manager
         for i, (xpath, text) in enumerate(zip(xpaths, selected_text)):
