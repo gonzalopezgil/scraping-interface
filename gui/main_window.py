@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
             'xml': f"{self.tr('XML files')} (*.xml)"
         }
         selected_filter = file_extensions.get(file_format, f"{self.tr('All files')} (*)")
-        filename, selected_ext = QFileDialog.getSaveFileName(self, self.tr("Save File"), "", f"{selected_filter};{self.tr('All files')} (*)")
+        filename, selected_ext = QFileDialog.getSaveFileName(self, self.tr("Save File"), "", selected_filter)
 
         if filename:
             # Add the appropriate file extension if it's missing
