@@ -54,37 +54,37 @@
         <translation>Descargar XML</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="195"/>
+        <location filename="../gui/browser_tab.py" line="197"/>
         <source>Scrape</source>
         <translation>Extraer</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="295"/>
+        <location filename="../gui/browser_tab.py" line="306"/>
         <source>Template saved successfully</source>
         <translation>Plantilla guardada correctamente</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="297"/>
+        <location filename="../gui/browser_tab.py" line="308"/>
         <source>Error saving template</source>
         <translation>Error al guardar la plantilla</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="301"/>
+        <location filename="../gui/browser_tab.py" line="312"/>
         <source>Information</source>
         <translation>Información</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="366"/>
+        <location filename="../gui/browser_tab.py" line="377"/>
         <source>Edit Column Header</source>
         <translation>Editar título de la columna</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="366"/>
+        <location filename="../gui/browser_tab.py" line="377"/>
         <source>Enter new column header text:</source>
         <translation>Ingrese el nuevo título de la columna:</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="444"/>
+        <location filename="../gui/browser_tab.py" line="455"/>
         <source>Remove Column</source>
         <translation>Eliminar Columna</translation>
     </message>
