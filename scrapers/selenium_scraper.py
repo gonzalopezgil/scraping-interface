@@ -106,11 +106,7 @@ class SeleniumScraper(Scraper):
                 actual_percentage += increment
                 self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
                 self.infinite_scroll(obj)
-                actual_percentage += increment
-                self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
-                # Wait for the document to be complete (fully loaded)
-                time.sleep(2)
-                actual_percentage += increment
+                actual_percentage += increment * 2
                 self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
                 actual_html = obj.page_source
             
@@ -120,7 +116,7 @@ class SeleniumScraper(Scraper):
             self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
             results.append(dictionary)
 
-            if pagination_xpath:
+            if pagination_xpath and pages + 1 < max_pages:
                 try:
                     WebDriverWait(obj, TIMEOUT).until(EC.presence_of_element_located((By.XPATH, pagination_xpath)))
                     next_button = obj.find_element(By.XPATH, pagination_xpath)
@@ -359,15 +355,23 @@ class SeleniumScraper(Scraper):
         signal_manager.process_signal.emit(row, progress, "")
 
     def infinite_scroll(self, obj):
-        # scroll down repeatedly
-        while True:
-            # scroll down to the bottom of the page
+        get_height_js = 'return document.body.scrollHeight'
+
+        # get initial page height
+        last_height = obj.execute_script(get_height_js)
+
+        # scroll down to the bottom of the page
+        obj.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+
+        # wait for the page to load new content
+        time.sleep(2)
+
+        new_height = obj.execute_script(get_height_js)
+
+        # compare with the old page height
+        while new_height != last_height: # # if heights are different it means more content was loaded
+            
+            last_height = new_height
             obj.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-
-            # wait for the page to load new content
-            obj.implicitly_wait(TIMEOUT)
-
-            # check if we have reached the end of the page
-            end_of_page = obj.execute_script('return window.pageYOffset + window.innerHeight >= document.body.scrollHeight;')
-            if end_of_page:
-                break
+            time.sleep(2)
+            new_height = obj.execute_script(get_height_js)
