@@ -4,7 +4,7 @@ SETTINGS_FILE = get_file_path("settings.json")
 
 LANGUAGES = {
     "English": "en",
-    "Español": "es"
+    "Spanish": "es"
 }
 
 RESTART_CODE = 1000
