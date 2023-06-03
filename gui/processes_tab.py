@@ -224,6 +224,7 @@ class ProcessesTab(QWidget):
     def stop_process(self, row):
         self.stop_variables[row].value = True
         status_code = ProcessStatus.STOPPING.value
+        self.table.setCellWidget(row, 3, None)
         self.table.setItem(row, 3, QTableWidgetItem(self.translate_status(status_code)))
         self.status_codes[row] = status_code
 
