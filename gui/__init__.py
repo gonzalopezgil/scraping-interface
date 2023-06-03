@@ -39,7 +39,11 @@ def main():
 
     # Set 'utf-8' encoding
     try:
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+        if hasattr(sys.stdout, 'buffer'):
+            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+            logger.info("stdout encoding set to 'utf-8'.")
+        else:
+            logger.warning("Warning: stdout has no buffer. utf-8 encoding was not set.")
     except Exception as e:
         logger.warning(f"Warning: Error setting the 'utf-8' encoding. {e}")
 
@@ -89,6 +93,7 @@ def main():
             window.show()
             logger.info("Main window created successfully.")
             exit_code = app.exec_()
+            logger.info(f"Application closed: {exit_code}")
         except Exception as e:
             logger.error(f"Error creating main window: {e}")
             exit_code = RESTART_CODE
