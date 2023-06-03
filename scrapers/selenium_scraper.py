@@ -38,7 +38,9 @@ class SeleniumScraper(Scraper):
         # Turn-off userAutomationExtension 
         options.add_experimental_option("useAutomationExtension", False) 
 
-        options.headless = headless
+        if headless:
+            options.add_argument("--headless")
+        
         options.add_argument("--window-size=1920,1200")
 
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
@@ -350,7 +352,7 @@ class SeleniumScraper(Scraper):
         return obj
     
     def update_progress(self, progress, stop, signal_manager, row):
-        if stop.value:
+        if stop and stop.value:
             signal_manager.process_signal.emit(row, str(ProcessStatus.STOPPED.value), "")
             logger.info("Scraper stopped by the user")
             raise ScraperStoppedException("Scraper stopped by the user")
