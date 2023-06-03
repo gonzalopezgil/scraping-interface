@@ -347,11 +347,11 @@ class SeleniumScraper(Scraper):
                             except WebDriverException:
                                 # The driver is no longer active
                                 # Write the page source to a file
-                                with open("temp.html", "w", encoding='utf-8') as f:
-                                    f.write(html)
-                                obj.quit()
-
                                 try:
+                                    with open("temp.html", "w", encoding='utf-8') as f:
+                                        f.write(html)
+                                    obj.quit()
+
                                     # Start a new driver without headless mode
                                     obj = self.get_driver()
                                     obj.get(f"file:///{os.getcwd()}/temp.html")
