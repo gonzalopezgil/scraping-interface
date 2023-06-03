@@ -1,5 +1,5 @@
 from . scraper import Scraper
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 from latest_user_agents import get_random_user_agent
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -18,6 +18,7 @@ from exceptions.scraper_exceptions import ScraperStoppedException
 import time
 from utils.manager.process_manager import ProcessStatus
 import logging
+import os
 
 TIMEOUT = 5
 XPATH_USERNAME = '//input[@type="text"]|//input[@type="email"]'
@@ -247,13 +248,23 @@ class SeleniumScraper(Scraper):
                     self.fill_input(driver, XPATH_USERNAME, login_info["username"])
                     self.fill_input(driver, XPATH_PASSWORD, login_info["password"])
 
-            # Wait for the user to login
-            interaction.wait()
-            interaction.clear()
+            if interaction:
+                # Wait for the user to login
+                interaction.wait()
+                interaction.clear()
 
-            cookies = driver.get_cookies()
-                
-            driver.quit()
+                cookies = driver.get_cookies()
+
+            else:
+                while True:
+                    try:
+                        cookies = driver.get_cookies()
+                        time.sleep(0.1)
+                    except WebDriverException:
+                        # The driver is no longer active
+                        break
+
+            driver.quit()            
             driver = self.get_webpage(url)
             for cookie in cookies:
                 try:
@@ -291,8 +302,9 @@ class SeleniumScraper(Scraper):
 
         self.update_progress(str(ProcessStatus.REQUIRES_INTERACTION.value), stop, signal_manager, row)
         # Wait for the user to open the Selenium window
-        interaction.wait()
-        interaction.clear()
+        if interaction:
+            interaction.wait()
+            interaction.clear()
 
         # Start a new driver without headless mode
         obj = self.get_webpage(url, headless=False)
@@ -324,9 +336,32 @@ class SeleniumScraper(Scraper):
 
                 if self.check_for_captcha(obj):
                     logger.info("Waiting for the user to solve the CAPTCHA")
-                    interaction.wait()
-                    interaction.clear()
-            
+                    if interaction:
+                        interaction.wait()
+                        interaction.clear()
+                    else:
+                        while True:
+                            try:
+                                html = obj.page_source
+                                time.sleep(0.1)
+                            except WebDriverException:
+                                # The driver is no longer active
+                                # Write the page source to a file
+                                with open("temp.html", "w", encoding='utf-8') as f:
+                                    f.write(html)
+                                obj.quit()
+
+                                try:
+                                    # Start a new driver without headless mode
+                                    obj = self.get_driver()
+                                    obj.get(f"file:///{os.getcwd()}/temp.html")
+                                    os.remove("temp.html")
+                                except Exception as e:
+                                    logger.warning(f"Warning: Error opening the temporary file with the page source: {e}")
+                                    obj = None
+                                found = True # It's not possible to continue interacting with the driver in this case
+                                break
+
         
         self.update_progress("5%", stop, signal_manager, row)
 
