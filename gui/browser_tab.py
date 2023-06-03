@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox, QStyle, QStyleOption, QLabel, QSpinBox
 from PyQt5.QtCore import QUrl, Qt
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile
 from PyQt5.QtCore import QTimer, pyqtSlot
 from PyQt5.QtGui import QIcon, QPainter
 import web.javascript_strings as jss
@@ -145,6 +145,8 @@ class BrowserTab(QWidget):
         self.download_menu.addAction(self.download_json_action)
         self.download_menu.addAction(self.download_xml_action)
 
+        # Set language
+        QWebEngineProfile.defaultProfile().setHttpAcceptLanguage(self.settings["locale"] if "locale" in self.settings else "en")
         page = WebEnginePage(self.browser, self.table_widget, self.table_xpath, self.process_manager, self.pagination_xpath_input)
         self.browser.setPage(page)
         page.runJavaScript(jss.START_JS)
@@ -272,6 +274,15 @@ class BrowserTab(QWidget):
     def toggle_pagination(self):
         if self.pagination_widget.isVisible():
             self.pagination_widget.hide()
+            if self.process_manager.pagination_xpath:
+                self.remove_background("", "green")
+            self.pagination_xpath_input.setText("")
+            self.pagination_checkbox.setChecked(False)
+            self.pagination_xpath_input.setEnabled(False)
+            self.pagination_checkbox.setText(self.PAGINATION_OFF_TEXT)
+            self.signal_manager.pagination_signal.emit(False)
+            self.process_manager.pagination_xpath = None
+
         else:
             self.pagination_widget.show()
             widget_width = self.scrape_widget.width()
