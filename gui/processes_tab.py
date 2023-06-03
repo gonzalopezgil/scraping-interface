@@ -217,7 +217,8 @@ class ProcessesTab(QWidget):
             elif status_code == ProcessStatus.REQUIRES_INTERACTION.value:
                 self.table.setCellWidget(row, 6, self.create_interaction_button(row))
                 self.show_notification(self.tr("Interaction required"), self.tr("Please interact with the browser to continue the process"))
-        self.status_codes[row] = status_code
+        if row < len(self.status_codes):
+            self.status_codes[row] = status_code
         self.table.setItem(row, 1, QTableWidgetItem(file_name))
         self.save_data()
 
