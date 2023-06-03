@@ -235,7 +235,17 @@ REMOVE_BACKGROUND_JS = """
             element = elements.iterateNext();
         }
     }
-    removeRedBackground(xpath);
+
+    if (color === 'red') {
+        removeRedBackground(xpath);
+    }
+    if (color === 'green') {
+        for (var i = 0; i < greenElements.length; i++) {
+            greenElements[i].style.backgroundColor = '';
+        }
+        greenElements = [];
+    }
+    
 """
 
 # xpath and color variables must be defined before calling this function
@@ -246,6 +256,9 @@ PAINT_BACKGROUND_JS = """
         var elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
         var element = elements.iterateNext();
         while (element) {
+            if (color === 'green') {
+                greenElements.push(element);
+            }
             element.style.backgroundColor = color;
             redElements.push(element);
             element = elements.iterateNext();
