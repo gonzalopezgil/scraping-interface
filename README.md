@@ -39,10 +39,6 @@ pip install -r requirements.txt
 python main.py
 ```
 
-### Using Pre-built Executables
-
-You can also use pre-built executables for your operating system. Download the appropriate release from the [Releases](https://github.com/gonzalopezgil/scraping-interface/releases) page of this repository. Select the version compatible with your OS (Windows, MacOS, or Linux) and follow the steps in the installer.
-
 ## Usage
 
 1. Launch the application, and you will be presented with a user-friendly interface with four tabs: Home, Browser, Processes and Settings.
