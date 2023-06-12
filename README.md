@@ -1,4 +1,5 @@
 # Scraping Interface
+![icon](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/85e24aff-f89d-4d58-af3c-6b4b8c8fb045)
 
 The Scraping Interface project is a cross-platform desktop application developed using Python and the PyQt5 library. It provides a user-friendly interface for web scraping, allowing users to extract information from web pages easily.
 
