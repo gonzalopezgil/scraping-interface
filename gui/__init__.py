@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication
 from gui.main_window import MainWindow
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFont
 from utils.manager.password_manager import create_key
 import sys
 import io
@@ -88,6 +88,18 @@ def main():
 
         # Create the main window
         try:
+
+            stylesheet = """
+            QWidget {
+                font-size: 16px;
+                font-family: 'Helvetica';
+            }
+            """
+            app.setStyleSheet(stylesheet)
+            app.setStyle('Fusion')
+            font = QFont("Helvetica", 8)
+            font.setStyleHint(QFont.Helvetica, QFont.PreferAntialias)
+            app.setFont(font)
             app.setWindowIcon(QIcon(icon_path))
             window = MainWindow(app)
             window.show()
