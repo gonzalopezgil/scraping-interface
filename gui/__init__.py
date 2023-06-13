@@ -97,6 +97,32 @@ def main():
                     font-size: 16px;
                     font-family: 'Helvetica';
                 }
+                QLineEdit:focus {
+                    border: 1px solid #8573a0;
+                }
+                QTableView::item:selected {
+                    background-color: #f1edff;
+                    color: black;
+                }
+                QProgressBar::chunk {
+                    background-color: #8573a0;
+                }
+                QMenu::item:selected {
+                    background-color: #8573a0;
+                }
+                QSpinBox {
+                    border: 1px solid #808080;
+                }
+                QSpinBox:focus {
+                    border: 1px solid #8573a0;
+                }
+                QSpinBox::up-button, QSpinBox::down-button {
+                    width: 20px;
+                }
+                QSpinBox::up-arrow, QSpinBox::down-arrow {
+                    width: 10px;
+                    height: 10px;
+                }
                 """
                 app.setStyleSheet(stylesheet)
                 app.setStyle('Fusion')
