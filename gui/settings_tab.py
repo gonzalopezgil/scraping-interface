@@ -165,6 +165,15 @@ class SettingsTab(QWidget):
             }}
         """)
 
+        dropdown_style = """
+            QListView {
+                selection-background-color: #8573a0;
+            }
+        """
+
+        self.search_engine_combo.view().setStyleSheet(dropdown_style)
+        self.language_combo.view().setStyleSheet(dropdown_style)
+
     def check_values(self):
         # Check if the search engine is in the SEARCH_ENGINES dictionary
         if self.settings["home_page"] and self.settings["home_page"] not in [engine[1][1] for engine in SEARCH_ENGINES.items()]:

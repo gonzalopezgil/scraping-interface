@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication
 from gui.main_window import MainWindow
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFont
 from utils.manager.password_manager import create_key
 import sys
 import io
@@ -11,6 +11,7 @@ import json
 from . constants import SETTINGS_FILE, LANGUAGES, RESTART_CODE
 import logging
 from utils.manager.file_manager import get_folder_path
+import platform
 
 def main():
 
@@ -88,6 +89,50 @@ def main():
 
         # Create the main window
         try:
+            if platform.system() == 'Darwin':
+                app.setStyle('Macintosh')
+            else:
+                stylesheet = """
+                QWidget {
+                    font-size: 16px;
+                    font-family: 'Helvetica';
+                }
+                QLineEdit:focus {
+                    border: 1px solid #8573a0;
+                }
+                QTableView::item:selected {
+                    background-color: #f1edff;
+                    color: black;
+                }
+                QProgressBar {
+                    text-align: center;
+                }
+                QProgressBar::chunk {
+                    background-color: #dbd0fb;
+                }
+                QMenu::item:selected {
+                    background-color: #8573a0;
+                }
+                QSpinBox {
+                    border: 1px solid #808080;
+                }
+                QSpinBox:focus {
+                    border: 1px solid #8573a0;
+                }
+                QSpinBox::up-button, QSpinBox::down-button {
+                    width: 20px;
+                }
+                QSpinBox::up-arrow, QSpinBox::down-arrow {
+                    width: 10px;
+                    height: 10px;
+                }
+                """
+                app.setStyleSheet(stylesheet)
+                app.setStyle('Fusion')
+                font = QFont("Helvetica", 8)
+                font.setStyleHint(QFont.Helvetica, QFont.PreferAntialias)
+                app.setFont(font)
+            
             app.setWindowIcon(QIcon(icon_path))
             window = MainWindow(app)
             window.show()
