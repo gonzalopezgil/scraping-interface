@@ -104,8 +104,11 @@ def main():
                     background-color: #f1edff;
                     color: black;
                 }
+                QProgressBar {
+                    text-align: center;
+                }
                 QProgressBar::chunk {
-                    background-color: #8573a0;
+                    background-color: #dbd0fb;
                 }
                 QMenu::item:selected {
                     background-color: #8573a0;
