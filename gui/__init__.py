@@ -11,6 +11,7 @@ import json
 from . constants import SETTINGS_FILE, LANGUAGES, RESTART_CODE
 import logging
 from utils.manager.file_manager import get_folder_path
+import platform
 
 def main():
 
@@ -88,18 +89,21 @@ def main():
 
         # Create the main window
         try:
-
-            stylesheet = """
-            QWidget {
-                font-size: 16px;
-                font-family: 'Helvetica';
-            }
-            """
-            app.setStyleSheet(stylesheet)
-            app.setStyle('Fusion')
-            font = QFont("Helvetica", 8)
-            font.setStyleHint(QFont.Helvetica, QFont.PreferAntialias)
-            app.setFont(font)
+            if platform.system() == 'Darwin':
+                app.setStyle('Macintosh')
+            else:
+                stylesheet = """
+                QWidget {
+                    font-size: 16px;
+                    font-family: 'Helvetica';
+                }
+                """
+                app.setStyleSheet(stylesheet)
+                app.setStyle('Fusion')
+                font = QFont("Helvetica", 8)
+                font.setStyleHint(QFont.Helvetica, QFont.PreferAntialias)
+                app.setFont(font)
+            
             app.setWindowIcon(QIcon(icon_path))
             window = MainWindow(app)
             window.show()
