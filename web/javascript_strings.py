@@ -1,8 +1,9 @@
 ENABLE_LINKS_JS = """
     document.body.removeEventListener("click", disableLink);
 
-    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
+    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div, button, img');
     for (var i = 0; i < textElements.length; i++) {
+        textElements[i].removeEventListener("click", disableLink);
         textElements[i].removeEventListener("click", scrapeData);
     }
 
@@ -29,12 +30,14 @@ DISABLE_LINKS_JS = """
     document.body.addEventListener("click", disableLink);
 
     function disableLink(event) {
+        event.stopPropagation();
         event.preventDefault();
     }
 
     var lastMessage = "";
-    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
+    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div, button, img');
     for (var i = 0; i < textElements.length; i++) {
+        textElements[i].addEventListener("click", disableLink);
         textElements[i].addEventListener("click", scrapeData);
     }
 
