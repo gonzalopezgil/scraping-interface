@@ -118,12 +118,23 @@ class SeleniumScraper(Scraper):
             results.append(dictionary)
 
             if pagination_xpath and pages + 1 < max_pages:
+                pagination_xpaths = []
+                if "\n" in pagination_xpath:
+                    pagination_xpaths = pagination_xpath.split("\n")
+                    pagination_xpath = pagination_xpaths[0]
+
                 try:
                     WebDriverWait(obj, TIMEOUT).until(EC.presence_of_element_located((By.XPATH, pagination_xpath)))
-                    next_button = obj.find_element(By.XPATH, pagination_xpath)
-                    next_button.click()
+                    next_element = obj.find_element(By.XPATH, pagination_xpath)
+                    if next_element.tag_name == "a":
+                        obj.execute_script("arguments[0].click();", next_element)
+                        #obj.get(next_element.get_attribute("href"))
+                    else:
+                        next_element.click()
                     actual_percentage += increment * 2
                     self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
+                    if pagination_xpaths:
+                        pagination_xpath = "\n".join(pagination_xpaths[1:])
                 except Exception:
                     logger.error("Error: Pagination button not found")
                     next_page = False

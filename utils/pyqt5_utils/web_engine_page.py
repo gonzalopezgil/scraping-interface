@@ -66,6 +66,9 @@ class WebEnginePage(QWebEnginePage):
                     col = count - 1
                     self.table_xpath.setItem(0, col, QTableWidgetItem(value))
                 elif message_type == "xpathRel" and self.pagination_clicked:
+                    actual_xpath = self.process_manager.pagination_xpath
+                    if actual_xpath:
+                        value = actual_xpath + "\n" + value    
                     self.process_manager.pagination_xpath = value
                     self.pagination_xpath_label.setText(value)
 

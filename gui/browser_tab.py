@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox, QStyle, QStyleOption, QLabel, QSpinBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox, QStyle, QStyleOption, QLabel, QSpinBox, QTextEdit
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile
 from PyQt5.QtCore import QTimer, pyqtSlot
@@ -50,10 +50,10 @@ class BrowserTab(QWidget):
         self.pagination_layout.addWidget(self.pagination_checkbox)
         self.pagination_checkbox.clicked.connect(self.set_pagination)
 
-        self.pagination_xpath_input = QLineEdit(self)
-        self.pagination_xpath_input.setPlaceholderText(self.tr("Click on the pagination button or enter an XPath"))
+        self.pagination_xpath_input = QTextEdit(self)
+        self.pagination_xpath_input.setPlaceholderText(self.tr("Click on the pagination buttons or enter the XPaths, one per line"))
         self.pagination_xpath_input.setEnabled(False)
-        self.pagination_xpath_input.editingFinished.connect(self.handle_pagination_changed)
+        self.pagination_xpath_input.textChanged.connect(self.handle_pagination_changed)
         self.pagination_layout.addWidget(self.pagination_xpath_input)
 
         # Add a label and a spin box to enter the maximum pages to be scraped
@@ -282,6 +282,7 @@ class BrowserTab(QWidget):
             self.pagination_checkbox.setText(self.PAGINATION_OFF_TEXT)
             self.signal_manager.pagination_signal.emit(False)
             self.process_manager.pagination_xpath = None
+            self.browser.page().runJavaScript(jss.DISABLE_PAGINATION_JS)
 
         else:
             self.pagination_widget.show()
@@ -409,9 +410,13 @@ class BrowserTab(QWidget):
             self.browser.page().toHtml(self.preview_scrape)
 
     def handle_pagination_changed(self):
-        pagination_xpath = self.pagination_xpath_input.text()
+        pagination_xpath = self.pagination_xpath_input.toPlainText()
         self.process_manager.pagination_xpath = pagination_xpath
-        self.paint_background(pagination_xpath, "green")
+        xpaths = pagination_xpath.split("\n")
+        
+        self.remove_background("", "green")
+        for xpath in xpaths:
+            self.paint_background(xpath, "green")
 
     def remove_background(self, xpath, color):
         js_code = f"var xpath = '{xpath}'; var color = '{color}'; {jss.REMOVE_BACKGROUND_JS}"

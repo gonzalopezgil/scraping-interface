@@ -67,12 +67,6 @@ START_JS = """
     var greenElements = [];
 
     function paintElementGreen(event) {
-        // Remove the green background color from the previously clicked element(s)
-        while (greenElements.length > 0) {
-            var previousElement = greenElements.pop();
-            previousElement.style.backgroundColor = '';
-        }
-        greenElements = [];
 
         var clickedElement = event.target;
         clickedElement.style.backgroundColor = 'green';
@@ -91,18 +85,13 @@ START_JS = """
     function getFullXPath(element) {
         var xpath = '';
         for (; element && element.nodeType == 1; element = element.parentNode) {
-            var id = element.id ? "[@id='" + element.id + "']" : "";
             var index = getElementIndex(element);
-            if(id) {
-                xpath = '//*' + id + '/' + xpath;
-                break; // If an id is found, stop building the XPath
-            }
-            else {
-                xpath = '/' + element.tagName.toLowerCase() + (index ? '[' + index + ']' : '') + xpath;
-            }
+            index = index ? '[' + index + ']' : '';
+            xpath = '/' + element.tagName.toLowerCase() + index + xpath;
         }
         return xpath;
     }
+
 
     // Helper function to get the index of an element among its siblings
     function getElementIndex(element) {
@@ -230,23 +219,21 @@ UNHIGHLIGHT_TEXT_JS = """
 REMOVE_BACKGROUND_JS = """
     var lastMessage = "";
 
-    function removeRedBackground(xpath) {
+    if (color === 'green') {
+        while (greenElements.length > 0) {
+            var previousElement = greenElements.pop();
+            previousElement.style.backgroundColor = '';
+        }
+        greenElements = [];
+    }
+
+    if (color === 'red') {
         var elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
         var element = elements.iterateNext();
         while (element) {
             element.style.backgroundColor = '';
             element = elements.iterateNext();
         }
-    }
-
-    if (color === 'red') {
-        removeRedBackground(xpath);
-    }
-    if (color === 'green') {
-        for (var i = 0; i < greenElements.length; i++) {
-            greenElements[i].style.backgroundColor = '';
-        }
-        greenElements = [];
     }
     
 """
@@ -261,9 +248,10 @@ PAINT_BACKGROUND_JS = """
         while (element) {
             if (color === 'green') {
                 greenElements.push(element);
+            } else {
+                redElements.push(element);
             }
             element.style.backgroundColor = color;
-            redElements.push(element);
             element = elements.iterateNext();
         }
     }
@@ -331,53 +319,4 @@ LOGIN_DETECTION_JS = """
             init_script();
         });
     })();
-"""
-
-FIND_RELATED_BUTTON_JS = """
-    function find_related_button() {
-        var password_input = document.querySelector('input[type="password"]');
-        var parent = password_input.parentElement;
-        var button = parent.querySelector('button, input[type="submit"], input[type="button"]');
-        
-        if (button) {
-            return button;
-        }
-        
-        var siblings = parent.parentElement.children;
-        for (var i = 0; i < siblings.length; i++) {
-            button = siblings[i].querySelector('button, input[type="submit"], input[type="button"]');
-            if (button) {
-                return button;
-            }
-        }
-        return null;
-    }
-
-    function get_element_xpath(element) {
-        if (element.id) {
-            return '//*[@id="' + element.id + '"]';
-        } else if (element.className) {
-            var classes = element.className.split(' ');
-            var classString = '';
-            for (var i = 0; i < classes.length; i++) {
-                classString += 'contains(@class, "' + classes[i] + '")';
-                if (i < classes.length - 1) {
-                    classString += ' and ';
-                }
-            }
-            return '//' + element.tagName.toLowerCase() + '[' + classString + ']';
-        } else {
-            var xpath = '';
-            for (; element && element.nodeType == 1; element = element.parentNode) {
-                var id = Array.prototype.indexOf.call(element.parentNode.children, element) + 1;
-                id > 0 ? (id = '[' + id + ']') : (id = '');
-                xpath = '/' + element.tagName.toLowerCase() + id + xpath;
-            }
-            return xpath;
-        }
-    }
-
-    var button = find_related_button();
-    console.log('Button: ' + get_element_xpath(button))
-    return button ? get_element_xpath(button) : null;
 """
