@@ -122,20 +122,19 @@ class MainWindow(QMainWindow):
         url = self.browser_tab.browser.url().toString()
         column_titles = self.browser_tab.get_column_titles()
         process_manager = self.process_manager
-        stop, interaction = self.processes_tab.add_row(url, "", column_titles)
-        row = self.processes_tab.table.rowCount()-1
+        unique_id, stop, interaction = self.processes_tab.add_row(url, "", column_titles)
         file_name = self.enter_file_name(file_format)
         if file_name:
             if self.process_manager.pagination_xpath:
                 max_pages = self.browser_tab.max_pages_input.value()
                 if not max_pages or max_pages == 0:
                     max_pages = None
-                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.signal_manager, interaction, html, stop, max_pages), daemon=True)
+                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, unique_id, process_manager, self.signal_manager, interaction, html, stop, max_pages), daemon=True)
             else:
-                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, row, process_manager, self.signal_manager, interaction, html, stop, 1), daemon=True)
+                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, unique_id, process_manager, self.signal_manager, interaction, html, stop, 1), daemon=True)
             self.thread.start()
         else:
-            self.signal_manager.process_signal.emit(row, str(ProcessStatus.STOPPED.value), "")
+            self.signal_manager.process_signal.emit(unique_id, str(ProcessStatus.STOPPED.value), "")
 
     def thread_function(self, url, column_titles, file_name, row, process_manager, signal_manager, interaction, html=None, stop=None, max_pages=None):
         self.tabs.setCurrentIndex(2)

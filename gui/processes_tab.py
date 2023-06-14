@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QPushButton, QStyle, QStyleOption, QProgressBar
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QPushButton, QStyle, QStyleOption, QProgressBar, QMenu
 from PyQt5.QtCore import Qt, QVariant, pyqtSlot
 from PyQt5.QtGui import QPainter
 import csv
@@ -13,6 +13,7 @@ from utils.manager.process_manager import ProcessStatus
 from plyer import notification
 from static import icon_path
 import logging
+import uuid
 
 PROCESSES_FILE = get_file_path("processes.csv")
 logger = logging.getLogger(__name__)
@@ -52,6 +53,8 @@ class ProcessesTab(QWidget):
         self.status_codes = [] # Stores status codes for each process
         self.load_data()
 
+        self.uuid_row_mapping = {}
+        self.row_uuid_mapping = {}
         self.stop_variables = {}
         self.interaction_variables = {}
 
@@ -68,19 +71,19 @@ class ProcessesTab(QWidget):
         open_file_button.clicked.connect(lambda: self.open_file(file_name))
         return open_file_button
     
-    def create_stop_button(self, row):
+    def create_stop_button(self, unique_id):
         stop_button = QPushButton(self.tr('Stop'))
-        stop_button.clicked.connect(lambda: self.stop_process(row))
+        stop_button.clicked.connect(lambda: self.stop_process(unique_id))
         return stop_button
     
-    def create_interaction_button(self, row):
+    def create_interaction_button(self, unique_id):
         interaction_button = QPushButton(self.tr('Interact'))
-        interaction_button.clicked.connect(lambda: self.on_interaction(row))
+        interaction_button.clicked.connect(lambda: self.on_interaction(unique_id))
         return interaction_button
     
-    def create_resolved_button(self, row):
+    def create_resolved_button(self, unique_id):
         resolved_button = QPushButton(self.tr('Resolved'))
-        resolved_button.clicked.connect(lambda: self.on_resolved(row))
+        resolved_button.clicked.connect(lambda: self.on_resolved(unique_id))
         return resolved_button
     
     def translate_status(self, status_code):
@@ -111,13 +114,20 @@ class ProcessesTab(QWidget):
                 
                 self.save_data()
 
-                self.no_data_label.hide() # Hide label if data is found
-                self.table.show() # Show table if data is found
+                if len(data) > 0:
+                    self.no_data_label.hide() # Hide label if data is found
+                    self.table.show() # Show table if data is found
+                else:
+                    self.hide_table()
+                
         except FileNotFoundError:
-            self.no_data_label.setText(self.tr("No processes found")) # Set label text if no data is found
-            self.no_data_label.show() # Show label if no data is found
-            self.table.hide() # Hide table if no data is found
-            self.table.setRowCount(0)
+            self.hide_table()
+
+    def hide_table(self):
+        self.no_data_label.setText(self.tr("No processes found")) # Set label text if no data is found
+        self.no_data_label.show() # Show label if no data is found
+        self.table.hide() # Hide table if no data is found
+        self.table.setRowCount(0)
 
     def add_row(self, scraped_web, file_name, column_titles):
         row_count = self.table.rowCount()
@@ -133,17 +143,22 @@ class ProcessesTab(QWidget):
             table_item = QTableWidgetItem(text)
             table_item.setFlags(table_item.flags() & ~Qt.ItemIsEditable)  # Disable editing
             self.table.setItem(row_count, col, table_item)
-            
-        self.table.setCellWidget(row_count, 6, self.create_stop_button(row_count))
+
+        unique_id = str(uuid.uuid4())
+        self.uuid_row_mapping[unique_id] = row_count
+        self.row_uuid_mapping[row_count] = unique_id
+
+        self.table.setCellWidget(row_count, 6, self.create_stop_button(unique_id))
         self.table.show()
         self.no_data_label.hide()
+
         stop = Value('b', False)
-        self.stop_variables[row_count] = stop
+        self.stop_variables[unique_id] = stop
 
         interaction = threading.Event()
-        self.interaction_variables[row_count] = interaction
+        self.interaction_variables[unique_id] = interaction
 
-        return stop, interaction
+        return unique_id, stop, interaction
 
     def get_table_data(self):
         table_data = []
@@ -152,7 +167,7 @@ class ProcessesTab(QWidget):
             for col in range(self.table.columnCount()):
                 if self.table.item(row, col):
                     if col == 3:
-                        status_code = self.status_codes[row]
+                        status_code = self.status_codes[row] if row < len(self.status_codes) else ''
                         row_data.append(status_code)
                     else:
                         row_data.append(self.table.item(row, col).text())
@@ -194,8 +209,11 @@ class ProcessesTab(QWidget):
         except Exception:
             logger.error("Error showing notification")
 
-    @pyqtSlot(int, QVariant, QVariant)
-    def update_status(self, row, status, file_name):
+    @pyqtSlot(QVariant, QVariant, QVariant)
+    def update_status(self, unique_id, status, file_name):
+        if unique_id not in self.uuid_row_mapping:
+            return
+        row = self.uuid_row_mapping[unique_id]
         if "%" in status:
             progress = QProgressBar()
             progress.setValue(int(status.replace("%", ""))) # Remove '%' character
@@ -215,33 +233,37 @@ class ProcessesTab(QWidget):
             elif status_code == ProcessStatus.STOPPED.value or status_code == ProcessStatus.ERROR.value:
                 self.table.setCellWidget(row, 6, None)
             elif status_code == ProcessStatus.REQUIRES_INTERACTION.value:
-                self.table.setCellWidget(row, 6, self.create_interaction_button(row))
+                self.table.setCellWidget(row, 6, self.create_interaction_button(unique_id))
                 self.show_notification(self.tr("Interaction required"), self.tr("Please interact with the browser to continue the process"))
         if row < len(self.status_codes):
             self.status_codes[row] = status_code
         self.table.setItem(row, 1, QTableWidgetItem(file_name))
         self.save_data()
 
-    def stop_process(self, row):
-        self.stop_variables[row].value = True
+    def stop_process(self, unique_id):
+        row = self.uuid_row_mapping[unique_id]
+        self.stop_variables[unique_id].value = True
         status_code = ProcessStatus.STOPPING.value
         self.table.setCellWidget(row, 3, None)
         self.table.setItem(row, 3, QTableWidgetItem(self.translate_status(status_code)))
         self.status_codes[row] = status_code
         self.table.setCellWidget(row, 6, None)
 
-    def on_interaction(self, row):
-        self.interaction_variables[row].set()
+    def on_interaction(self, unique_id):
+        row = self.uuid_row_mapping[unique_id]
+        self.interaction_variables[unique_id].set()
         status_code = ProcessStatus.INTERACTING.value
         self.table.setItem(row, 3, QTableWidgetItem(self.translate_status(status_code)))
-        self.table.setCellWidget(row, 6, self.create_resolved_button(row))
+        self.table.setCellWidget(row, 6, self.create_resolved_button(unique_id))
         self.status_codes[row] = status_code
 
-    def on_resolved(self, row):
-        self.interaction_variables[row].set()
+    def on_resolved(self, unique_id):
+        row = self.uuid_row_mapping[unique_id]
+        unique_id = self.row_uuid_mapping[row]
+        self.interaction_variables[unique_id].set()
         status_code = ProcessStatus.RUNNING.value
         self.table.setItem(row, 3, QTableWidgetItem(self.translate_status(status_code)))
-        self.table.setCellWidget(row, 6, self.create_stop_button(row))
+        self.table.setCellWidget(row, 6, self.create_stop_button(unique_id))
         self.status_codes[row] = status_code
 
     def paintEvent(self, _):
@@ -249,3 +271,57 @@ class ProcessesTab(QWidget):
         option.initFrom(self)
         painter = QPainter(self)
         self.style().drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
+    def contextMenuEvent(self, event):
+        context_menu = QMenu(self)
+
+        del_action = context_menu.addAction(self.tr("Delete Row"))
+        del_file_and_action = context_menu.addAction(self.tr("Delete Row and File"))
+
+        action = context_menu.exec_(self.table.mapToGlobal(event.pos()))
+
+        if action == del_action or action == del_file_and_action:
+            row = self.table.currentRow()
+            if row >= 0:
+                if action == del_file_and_action:
+                    file_name = self.table.item(row, 1).text()
+                    if file_name and os.path.exists(file_name):
+                        os.remove(file_name)
+                self.delete_row(row)
+
+    def delete_row(self, row):
+        # If the process is running, stop it.
+        status_code = self.status_codes[row]
+        unique_id = None
+        if row in self.row_uuid_mapping:
+            unique_id = self.row_uuid_mapping[row]
+            if status_code == ProcessStatus.RUNNING.value or status_code == ProcessStatus.REQUIRES_INTERACTION.value or status_code == ProcessStatus.INTERACTING.value:
+                self.stop_process(unique_id)
+
+        # Remove the row from the table.
+        self.table.removeRow(row)
+        if self.table.rowCount() == 0:
+            self.hide_table()
+
+        # Remove the status code from the list.
+        self.status_codes.pop(row)
+        if row in self.stop_variables:
+            del self.stop_variables[row]
+        if row in self.interaction_variables:
+            del self.interaction_variables[row]
+
+        # Update the row numbers in the dictionary.
+        self.row_uuid_mapping = {}
+        for key, value in self.uuid_row_mapping.items():
+            if value > row:
+                self.uuid_row_mapping[key] = value - 1
+                self.row_uuid_mapping[value - 1] = key
+            elif value < row:
+                self.row_uuid_mapping[value] = key
+                
+        # Remove the row number from the dictionary.
+        if unique_id:
+            del self.uuid_row_mapping[unique_id]
+
+        # Save changes to the "processes.csv" file.
+        self.save_data()
