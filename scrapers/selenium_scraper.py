@@ -99,6 +99,19 @@ class SeleniumScraper(Scraper):
         actual_percentage = 10
         increment = 10/max_pages
 
+        # Clean the pagination xpath in case it has blank lines
+        pagination_xpaths = []
+        is_list = False
+        if pagination_xpath and "\n" in pagination_xpath:
+            pagination_xpaths = pagination_xpath.split("\n")
+            pagination_xpaths = [xpath for xpath in pagination_xpaths if xpath.strip()]
+            if len(pagination_xpaths) == 1:            
+                pagination_xpath = pagination_xpaths[0]
+                pagination_xpaths = []
+            else:
+                is_list = True
+
+        scrape = True
         while next_page and pages < max_pages:
             actual_html = ""
             if not pagination_xpath:
@@ -111,8 +124,11 @@ class SeleniumScraper(Scraper):
                 self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
                 actual_html = obj.page_source
             
-            # html, prefix, labels, xpath_suffixes, selected_text, file_name, row, signal_manager
-            dictionary = self.scrape(actual_html, prefix, labels, xpath_suffixes)
+            # Scrape the page
+            if scrape:
+                dictionary = self.scrape(actual_html, prefix, labels, xpath_suffixes)
+            scrape = True
+
             actual_percentage += increment * 2
             self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
             results.append(dictionary)
@@ -121,6 +137,7 @@ class SeleniumScraper(Scraper):
                 pagination_xpaths = []
                 if "\n" in pagination_xpath:
                     pagination_xpaths = pagination_xpath.split("\n")
+                    pagination_xpaths = [xpath for xpath in pagination_xpaths if xpath.strip()]
                     pagination_xpath = pagination_xpaths[0]
 
                 try:
@@ -128,17 +145,20 @@ class SeleniumScraper(Scraper):
                     next_element = obj.find_element(By.XPATH, pagination_xpath)
                     if next_element.tag_name == "a":
                         obj.execute_script("arguments[0].click();", next_element)
-                        #obj.get(next_element.get_attribute("href"))
                     else:
                         next_element.click()
                     actual_percentage += increment * 2
                     self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
                     if pagination_xpaths:
                         pagination_xpath = "\n".join(pagination_xpaths[1:])
+                    elif is_list:
+                        next_page = False
                 except Exception:
                     logger.error("Error: Pagination button not found")
                     if pagination_xpaths:
                         pagination_xpath = "\n".join(pagination_xpaths[1:])
+                        # don't scrape again the same page
+                        scrape = False
                     else:
                         next_page = False
             else:
