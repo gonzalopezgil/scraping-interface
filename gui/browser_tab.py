@@ -209,6 +209,7 @@ class BrowserTab(QWidget):
         self.timer = QTimer(self)
 
         self.browser.loadFinished.connect(lambda: self.browser.page().runJavaScript(jss.LOGIN_DETECTION_JS))
+        self.browser.loadFinished.connect(self.handle_load_finished)
 
         self.pagination_button.clicked.connect(self.toggle_pagination)
 
@@ -249,6 +250,11 @@ class BrowserTab(QWidget):
                 image: url(static/on.png);
             }
         """)
+
+    def handle_load_finished(self, ok):
+        # If the load was not successful and the scraping process is running, stop it
+        if not ok and self.scrape_widget.isVisible():
+            self.toggle_scrape_widget()
 
     def refresh_browser(self):
         self.browser.reload()
