@@ -91,9 +91,8 @@ class BrowserTab(QWidget):
 
         # Allow users to edit column headers
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table_widget.horizontalHeader().setSectionsMovable(True)
+        self.table_widget.horizontalHeader().setSectionsMovable(False)
         self.table_widget.horizontalHeader().sectionDoubleClicked.connect(self.change_column_header)
-        self.table_widget.horizontalHeader().sectionMoved.connect(self.move_column)
 
         # Create a second table to edit the xpath of each column
         self.table_xpath = CustomTableWidget(self)
@@ -431,6 +430,9 @@ class BrowserTab(QWidget):
         self.table_widget.removeColumn(column)
         self.table_xpath.removeColumn(column)
         self.process_manager.remove_column(column)
+        for col in self.process_manager.get_columns():
+            if col.get_visual_index() > column:
+                col.set_visual_index(col.get_visual_index() - 1)
         self.remove_background(xpath, "red")
 
         self.browser.page().toHtml(self.preview_scrape)
@@ -461,13 +463,6 @@ class BrowserTab(QWidget):
             remove_action.triggered.connect(lambda: self.remove_column(column))
             menu.addAction(remove_action)
             menu.exec_(table.viewport().mapToGlobal(pos))
-
-    def move_column(self, logical_index, old_visual_index, new_visual_index):
-        self.process_manager.move_column(old_visual_index, new_visual_index)
-
-        self.table_xpath.horizontalHeader().blockSignals(True)  # Temporarily block signals to avoid infinite loop
-        self.table_xpath.horizontalHeader().moveSection(old_visual_index, new_visual_index)
-        self.table_xpath.horizontalHeader().blockSignals(False)  # Re-enable signals
 
     def load_template(self, template):
         # Open the scrape widget

@@ -73,11 +73,6 @@ class ProcessManager:
         if index >= 0 and index < len(self.columns):
             self.columns.pop(index)
 
-    def move_column(self, from_index, to_index):
-        if from_index >= 0 and from_index < len(self.columns) and to_index >= 0 and to_index < len(self.columns):
-            column = self.columns.pop(from_index)
-            self.columns.insert(to_index, column)    
-
     def get_column(self, index):
         if index >= 0 and index < len(self.columns):
             return self.columns[index]
@@ -100,3 +95,6 @@ class ProcessManager:
 
     def clear_columns(self):
         self.columns = []
+
+    def get_columns(self):
+        return self.columns
