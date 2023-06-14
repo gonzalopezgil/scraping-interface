@@ -131,6 +131,8 @@ class MainWindow(QMainWindow):
                     max_pages = None
                 self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, unique_id, process_manager, self.signal_manager, interaction, html, stop, max_pages), daemon=True)
             else:
+                if self.browser_tab.pagination_widget.isVisible():
+                    self.process_manager.pagination_xpath = 'fake'
                 self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, unique_id, process_manager, self.signal_manager, interaction, html, stop, 1), daemon=True)
             self.thread.start()
         else:
