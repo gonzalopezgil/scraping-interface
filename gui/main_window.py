@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
         self.app = app
 
         self.setWindowTitle("Scraping Interface")
-        self.setMinimumSize(1300, 850)
+        self.setMinimumSize(1500, 850)
         self.resize(1800, 1000)
 
         # Create a QTabWidget to hold the tabs
