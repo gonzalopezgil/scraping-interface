@@ -137,7 +137,10 @@ class SeleniumScraper(Scraper):
                         pagination_xpath = "\n".join(pagination_xpaths[1:])
                 except Exception:
                     logger.error("Error: Pagination button not found")
-                    next_page = False
+                    if pagination_xpaths:
+                        pagination_xpath = "\n".join(pagination_xpaths[1:])
+                    else:
+                        next_page = False
             else:
                 next_page = False
             pages+=1
