@@ -68,7 +68,7 @@ class Scraper(ABC):
             elem = elements[i]
             if elem:
                 if i == len(elements)-1:
-                    final_xpath+="/"+ending+"//text()"
+                    final_xpath+="//"+ending+"//text()"
                 else:
                     final_xpath+="//"+elem
         return final_xpath

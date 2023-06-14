@@ -181,7 +181,7 @@ START_JS = """
                 } else {
                     if (i == xpathResult.snapshotLength - 1) {
                         var index = getElementIndex(element);
-                        xpath = '/' + tagName + '[' + index + ']' + xpath;
+                        xpath = '//' + tagName + '[' + index + ']' + xpath;
                     } else {
                         xpath = '//' + tagName + xpath;
                     }
