@@ -108,11 +108,13 @@ class BrowserTab(QWidget):
         if self.table_widget.columnCount() == 0:
             self.table_widget.setColumnCount(COLUMN_COUNT)
 
+        self.scroll_area.setMinimumHeight(header_height + row_height * 5)
         self.scroll_area.setMaximumHeight(header_height + row_height * 5)
 
         # Create a second table to edit the xpath of each column
         self.table_xpath = CustomTableWidget(self)
         self.table_xpath.verticalHeader().setVisible(False)
+        self.table_xpath.setMinimumHeight(row_height + 2)
         self.table_xpath.setMaximumHeight(row_height + 2)
         self.table_xpath.horizontalHeader().setVisible(False)
         self.table_xpath.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
