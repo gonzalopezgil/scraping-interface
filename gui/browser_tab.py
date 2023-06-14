@@ -291,23 +291,23 @@ class BrowserTab(QWidget):
             self.pagination_checkbox.setText(self.PAGINATION_ON_TEXT)
             page.runJavaScript(jss.SELECT_PAGINATION_JS)
         else:
+            page.runJavaScript(jss.DISABLE_PAGINATION_JS)
             self.signal_manager.pagination_signal.emit(False)
             self.pagination_xpath_input.setEnabled(False)
             self.pagination_checkbox.setText(self.PAGINATION_OFF_TEXT)
-            page.runJavaScript(jss.DISABLE_PAGINATION_JS)
 
     def toggle_pagination(self):
         if self.pagination_widget.isVisible():
             self.pagination_widget.hide()
             if self.process_manager.pagination_xpath:
                 self.remove_background("", "green")
+            self.browser.page().runJavaScript(jss.DISABLE_PAGINATION_JS)
             self.pagination_xpath_input.setText("")
             self.pagination_checkbox.setChecked(False)
             self.pagination_xpath_input.setEnabled(False)
             self.pagination_checkbox.setText(self.PAGINATION_OFF_TEXT)
             self.signal_manager.pagination_signal.emit(False)
             self.process_manager.pagination_xpath = None
-            self.browser.page().runJavaScript(jss.DISABLE_PAGINATION_JS)
 
         else:
             self.pagination_widget.show()
@@ -383,6 +383,7 @@ class BrowserTab(QWidget):
         # Enable links if the scrape widget is not visible
         else:
             self.timer.stop()
+            page.runJavaScript(jss.DISABLE_PAGINATION_JS)
             page.runJavaScript(jss.ENABLE_LINKS_JS)
             page.runJavaScript(jss.UNHIGHLIGHT_TEXT_JS)
             self.process_manager.clear_columns()
@@ -391,7 +392,6 @@ class BrowserTab(QWidget):
             self.pagination_checkbox.setText(self.PAGINATION_OFF_TEXT)
             self.signal_manager.pagination_signal.emit(False)
             self.pagination_xpath_input.setText("")
-            self.browser.page().runJavaScript(jss.DISABLE_PAGINATION_JS)
             self.pagination_widget.setVisible(False)
 
     # Create a loop that continuously disables all links in the page
