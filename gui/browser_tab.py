@@ -108,8 +108,10 @@ class BrowserTab(QWidget):
         if self.table_widget.columnCount() == 0:
             self.table_widget.setColumnCount(COLUMN_COUNT)
 
-        self.scroll_area.setMinimumHeight(header_height + row_height * 5)
-        self.scroll_area.setMaximumHeight(header_height + row_height * 5)
+        height_hint = header_height + row_height * 5
+
+        self.scroll_area.setMinimumHeight(height_hint)
+        self.scroll_area.setMaximumHeight(height_hint)
 
         # Create a second table to edit the xpath of each column
         self.table_xpath = CustomTableWidget(self)
@@ -237,6 +239,9 @@ class BrowserTab(QWidget):
         self.pagination_button.setFixedWidth(max_width)
         self.save_template_button.setFixedWidth(max_width)
         self.download_button.setFixedWidth(max_width)
+
+        self.pagination_xpath_input.setMinimumWidth(int(height_hint * 0.73))
+        self.pagination_xpath_input.setMaximumHeight(int(height_hint * 0.73))
 
         self.setStyleSheet(f"""
             BrowserTab {{
