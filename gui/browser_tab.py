@@ -240,8 +240,8 @@ class BrowserTab(QWidget):
         self.save_template_button.setFixedWidth(max_width)
         self.download_button.setFixedWidth(max_width)
 
-        self.pagination_xpath_input.setMinimumWidth(int(height_hint * 0.73))
-        self.pagination_xpath_input.setMaximumHeight(int(height_hint * 0.73))
+        self.pagination_xpath_input.setMinimumWidth(int(height_hint * 0.75))
+        self.pagination_xpath_input.setMaximumHeight(int(height_hint * 0.75))
 
         self.setStyleSheet(f"""
             BrowserTab {{
