@@ -34,30 +34,14 @@ DISABLE_LINKS_JS = """
         event.preventDefault();
     }
 
+    highlightText();
+
     var lastMessage = "";
     var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div, button, img');
     for (var i = 0; i < textElements.length; i++) {
         textElements[i].addEventListener("click", disableLink);
         textElements[i].addEventListener("click", scrapeData);
     }
-
-    var style = document.createElement('style');
-    style.innerHTML = `
-        ::selection {
-            background: #E7d5ff; /* WebKit/Blink Browsers */
-            color: black;
-        }
-        ::-moz-selection {
-            background: #E7d5ff; /* Gecko Browsers */
-            color: black;
-        }
-    `;
-    document.head.appendChild(style);
-    var range = document.createRange();
-    range.selectNodeContents(document.body);
-    var selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
 
     document.addEventListener('mousedown', preventMousedown);
 """
@@ -66,7 +50,29 @@ START_JS = """
     var redElements = [];
     var greenElements = [];
 
+    function highlightText() {
+        var style = document.createElement('style');
+        style.innerHTML = `
+            ::selection {
+                background: #E7d5ff; /* WebKit/Blink Browsers */
+                color: black;
+            }
+            ::-moz-selection {
+                background: #E7d5ff; /* Gecko Browsers */
+                color: black;
+            }
+        `;
+        document.head.appendChild(style);
+        var range = document.createRange();
+        range.selectNodeContents(document.body);
+        var selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
     function paintElementGreen(event) {
+    
+        highlightText();
 
         var clickedElement = event.target;
         clickedElement.style.backgroundColor = 'green';
@@ -111,6 +117,8 @@ START_JS = """
     }
 
     function scrapeData(event) {
+        highlightText();
+
         var message = event.target.innerText.trim();
         if (message && message !== lastMessage) {
             lastMessage = message;
