@@ -93,13 +93,27 @@ class BrowserTab(QWidget):
         self.table_widget.horizontalHeader().setSectionsMovable(False)
         self.table_widget.horizontalHeader().sectionDoubleClicked.connect(self.change_column_header)
 
+        if self.table_widget.rowCount() == 0:
+            self.table_widget.setRowCount(1)
+        if self.table_widget.columnCount() == 0:
+            self.table_widget.setColumnCount(1)
+        self.table_widget.horizontalHeader().setVisible(True)
+
+        # Get the row height
+        row_height = self.table_widget.rowHeight(0)
+        header_height = self.table_widget.horizontalHeader().height() + 4
+
+        if self.table_widget.rowCount() == 1:
+            self.table_widget.setRowCount(0)
+        if self.table_widget.columnCount() == 0:
+            self.table_widget.setColumnCount(COLUMN_COUNT)
+
+        self.scroll_area.setMaximumHeight(header_height + row_height * 5)
+
         # Create a second table to edit the xpath of each column
         self.table_xpath = CustomTableWidget(self)
         self.table_xpath.verticalHeader().setVisible(False)
-        self.table_xpath.setRowCount(1)
-        single_row_height = self.table_xpath.rowHeight(0)
-        self.table_xpath.setMaximumHeight(single_row_height)
-        self.table_xpath.setRowCount(0)
+        self.table_xpath.setMaximumHeight(row_height + 2)
         self.table_xpath.horizontalHeader().setVisible(False)
         self.table_xpath.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_xpath.cellChanged.connect(self.handle_cell_changed)
