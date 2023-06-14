@@ -44,7 +44,7 @@ class Scraper(ABC):
         if file_extension == ".xlsx":
             dataframe.to_excel(file_name)
         elif file_extension == ".csv":
-            dataframe.to_csv(file_name, index=False)
+            dataframe.to_csv(file_name, index=False, encoding="utf-8-sig")
         elif file_extension == ".json":
             dataframe.to_json(file_name, orient="records")
         elif file_extension == ".xml":
