@@ -19,6 +19,7 @@ import time
 from utils.manager.process_manager import ProcessStatus
 import logging
 import os
+import html
 
 TIMEOUT = 5
 XPATH_USERNAME = '//input[@type="text"]|//input[@type="email"]'
@@ -67,8 +68,8 @@ class SeleniumScraper(Scraper):
             WebDriverWait(obj, TIMEOUT).until(EC.presence_of_element_located((By.XPATH, xpath)))
             elements = obj.find_elements(By.XPATH, xpath)
             if text:
-                WebDriverWait(obj, TIMEOUT).until(lambda driver: any(text in element.text for element in elements))
-                elements = [element.text for element in elements]
+                WebDriverWait(obj, TIMEOUT).until(lambda driver: any(text in html.unescape(element.text) for element in elements))
+                elements = [html.unescape(element.text) for element in elements]
             return elements
         except TimeoutException:
             logger.warning(f"Elements not found for xpath: {xpath}")

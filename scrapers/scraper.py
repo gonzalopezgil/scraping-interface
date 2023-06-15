@@ -6,6 +6,7 @@ import os
 import logging
 from scrapy.item import Item, Field
 from utils.manager.file_manager import get_folder_path
+import html
 
 logger = logging.getLogger(__name__)
 
@@ -146,6 +147,7 @@ class Scraper(ABC):
         return -1
 
     def clean_text(self, text):
+        text = html.unescape(text)
         text = text.replace("\r","").replace("\t","").replace("\n","").replace("  "," ").replace(chr(160), chr(32))
         if text == " ":
             return text
