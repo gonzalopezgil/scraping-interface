@@ -169,7 +169,7 @@ class IntegrationTest(unittest.TestCase):
 
         # Open the CSV file and check its contents
         row_count = 0
-        with open(file_name, 'r') as f:
+        with open(file_name, 'r', encoding='utf-8-sig') as f:
             reader = csv.reader(f)
 
             # Check column headers
