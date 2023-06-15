@@ -1,7 +1,7 @@
 ENABLE_LINKS_JS = """
     document.body.removeEventListener("click", disableLink);
 
-    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div, button, img');
+    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div, button, img, input[type=button], input[type=submit], input[type=image], label, area, summary, svg, path, circle, rect');
     for (var i = 0; i < textElements.length; i++) {
         textElements[i].removeEventListener("click", disableLink);
         textElements[i].removeEventListener("click", scrapeData);
@@ -37,7 +37,7 @@ DISABLE_LINKS_JS = """
     highlightText();
 
     var lastMessage = "";
-    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div, button, img');
+    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div, button, img, input[type=button], input[type=submit], input[type=image], label, area, summary, svg, path, circle, rect');
     for (var i = 0; i < textElements.length; i++) {
         textElements[i].addEventListener("click", disableLink);
         textElements[i].addEventListener("click", scrapeData);
@@ -201,7 +201,7 @@ HIGHIGHT_TEXT_JS = """
 """
 
 SELECT_PAGINATION_JS = """
-    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
+    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div, button, img, input[type=button], input[type=submit], input[type=image], label, area, summary, svg, path, circle, rect');
     for (var i = 0; i < textElements.length; i++) {
         textElements[i].removeEventListener("click", scrapeData);
         textElements[i].addEventListener("click", paintElementGreen);
@@ -209,7 +209,7 @@ SELECT_PAGINATION_JS = """
 """
 
 DISABLE_PAGINATION_JS = """
-    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
+    var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div, button, img, input[type=button], input[type=submit], input[type=image], label, area, summary, svg, path, circle, rect');
     for (var i = 0; i < textElements.length; i++) {
         textElements[i].removeEventListener("click", paintElementGreen);
         textElements[i].addEventListener("click", scrapeData);
