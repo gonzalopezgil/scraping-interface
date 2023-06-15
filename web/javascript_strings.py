@@ -85,14 +85,21 @@ START_JS = """
 
     function getFullXPath(element) {
         var xpath = '';
+        var clickedElement = element;
         for (; element && element.nodeType == 1; element = element.parentNode) {
             var index = getElementIndex(element);
             index = index ? '[' + index + ']' : '';
-            xpath = '/' + element.tagName.toLowerCase() + index + xpath;
+            if (element === clickedElement && element.className) {
+                xpath = '/' + element.tagName.toLowerCase() +
+                        '[contains(@class, "' +
+                        element.className +
+                        '")]' + xpath;
+            } else {
+                xpath = '/' + element.tagName.toLowerCase() + index + xpath;
+            }
         }
         return xpath;
     }
-
 
     // Helper function to get the index of an element among its siblings
     function getElementIndex(element) {
