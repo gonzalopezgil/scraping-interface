@@ -201,6 +201,10 @@ START_JS = """
     }
 """
 
+HIGHIGHT_TEXT_JS = """
+    highlightText();
+"""
+
 SELECT_PAGINATION_JS = """
     var textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, a, td, th, div');
     for (var i = 0; i < textElements.length; i++) {

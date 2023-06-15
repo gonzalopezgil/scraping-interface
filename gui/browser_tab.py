@@ -396,6 +396,7 @@ class BrowserTab(QWidget):
 
     # Create a loop that continuously disables all links in the page
     def disable_links(self):
+        self.browser.page().runJavaScript(jss.HIGHIGHT_TEXT_JS)
         self.browser.page().runJavaScript(jss.DISABLE_LINKS_JS)
 
     def change_column_header(self, index):
