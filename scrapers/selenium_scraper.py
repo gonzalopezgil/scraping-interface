@@ -133,7 +133,7 @@ class SeleniumScraper(Scraper):
             self.update_progress(f"{int(actual_percentage)}%", stop, signal_manager, row)
             results.append(dictionary)
 
-            if pagination_xpath and pages + 1 < max_pages:
+            if pagination_xpath and pagination_xpath != "fake" and pages + 1 < max_pages:
                 pagination_xpaths = []
                 if "\n" in pagination_xpath:
                     pagination_xpaths = pagination_xpath.split("\n")
