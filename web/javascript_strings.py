@@ -79,12 +79,7 @@ START_JS = """
         greenElements.push(clickedElement);
 
         // Get the XPath of the clicked element
-        var xpathRel;
-        if (clickedElement.id) {
-            xpathRel = "//*[@id='" + clickedElement.id + "']";
-        } else {
-            xpathRel = getFullXPath(clickedElement);
-        }
+        var xpathRel = getFullXPath(clickedElement);
         console.log("To Python>xpathRel>" + xpathRel);
     }
 
