@@ -42,11 +42,13 @@ class SeleniumScraper(Scraper):
 
         if headless:
             options.add_argument("--headless")
-        
-        options.add_argument("--window-size=1920,1200")
 
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
+        browser_width = 1800
+        browser_height = 1000
+        driver.set_window_size(browser_width, browser_height)
+        
         # Changing the property of the navigator value for webdriver to undefined 
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
