@@ -20,8 +20,9 @@ from utils.manager.process_manager import ProcessStatus
 import logging
 import os
 import html
+import random
 
-TIMEOUT = 5
+TIMEOUT = random.uniform(4,6)
 XPATH_USERNAME = '//input[@type="text"]|//input[@type="email"]'
 XPATH_PASSWORD = '//input[@type="password"]'
 logger = logging.getLogger(__name__)

@@ -3,8 +3,9 @@ import scrapy
 from scrapy.loader import ItemLoader
 from scrapy.selector import Selector
 from scrapers.middlewares import DOWNLOADER_MIDDLEWARES
+import random
 
-TIMEOUT = 5
+TIMEOUT = random.uniform(4,6)
 
 class ScrapySeleniumScraper(Scraper, scrapy.Spider):
     name = "ScrapySeleniumScraper"
