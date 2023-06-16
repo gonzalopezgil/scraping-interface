@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QPushButton, QStyle, QStyleOption, QProgressBar, QMenu
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QPushButton, QStyle, QStyleOption, QProgressBar, QMenu, QMessageBox
 from PyQt5.QtCore import Qt, QVariant, pyqtSlot
 from PyQt5.QtGui import QPainter
 import csv
@@ -286,7 +286,11 @@ class ProcessesTab(QWidget):
                 if action == del_file_and_action:
                     file_name = self.table.item(row, 1).text()
                     if file_name and os.path.exists(file_name):
-                        os.remove(file_name)
+                        try:
+                            os.remove(file_name)
+                        except PermissionError:
+                            QMessageBox.critical(self, "Error", self.tr("The file could not be removed. Please make sure it's closed."))
+                            return  # Don't proceed to row deletion if file deletion failed
                 self.delete_row(row)
 
     def delete_row(self, row):
