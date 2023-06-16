@@ -285,6 +285,7 @@ class SeleniumScraper(Scraper):
                 # Wait for the user to login
                 interaction.wait()
                 interaction.clear()
+                self.check_selenium_driver(driver, signal_manager, row)
 
                 cookies = driver.get_cookies()
 
@@ -355,6 +356,14 @@ class SeleniumScraper(Scraper):
 
         return obj
     
+    def check_selenium_driver(self, obj, signal_manager, row):
+        try:
+            obj.title
+        except WebDriverException:
+            signal_manager.process_signal.emit(row, str(ProcessStatus.ERROR.value), "")
+            logger.error("Scraper closed accidentally by the user")
+            raise ScraperStoppedException("Scraper closed accidentally by the user")
+    
     def check_elements(self, stop, signal_manager, row, xpaths, selected_text, url, obj, interaction):
         found = False
         if self._check_elements(xpaths, selected_text, obj):
@@ -372,6 +381,7 @@ class SeleniumScraper(Scraper):
                     if interaction:
                         interaction.wait()
                         interaction.clear()
+                        self.check_selenium_driver(obj, signal_manager, row)
                     else:
                         while True:
                             try:
