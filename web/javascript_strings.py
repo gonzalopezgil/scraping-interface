@@ -218,63 +218,48 @@ START_JS = """
         for (var i = xpathResult.snapshotLength - 1; i >= 0; i--) {
             var element = xpathResult.snapshotItem(i);
             var tagName = element.tagName.toLowerCase();
+
+            var classes = '';
+            var index = '';
+            if (element.className && ((tagName === 'div') || (i == xpathResult.snapshotLength - 1))) {
+                classes = buildClassSelector(element);
+            } 
+
             if (i == xpathResult.snapshotLength - 1) {
-                if (element.className) {
-                    classes = '[contains(@class, "';
-                    var classList = element.className.split(' ');
-                    var j = 0;
-                    while (j < classList.length && !/\d/.test(classList[j]) && classList[j] !== 'selected') {
-                        if (j > 0) {
-                            classes += ' ';
-                        }
-                        classes += classList[j];
-                        j++;
-                    }
-                    if (j === 0) {
-                        classes = '';
-                    } else {
-                        classes += '")]';
-                    }
-                }
-                var xpathRel = '//' + tagName + classes;
-                console.log(consoleMessage + "xpathRel>" + xpathRel);
+                index = '[' + getElementIndex(element) + ']';
             }
 
-            if (tagName === 'html' || tagName === 'body') {
-                xpath = '//' + tagName + xpath;
-            } else {
-                var classes = '';
-                if (tagName === 'div') {
-                    if (element.className) {
-                        classes = '[contains(@class, "';
-                        var classList = element.className.split(' ');
-                        var j = 0;
-                        while (j < classList.length && !/\d/.test(classList[j]) && classList[j] !== 'selected') {
-                            if (j > 0) {
-                                classes += ' ';
-                            }
-                            classes += classList[j];
-                            j++;
-                        }
-                        if (j === 0) {
-                            classes = '';
-                        } else {
-                            classes += '")]';
-                        }
-                    }
-                    xpath = '//' + tagName + classes + xpath;
-                } else {
-                    if (i == xpathResult.snapshotLength - 1) {
-                        var index = getElementIndex(element);
-                        xpath = '//' + tagName + '[' + index + ']' + xpath;
-                    } else {
-                        xpath = '//' + tagName + xpath;
-                    }
-                }
+            var finalSuffix = index + classes;
+            if (!index) {
+                finalSuffix = classes;
+            } else if (!classes) {
+                finalSuffix = index;
             }
+
+            xpath = '//' + tagName + finalSuffix + xpath;
         }
+
         console.log(consoleMessage + "xpath>" + xpath);
         console.log(consoleMessage + "selectedText>" + message + ">" + 1);
+    }
+
+    function buildClassSelector(element) {
+        var classes = '[contains(@class, "';
+        var classList = element.className.split(' ');
+        var j = 0;
+        while (j < classList.length && !/\d/.test(classList[j]) && classList[j] !== 'selected') {
+            if (j > 0) {
+                classes += ' ';
+            }
+            classes += classList[j];
+            j++;
+        }
+        if (j === 0) {
+            classes = '';
+        } else {
+            classes += '")]';
+        }
+        return classes;
     }
 """
 
