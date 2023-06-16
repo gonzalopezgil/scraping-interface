@@ -71,16 +71,91 @@ START_JS = """
     }
 
     function paintElementGreen(event) {
-    
         highlightText();
 
         var clickedElement = event.target;
         clickedElement.style.backgroundColor = 'green';
         greenElements.push(clickedElement);
 
-        // Get the XPath of the clicked element
-        var xpathRel = getFullXPath(clickedElement);
-        console.log("To Python>xpathRel>" + xpathRel);
+        var xpathResult = document.evaluate(
+            'ancestor-or-self::*',
+            clickedElement,
+            null,
+            XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+            null
+        );
+        var xpath = '';
+        var skipClasses = false; // flag to skip classes for ancestors
+        for (var i = xpathResult.snapshotLength - 1; i >= 0; i--) {
+            var element = xpathResult.snapshotItem(i);
+            var tagName = element.tagName.toLowerCase();
+            var classes = '';
+            var id = '';
+            var text = '';
+            var rel = '';
+            var label = '';
+            var ariaLabel = '';
+
+            // If the element has an ID, use it and skip classes
+            if (element.id) {
+                id = '[@id="' + element.id + '"]';
+                if (i == xpathResult.snapshotLength - 1) {
+                    skipClasses = true;
+                }
+            } else if (i == xpathResult.snapshotLength - 1 && element.getAttribute('rel') === 'next') {
+                // If the last element has a rel="next" attribute, add it and skip the rest
+                rel = '[@rel="next"]';
+                skipClasses = true;
+            } else if (element.textContent && tagName !== 'html' && tagName !== 'body' && i == xpathResult.snapshotLength - 1) {
+                // If last element has text and it's not 'html' or 'body', add the text
+                text = '[text()="' + element.textContent.trim() + '"]';
+                skipClasses = true;
+            } else if (element.getAttribute('label') && i == xpathResult.snapshotLength - 1) {
+                // If last element has a label attribute, add it and skip classes
+                label = '[@label="' + element.getAttribute('label') + '"]';
+                skipClasses = true;
+            } else if (element.getAttribute('aria-label') && i == xpathResult.snapshotLength - 1) {
+                // If last element has an aria-label attribute, add it and skip classes
+                ariaLabel = '[@aria-label="' + element.getAttribute('aria-label') + '"]';
+                skipClasses = true;
+            } else if (element.className && !skipClasses) {
+                // Create classes string if no ID, no rel, no label, no aria-label and there are classes
+                classes = '[contains(@class, "';
+                var classList = element.className.split(' ');
+                var j = 0;
+                while (j < classList.length && !/\d/.test(classList[j]) && classList[j] !== 'selected') {
+                    if (j > 0) {
+                        classes += ' ';
+                    }
+                    classes += classList[j];
+                    j++;
+                }
+                if (j === 0) {
+                    classes = '';
+                } else {
+                    classes += '")]';
+                }
+            }
+            
+            if (tagName === 'html' || tagName === 'body') {
+                xpath = '/' + tagName + xpath;
+            } else {
+                if (id !== '') {
+                    xpath = '/' + tagName + id + xpath;
+                } else if (rel !== '') {
+                    xpath = '/' + tagName + rel + xpath;
+                } else if (text !== '') {
+                    xpath = '/' + tagName + text + xpath;
+                } else if (label !== '') {
+                    xpath = '/' + tagName + label + xpath;
+                } else if (ariaLabel !== '') {
+                    xpath = '/' + tagName + ariaLabel + xpath;
+                } else {
+                    xpath = '/' + tagName + classes + xpath;
+                }
+            }
+        }
+        console.log("To Python>xpathRel>" + xpath);
     }
 
     function getFullXPath(element) {
