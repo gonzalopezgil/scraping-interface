@@ -47,11 +47,11 @@ python main.py
 3. When you're ready to extract data, navigate to the desired web page and click the "Scrape" button. The program will display the extracted data in a table for preview.
 ![BrowserScraping](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/a0678460-5e65-4707-9339-2f03bf87d2df)
 4. Customize your selection using generalized XPath expressions and modify the table as needed.
-![BrowserSelection](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/6c82cca4-4583-4baa-b6be-b82d5e141282)
+![BrowserSelection](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/c3ebfd19-55b2-4dcb-b39d-663fa950bc48)
 5. Configure pagination settings, save templates for future use, and choose the desired data export format in the respective process.
-![BrowserPagination](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/7511f2c9-92a6-40dc-91c2-79ef899a6be3)
-6. Monitor the scraping processes in the Processes tab, and manage them by starting, stopping, or opening the output files.
-![Processes](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/c8519d47-5f04-4c74-95f6-067c8b0748d4)
+![BrowserPagination](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/40a63199-336b-49d1-8935-695dd87c3de2)
+6. Monitor the scraping processes in the Processes tab, and manage them by stopping, interacting to solve manual actions or opening the output files.
+![Processes](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/fd19a58e-33fa-4ab4-bd0b-f5f0d0849927)
 7. Adjust application settings, including browser preferences and language management in the Settings tab.
 ![Settings](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/d32409d6-2b55-4f62-a6e6-80a79c38f448)
 
