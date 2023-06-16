@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox, QStyle, QStyleOption, QLabel, QSpinBox, QTextEdit
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTableWidgetItem, QScrollArea, QSizePolicy, QHeaderView, QInputDialog, QMenu, QAction, QAbstractItemView, QMessageBox, QCheckBox, QStyle, QStyleOption, QLabel, QSpinBox, QTextEdit, QToolButton
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile
 from PyQt5.QtCore import QTimer, pyqtSlot
@@ -57,14 +57,31 @@ class BrowserTab(QWidget):
         self.pagination_layout.addWidget(self.pagination_xpath_input)
 
         # Add a label and a spin box to enter the maximum pages to be scraped
-        self.max_pages_layout = QHBoxLayout()
+        # along with a checkbox to set automation on or off and a help button in a horizontal layout
+        self.second_row_layout = QHBoxLayout()
+
         self.max_pages_label = QLabel(self.tr("Maximum pages to scrape:"))
-        self.max_pages_layout.addWidget(self.max_pages_label)
+        self.second_row_layout.addWidget(self.max_pages_label)
         self.max_pages_input = QSpinBox(self)
         self.max_pages_input.setMinimum(1)
         self.max_pages_input.setMaximum(1000000)
-        self.max_pages_layout.addWidget(self.max_pages_input)
-        self.pagination_layout.addLayout(self.max_pages_layout)
+        self.second_row_layout.addWidget(self.max_pages_input)
+
+        # Add stretch to push the remaining widgets to the right
+        self.second_row_layout.addStretch()
+
+        self.automated_checkbox = QCheckBox(self.tr("Automated"), self)
+        self.automated_checkbox.setChecked(True)  # set default as automated
+        #self.automated_checkbox.clicked.connect(self.set_automation)
+        self.second_row_layout.addWidget(self.automated_checkbox)
+
+        self.help_button = QToolButton(self)
+        self.help_button.setText('?')
+        self.help_button.clicked.connect(self.show_help_dialog)
+        self.second_row_layout.addWidget(self.help_button)
+
+        # Add the second row to the pagination layout
+        self.pagination_layout.addLayout(self.second_row_layout)
 
         # Create a scroll area to hold the table widget
         self.scroll_area = QScrollArea(self)
@@ -563,3 +580,13 @@ class BrowserTab(QWidget):
         option.initFrom(self)
         painter = QPainter(self)
         self.style().drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
+    def show_help_dialog(self):
+        QMessageBox.information(
+            self,
+            self.tr("Help"),
+            self.tr("If you encounter any issues that prevent the successful completion of scraping during the "
+                    "automatic pagination process (IP blocks, failure to find the pagination button, etc.), "
+                    "but you do have access to the required website from this browser, disable this option "
+                    "and try again following the steps that will appear on the screen.")
+        )

@@ -9,77 +9,77 @@
         <translation>Haga click en los botones de paginación o ingrese los XPath, uno por línea</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="61"/>
+        <location filename="../gui/browser_tab.py" line="63"/>
         <source>Maximum pages to scrape:</source>
         <translation>Máximo de páginas a extraer:</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="134"/>
+        <location filename="../gui/browser_tab.py" line="151"/>
         <source>Pagination</source>
         <translation>Paginación</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="140"/>
+        <location filename="../gui/browser_tab.py" line="157"/>
         <source>Save Template</source>
         <translation>Guardar Plantilla</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="147"/>
+        <location filename="../gui/browser_tab.py" line="164"/>
         <source>Download Data</source>
         <translation>Descargar Datos</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="154"/>
+        <location filename="../gui/browser_tab.py" line="171"/>
         <source>Download Excel</source>
         <translation>Descargar Excel</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="155"/>
+        <location filename="../gui/browser_tab.py" line="172"/>
         <source>Download CSV</source>
         <translation>Descargar CSV</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="156"/>
+        <location filename="../gui/browser_tab.py" line="173"/>
         <source>Download JSON</source>
         <translation>Descargar JSON</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="157"/>
+        <location filename="../gui/browser_tab.py" line="174"/>
         <source>Download XML</source>
         <translation>Descargar XML</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="213"/>
+        <location filename="../gui/browser_tab.py" line="230"/>
         <source>Scrape</source>
         <translation>Extraer</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="332"/>
+        <location filename="../gui/browser_tab.py" line="349"/>
         <source>Template saved successfully</source>
         <translation>Plantilla guardada correctamente</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="334"/>
+        <location filename="../gui/browser_tab.py" line="351"/>
         <source>Error saving template</source>
         <translation>Error al guardar la plantilla</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="338"/>
+        <location filename="../gui/browser_tab.py" line="355"/>
         <source>Information</source>
         <translation>Información</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="404"/>
+        <location filename="../gui/browser_tab.py" line="421"/>
         <source>Edit Column Header</source>
         <translation>Editar título de la columna</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="404"/>
+        <location filename="../gui/browser_tab.py" line="421"/>
         <source>Enter new column header text:</source>
         <translation>Ingrese el nuevo título de la columna:</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="489"/>
+        <location filename="../gui/browser_tab.py" line="506"/>
         <source>Remove Column</source>
         <translation>Eliminar Columna</translation>
     </message>
@@ -97,6 +97,21 @@
         <location filename="../gui/browser_tab.py" line="30"/>
         <source>Click to stop selecting the pagination button...</source>
         <translation>Click para dejar de seleccionar el botón de paginación...</translation>
+    </message>
+    <message>
+        <location filename="../gui/browser_tab.py" line="73"/>
+        <source>Automated</source>
+        <translation>Automático</translation>
+    </message>
+    <message>
+        <location filename="../gui/browser_tab.py" line="585"/>
+        <source>Help</source>
+        <translation>Ayuda</translation>
+    </message>
+    <message>
+        <location filename="../gui/browser_tab.py" line="585"/>
+        <source>If you encounter any issues that prevent the successful completion of scraping during the automatic pagination process (IP blocks, failure to find the pagination button, etc.), but you do have access to the required website from this browser, disable this option and try again following the steps that will appear on the screen.</source>
+        <translation>En caso de encontrar problemas que impidan terminar el scraping correctamente durante el proceso de paginación automática (bloqueos de IPs, fallo al encontrar botón de paginación, etc), pero sí tienes acceso acceso a la web requerida desde este navegador, desactiva esta opción e inténtalo de nuevo siguiendo los pasos que aparecerán en pantalla.</translation>
     </message>
 </context>
 <context>
@@ -281,6 +296,11 @@
         <location filename="../gui/processes_tab.py" line="279"/>
         <source>Delete Row and File</source>
         <translation>Eliminar fila y archivo</translation>
+    </message>
+    <message>
+        <location filename="../gui/processes_tab.py" line="292"/>
+        <source>The file could not be removed. Please make sure it&apos;s closed.</source>
+        <translation>El archivo no pudo eliminarse. Por favor, asegúrate de que no se encuentra abierto por otros programas.</translation>
     </message>
 </context>
 <context>
