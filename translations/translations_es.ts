@@ -69,17 +69,17 @@
         <translation>Información</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="403"/>
+        <location filename="../gui/browser_tab.py" line="404"/>
         <source>Edit Column Header</source>
         <translation>Editar título de la columna</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="403"/>
+        <location filename="../gui/browser_tab.py" line="404"/>
         <source>Enter new column header text:</source>
         <translation>Ingrese el nuevo título de la columna:</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="488"/>
+        <location filename="../gui/browser_tab.py" line="489"/>
         <source>Remove Column</source>
         <translation>Eliminar Columna</translation>
     </message>
