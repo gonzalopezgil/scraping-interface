@@ -647,7 +647,7 @@ class BrowserTab(QWidget):
             self.tr("If you encounter any issues that prevent the successful completion of scraping during the "
                     "automatic pagination process (IP blocks, failure to find the pagination button, etc.), "
                     "but you do have access to the required website from this browser, disable this option "
-                    "and try again following the steps that will appear on the screen.")
+                    "and try again. Note that the interface will be blocked until the process is completed.")
         )
 
     def create_interaction_widget(self):
