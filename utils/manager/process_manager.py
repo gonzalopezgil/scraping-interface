@@ -107,7 +107,7 @@ class ProcessManager:
                 self.columns[i].title = title
 
     def get_titles(self):
-        return [column.title for column in self.columns]
+        return [column.title if column.title else column.get_visual_index() for column in self.columns]
 
     def clear_columns(self):
         self.columns = []

@@ -11,9 +11,12 @@ from utils.pyqt5_utils.custom_table_widget import CustomTableWidget
 from utils.manager.template_manager import save_template, get_column_data_from_template
 import static
 import random
+import logging
 
 COLUMN_COUNT = 0
 PAGINATION_WIDGET_WIDTH_PERCENTAGE = 1/3
+
+logger = logging.getLogger(__name__)
 
 class BrowserTab(QWidget):
 
@@ -453,12 +456,17 @@ class BrowserTab(QWidget):
 
     def thread_preview_scrape(self, url, column_titles, xpaths, html):
         scraper = ScrapyScraper()
-        items = scraper.scrape(url, column_titles, xpaths, html, max_items=5)
-        actual_column_titles = self.get_column_titles()
-        if items is not None and len(items) > 0 and column_titles == actual_column_titles:
-            self.signal_manager.table_items_signal.emit(items)
-        elif self.wait_data:
-            self.signal_manager.table_items_signal.emit({})
+        try:
+            items = scraper.scrape(url, column_titles, xpaths, html, max_items=5)
+            actual_column_titles = self.get_column_titles()
+            if items is not None and len(items) > 0 and column_titles == actual_column_titles:
+                self.signal_manager.table_items_signal.emit(items)
+            elif self.wait_data:
+                self.signal_manager.table_items_signal.emit({})
+        except Exception as e:
+            logger.error("Error: No items found. " + str(e))
+            if self.wait_data:
+                self.signal_manager.table_items_signal.emit({})
 
     def handle_cell_changed(self, row, column):
         if self.scrape_widget.isVisible():

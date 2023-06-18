@@ -177,19 +177,23 @@ class SeleniumScraper(Scraper):
         dict_results = self.merge_list_dicts(results)
         self.update_progress("92%", stop, signal_manager, row)
         if len(dict_results) > 0:
-            for label,text in zip(labels, selected_text):
-                elements = dict_results[label]
-                elements = self.clean_list(elements)
-                text = self.clean_text(text)
-                dict_results[label] = elements
-            
-            self.update_progress("95%", stop, signal_manager, row)
-            df = self.dict_to_df(dict_results)
-            self.update_progress("96%", stop, signal_manager, row)
+            try:
+                for label,text in zip(labels, selected_text):
+                    elements = dict_results[label]
+                    elements = self.clean_list(elements)
+                    text = self.clean_text(text)
+                    dict_results[label] = elements
+                
+                self.update_progress("95%", stop, signal_manager, row)
+                df = self.dict_to_df(dict_results)
+                self.update_progress("96%", stop, signal_manager, row)
 
-            if df is not None and file_name is not None:
-                self.save_file(df, file_name, append)
-                signal_manager.process_signal.emit(row, str(ProcessStatus.FINISHED.value), file_name)
+                if df is not None and file_name is not None:
+                    self.save_file(df, file_name, append)
+                    signal_manager.process_signal.emit(row, str(ProcessStatus.FINISHED.value), file_name)
+            except Exception as e:
+                logger.error(f"Error: No elements found. {e}")
+                signal_manager.process_signal.emit(row, str(ProcessStatus.ERROR.value), "")
         else:
             logger.error("Error: No elements found")
             signal_manager.process_signal.emit(row, str(ProcessStatus.ERROR.value), "")
