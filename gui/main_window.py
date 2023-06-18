@@ -167,13 +167,16 @@ class MainWindow(QMainWindow):
             return len(data)
         elif file_extension == ".xml":
             tree = ET.parse(filename)
-            root = tree.getroot()
-            return len(root.findall('item'))
+            # Find all 'item' elements at any depth
+            items = tree.findall('.//item')
+            return len(items)
         else:
             logger.warning(f"Unsupported file format: {file_extension}")
             return None
         
     def change_page(self):
+        current_url = self.browser_tab.browser.url().toString()
+
         self.browser_tab.process_manager.set_titles(self.browser_tab.get_column_titles())
 
         self.interaction = self.process_manager.interaction
@@ -198,9 +201,16 @@ class MainWindow(QMainWindow):
                 process_manager.pagination_xpath = "\n".join(pagination_xpaths[1:])
 
         if self.current_page < process_manager.max_pages and process_manager.pagination_xpath and process_manager.pagination_xpath != 'fake':
-            QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager))
-            self.process_manager = process_manager
-            self.current_page += 1
+            new_url = self.browser_tab.browser.url().toString()
+
+            # Compare current page and new page. If they're identical, require user interaction
+            if current_url == new_url:
+                self.process_manager = process_manager
+                self.require_user_interaction(process_manager.file_name)
+            else:
+                QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager))
+                self.process_manager = process_manager
+                self.current_page += 1
         else:
             self.current_page = 0
             self.row_count = 0

@@ -9,6 +9,7 @@ from utils.manager.file_manager import get_folder_path
 import html
 from csv import DictReader
 import json
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,12 @@ class Scraper(ABC):
                 for _, row in dataframe.iterrows():
                     item = ET.SubElement(root, "item")
                     for col_name, value in row.items():
-                        col = ET.SubElement(item, col_name)
+                        # Replace any spaces or special characters with an underscore
+                        safe_col_name = re.sub('[^a-zA-Z0-9]', '_', col_name)
+                        # If the column name starts with a number, add an underscore at the start
+                        if safe_col_name[0].isdigit():
+                            safe_col_name = "_" + safe_col_name
+                        col = ET.SubElement(item, safe_col_name)
                         col.text = str(value)
                 tree.write(file_name, encoding="utf-8", xml_declaration=True)
             else:
@@ -91,9 +97,13 @@ class Scraper(ABC):
                 for index, row in dataframe.iterrows():
                     item = ET.SubElement(root, "item")
                     for col_name, value in row.items():
-                        col = ET.SubElement(item, col_name)
+                        # Replace any spaces or special characters with an underscore
+                        safe_col_name = re.sub('[^a-zA-Z0-9]', '_', col_name)
+                        # If the column name starts with a number, add an underscore at the start
+                        if safe_col_name[0].isdigit():
+                            safe_col_name = "_" + safe_col_name
+                        col = ET.SubElement(item, safe_col_name)
                         col.text = str(value)
-
                 tree = ET.ElementTree(root)
                 tree.write(file_name, encoding="utf-8", xml_declaration=True)
             else:
