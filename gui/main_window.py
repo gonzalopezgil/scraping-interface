@@ -182,10 +182,20 @@ class MainWindow(QMainWindow):
                                            
         self.browser_tab.toggle_pagination()
         self.browser_tab.toggle_scrape_widget()
-        js_code = f"var xpath = '{process_manager.pagination_xpath}'; {jss.CLICK_ELEMENT_JS}"
-        self.browser_tab.browser.page().runJavaScript(js_code)
+        if process_manager.pagination_xpath and process_manager.pagination_xpath != 'fake':
+            pagination_xpaths = []
+            if "\n" in process_manager.pagination_xpath:
+                pagination_xpaths = process_manager.pagination_xpath.split("\n")
+                pagination_xpaths = [xpath for xpath in pagination_xpaths if xpath.strip()]
+                pagination_xpath = pagination_xpaths[0]
+            else:
+                pagination_xpath = process_manager.pagination_xpath
+            js_code = f"var xpath = '{pagination_xpath}'; {jss.CLICK_ELEMENT_JS}"
+            self.browser_tab.browser.page().runJavaScript(js_code)
+            if pagination_xpaths and len(pagination_xpaths) > 0:
+                process_manager.pagination_xpath = "\n".join(pagination_xpaths[1:])
 
-        if self.current_page < process_manager.max_pages and process_manager.pagination_xpath != 'fake':
+        if self.current_page < process_manager.max_pages and process_manager.pagination_xpath and process_manager.pagination_xpath != 'fake':
             QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager))
             self.process_manager = process_manager
             self.current_page += 1
@@ -260,6 +270,7 @@ class MainWindow(QMainWindow):
         self.process_manager.append = False
         self.process_manager.unique_id = None
         self.process_manager.max_pages = None
+        self.process_manager.pagination_xpaths = None
 
     def scrape(self, html, file_format):
         url = self.browser_tab.browser.url().toString()
