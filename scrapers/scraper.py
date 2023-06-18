@@ -45,17 +45,19 @@ class Scraper(ABC):
 
         if append and os.path.exists(file_name):
             if file_extension == ".csv":
-                current_headers = next(DictReader(open(file_name)))
-                if set(current_headers[1:]) == set(dataframe.columns):
+                with open(file_name, 'r', encoding='utf-8-sig') as f:
+                    current_headers = next(DictReader(f))
+                keys_list = list(current_headers.keys())
+                clean_list = [key.strip() for key in keys_list]
+                if set(clean_list) == set(dataframe.columns):
                     dataframe.to_csv(file_name, mode='a', index=False, header=False, encoding="utf-8-sig")
                 else:
                     logger.error("Error: columns of existing file do not match input dataframe")
             elif file_extension == ".xlsx":
-                current_df = pd.read_excel(file_name, usecols=lambda x: x != 'Unnamed: 0')
+                current_df = pd.read_excel(file_name)
                 if set(current_df.columns) == set(dataframe.columns):
-                    appended_df = pd.concat([current_df, dataframe], ignore_index=True)
-                    appended_df.index += 1
-                    appended_df.to_excel(file_name, index=True)
+                    appended_df = pd.concat([current_df, dataframe])
+                    appended_df.to_excel(file_name, index=False)
                 else:
                     logger.error("Error: columns of existing file do not match input dataframe")
             elif file_extension == ".json":
@@ -66,9 +68,9 @@ class Scraper(ABC):
                 logger.error(f"Error: unsupported file format: {file_extension}")
         else:
             if file_extension == ".xlsx":
-                dataframe.to_excel(file_name, index=True)
+                dataframe.to_excel(file_name, index=False)
             elif file_extension == ".csv":
-                dataframe.to_csv(file_name, index=True, encoding="utf-8-sig")
+                dataframe.to_csv(file_name, index=False, encoding="utf-8-sig")
             elif file_extension == ".json":
                 dataframe.to_json(file_name, orient="records")
             elif file_extension == ".xml":
@@ -136,7 +138,6 @@ class Scraper(ABC):
     def dict_to_df(self, my_dict):
         try:
             df = pd.DataFrame(my_dict)
-            df.index += 1
             return df
         except ValueError as e:
             logger.error(f"Error creating dataframe: {e}")
