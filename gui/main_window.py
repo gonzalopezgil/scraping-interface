@@ -190,6 +190,7 @@ class MainWindow(QMainWindow):
             self.process_manager = process_manager
             self.current_page += 1
         else:
+            self.current_page = 0
             self.browser_tab.browser.load(QUrl(process_manager.url))
             if process_manager.pagination_xpath == 'fake':
                 process_manager.pagination_xpath = None
