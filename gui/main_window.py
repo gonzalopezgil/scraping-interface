@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, QTableWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, QTableWidgetItem, QApplication
 from PyQt5.QtCore import QTimer, QUrl, pyqtSlot
 from gui.browser_tab import BrowserTab
 from gui.processes_tab import ProcessesTab
@@ -86,6 +86,8 @@ class MainWindow(QMainWindow):
 
         self.browser_tab.continue_button.clicked.connect(self.continue_process)
         self.browser_tab.cancel_button.clicked.connect(self.show_modal_dialog_to_cancel)
+
+        self.dialog = ProgressDialog()
 
     def export_data(self, action):
         file_format = action.text().split(" ")[-1].lower()
@@ -295,8 +297,8 @@ class MainWindow(QMainWindow):
 
         if append:
             self.notification_manager.disable_notifications()
-            self.dialog = ProgressDialog()
             self.dialog.show()
+            QApplication.processEvents()  # Process all pending UI events
             QTimer.singleShot(0, lambda: self.start_thread(html))
         else:
             self.start_thread(html)
