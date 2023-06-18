@@ -160,47 +160,47 @@
         <translation>Guardar archivo</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="338"/>
+        <location filename="../gui/main_window.py" line="350"/>
         <source>Warning</source>
         <translation>Aviso</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="333"/>
+        <location filename="../gui/main_window.py" line="345"/>
         <source>No preview results to show</source>
         <translation>No existen resultados de vista previa para mostrar</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="338"/>
+        <location filename="../gui/main_window.py" line="350"/>
         <source>The thread is still running. Do you want to force it to stop?</source>
         <translation>Existe al menos un hilo en ejecución. ¿Desea forzarlo a detenerse?</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="199"/>
+        <location filename="../gui/main_window.py" line="210"/>
         <source>Process finished</source>
         <translation>Proceso finalizado</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="199"/>
+        <location filename="../gui/main_window.py" line="210"/>
         <source>A process has finished successfully</source>
         <translation>Un proceso ha terminado con éxito</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="222"/>
+        <location filename="../gui/main_window.py" line="233"/>
         <source>Interaction required</source>
         <translation>Interacción requerida</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="222"/>
+        <location filename="../gui/main_window.py" line="233"/>
         <source>Please interact with the browser to continue the process</source>
         <translation>Por favor, interactúa con el navegador para continuar un proceso</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="224"/>
+        <location filename="../gui/main_window.py" line="235"/>
         <source>Attention</source>
         <translation>Atención</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="224"/>
+        <location filename="../gui/main_window.py" line="235"/>
         <source>No information found in the current page. Please interact with the browser until you see the data to continue the process.</source>
         <translation>No se encontró información en la página actual. Por favor, interactúa con el navegador hasta que veas los datos para continuar el proceso.</translation>
     </message>
@@ -341,6 +341,14 @@
         <location filename="../gui/processes_tab.py" line="279"/>
         <source>The file could not be removed. Please make sure it&apos;s closed.</source>
         <translation>El archivo no pudo eliminarse. Por favor, asegúrate de que no se encuentra abierto por otros programas.</translation>
+    </message>
+</context>
+<context>
+    <name>ProgressDialog</name>
+    <message>
+        <location filename="../utils/pyqt5_utils/progress_dialog.py" line="13"/>
+        <source>Please wait for the process to finish...</source>
+        <translation>Por favor, espera hasta que el proceso termine...</translation>
     </message>
 </context>
 <context>

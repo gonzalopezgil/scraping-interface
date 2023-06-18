@@ -1,15 +1,22 @@
 SOURCES = \
         ../web/__init__.py \
         ../web/javascript_strings.py \
+        ../tests/test_scraper.py \
+        ../tests/test_selenium_scraper.py \
+        ../tests/test_scrapy_selenium_scraper.py \
+        ../tests/__init__.py \
+        ../tests/test_middlewares.py \
         ../utils/__init__.py \
         ../utils/manager/signal_manager.py \
         ../utils/manager/__init__.py \
         ../utils/manager/template_manager.py \
         ../utils/manager/password_manager.py \
         ../utils/manager/process_manager.py \
+        ../utils/manager/notification_manager.py \
         ../utils/manager/file_manager.py \
         ../utils/pyqt5_utils/template_thumbnail.py \
         ../utils/pyqt5_utils/__init__.py \
+        ../utils/pyqt5_utils/progress_dialog.py \
         ../utils/pyqt5_utils/custom_table_widget.py \
         ../utils/pyqt5_utils/web_engine_page.py \
         ../exceptions/scraper_exceptions.py \
@@ -30,5 +37,7 @@ SOURCES = \
         ../scrapers/middlewares.py \
         ../scrapers/selenium_scraper.py \
         ../main.py \
+        ../run_integration_tests.py \
+        ../run_unit_tests.py \
 
 TRANSLATIONS = translations_es.ts
