@@ -18,6 +18,7 @@ import os
 import pandas as pd
 import json
 import xml.etree.ElementTree as ET
+from utils.manager.notification_manager import NotificationManager
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +44,11 @@ class MainWindow(QMainWindow):
             "home_page": "https://www.google.com"
         }
 
+        self.notification_manager = NotificationManager()
+
         # Create the tabs
         self.home_tab = HomeTab(self)
-        self.processes_tab = ProcessesTab(self)
+        self.processes_tab = ProcessesTab(self, self.notification_manager)
         self.settings_tab = SettingsTab(self, self.settings, self.processes_tab, self, self.app)
         self.browser_tab = BrowserTab(self, self.process_manager, self.signal_manager, self.settings)
 
@@ -182,14 +185,18 @@ class MainWindow(QMainWindow):
         js_code = f"var xpath = '{process_manager.pagination_xpath}'; {jss.CLICK_ELEMENT_JS}"
         self.browser_tab.browser.page().runJavaScript(js_code)
 
-        if self.current_page < process_manager.max_pages:
+        if self.current_page < process_manager.max_pages and process_manager.pagination_xpath != 'fake':
             QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager))
             self.process_manager = process_manager
             self.current_page += 1
         else:
             self.browser_tab.browser.load(QUrl(process_manager.url))
+            if process_manager.pagination_xpath == 'fake':
+                process_manager.pagination_xpath = None
             self.process_manager = process_manager
             self.reset_process()
+            self.notification_manager.enable_notifications()
+            self.notification_manager.show_notification(self.tr("Process finished"), self.tr("A process has finished successfully"))
             QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager, scrape=False))
 
     def require_user_interaction(self, file_name):
@@ -210,13 +217,17 @@ class MainWindow(QMainWindow):
             self.browser_tab.toggle_scrape_widget()
 
             self.browser_tab.interaction_widget.show()
+
+            self.notification_manager.enable_notifications()
+            self.notification_manager.show_notification(self.tr("Interaction required"), self.tr("Please interact with the browser to continue the process"))
             
-            QMessageBox.information(self, self.tr("Attention"), self.tr("No information found. Please interact with the browser to continue the process."))
+            QMessageBox.information(self, self.tr("Attention"), self.tr("No information found in the current page. Please interact with the browser until you see the data to continue the process."))
         else:
             self.row_count = count
             self.change_page()
 
     def continue_process(self):
+        self.notification_manager.disable_notifications()
         self.browser_tab.interaction_widget.hide()
         self.process_manager = self.actual_process_manager
         self.actual_process_manager = None
@@ -231,6 +242,7 @@ class MainWindow(QMainWindow):
         self.process_manager = process_manager
         self.reset_process()
         self.browser_tab.enable_elements_layout(self.browser_tab.navigation_bar_layout, True)
+        self.notification_manager.enable_notifications()
         QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager, scrape=False))
 
     def show_modal_dialog_to_cancel(self):
@@ -270,6 +282,7 @@ class MainWindow(QMainWindow):
             self.process_manager.file_name = file_name
 
         if append:
+            self.notification_manager.disable_notifications()
             self.dialog = ProgressDialog()
             self.dialog.show()
             QTimer.singleShot(0, lambda: self.start_thread(html))

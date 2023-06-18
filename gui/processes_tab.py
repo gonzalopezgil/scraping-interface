@@ -10,8 +10,6 @@ from utils.manager.file_manager import get_file_path
 import sys
 import threading
 from utils.manager.process_manager import ProcessStatus
-from plyer import notification
-from static import icon_path
 import logging
 import uuid
 
@@ -19,8 +17,9 @@ PROCESSES_FILE = get_file_path("processes.csv")
 logger = logging.getLogger(__name__)
 
 class ProcessesTab(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, notification_manager=None):
         super().__init__(parent)
+        self.notification_manager = notification_manager
 
         self.STATUS_STRINGS = {
             ProcessStatus.RUNNING: self.tr("Running"),
@@ -197,18 +196,6 @@ class ProcessesTab(QWidget):
         else:
             logger.error("Error: File is not opening due to unknown operating system")
 
-    def show_notification(self, title, message):
-        try:
-            notification.notify(
-                title=title,
-                message=message,
-                app_icon=icon_path,
-                timeout=10,
-            )
-            logger.info(f"Notification shown: {title} - {message}")
-        except Exception:
-            logger.error("Error showing notification")
-
     @pyqtSlot(QVariant, QVariant, QVariant)
     def update_status(self, unique_id, status, file_name):
         if unique_id not in self.uuid_row_mapping:
@@ -229,12 +216,12 @@ class ProcessesTab(QWidget):
             self.table.setItem(row, 3, QTableWidgetItem(self.translate_status(status_code)))
             if status_code == ProcessStatus.FINISHED.value:
                 self.table.setCellWidget(row, 6, self.create_open_file_button(file_name))
-                self.show_notification(self.tr("Process finished"), self.tr("A process has finished successfully"))
+                self.notification_manager.show_notification(self.tr("Process finished"), self.tr("A process has finished successfully"))
             elif status_code == ProcessStatus.STOPPED.value or status_code == ProcessStatus.ERROR.value:
                 self.table.setCellWidget(row, 6, None)
             elif status_code == ProcessStatus.REQUIRES_INTERACTION.value:
                 self.table.setCellWidget(row, 6, self.create_interaction_button(unique_id))
-                self.show_notification(self.tr("Interaction required"), self.tr("Please interact with the browser to continue the process"))
+                self.notification_manager.show_notification(self.tr("Interaction required"), self.tr("Please interact with the browser to continue the process"))
         if row < len(self.status_codes):
             self.status_codes[row] = status_code
         self.table.setItem(row, 1, QTableWidgetItem(file_name))
