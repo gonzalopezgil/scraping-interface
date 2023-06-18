@@ -206,7 +206,7 @@ class MainWindow(QMainWindow):
             # Compare current page and new page. If they're identical, require user interaction
             if current_url == new_url:
                 self.process_manager = process_manager
-                self.require_user_interaction(process_manager.file_name)
+                self.require_user_interaction(process_manager.file_name, self.tr("No pagination button found. Please click on the next page button to continue the process or cancel to stop it."))
             else:
                 QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager))
                 self.process_manager = process_manager
@@ -223,7 +223,7 @@ class MainWindow(QMainWindow):
             self.notification_manager.show_notification(self.tr("Process finished"), self.tr("A process has finished successfully"))
             QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager, scrape=False))
 
-    def require_user_interaction(self, file_name):
+    def require_user_interaction(self, file_name, message):
         count = self.count_rows(file_name)
         if not count or count <= self.row_count:
             self.dialog.close()
@@ -245,7 +245,7 @@ class MainWindow(QMainWindow):
             self.notification_manager.enable_notifications()
             self.notification_manager.show_notification(self.tr("Interaction required"), self.tr("Please interact with the browser to continue the process"))
             
-            QMessageBox.information(self, self.tr("Attention"), self.tr("No information found in the current page. Please interact with the browser until you see the data to continue the process."))
+            QMessageBox.information(self, self.tr("Attention"), message)
         else:
             self.row_count = count
             self.change_page()
@@ -340,7 +340,7 @@ class MainWindow(QMainWindow):
             self.thread.start()
             if append:
                 self.thread.join()
-                self.require_user_interaction(file_name)
+                self.require_user_interaction(file_name, self.tr("No information found in the current page. Please interact with the browser until you see the data to continue the process."))
             else:
                 self.tabs.setCurrentIndex(2)
                 self.reset_process()
