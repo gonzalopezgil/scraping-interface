@@ -74,7 +74,6 @@ class BrowserTab(QWidget):
 
         self.automated_checkbox = QCheckBox(self.tr("Automated"), self)
         self.automated_checkbox.setChecked(True)  # set default as automated
-        #self.automated_checkbox.clicked.connect(self.set_automation)
         self.second_row_layout.addWidget(self.automated_checkbox)
 
         self.help_button = QToolButton(self)
@@ -262,6 +261,8 @@ class BrowserTab(QWidget):
         self.pagination_xpath_input.setMinimumWidth(int(height_hint * 0.75))
         self.pagination_xpath_input.setMaximumHeight(int(height_hint * 0.75))
 
+        self.create_interaction_widget()
+
         self.wait_data = False
 
         self.setStyleSheet(f"""
@@ -300,6 +301,12 @@ class BrowserTab(QWidget):
     def refresh_browser(self):
         self.browser.reload()
         self.browser.loadFinished.connect(lambda _: self.update_url_field(self.browser.url()))
+
+    def enable_elements_layout(self, layout, enable):
+        for i in range(layout.count()):
+            widget = layout.itemAt(i).widget()
+            if widget:
+                widget.setEnabled(enable)
 
     def export_data(self, action):
         self.process_manager.file_format = action.text().split(" ")[-1].lower()
@@ -436,10 +443,9 @@ class BrowserTab(QWidget):
                     self.table_widget.setRowCount(j+1)
                 self.table_widget.setItem(j, i, QTableWidgetItem(item))
         
-        if self.wait_data and self.table_widget.columnCount() == len(items.keys()):
+        if self.wait_data and (self.table_widget.columnCount() == len(items.keys()) or items == {}):
             self.wait_data = False
             self.signal_manager.tab_signal.emit()
-        
     
     def preview_scrape(self, html):
         thread = threading.Thread(target=self.thread_preview_scrape, args=(self.browser.url().toString(), self.get_column_titles(), self.process_manager.get_all_xpaths(), html), daemon=True)
@@ -451,6 +457,8 @@ class BrowserTab(QWidget):
         actual_column_titles = self.get_column_titles()
         if items is not None and len(items) > 0 and column_titles == actual_column_titles:
             self.signal_manager.table_items_signal.emit(items)
+        elif self.wait_data:
+            self.signal_manager.table_items_signal.emit({})
 
     def handle_cell_changed(self, row, column):
         if self.scrape_widget.isVisible():
@@ -641,3 +649,16 @@ class BrowserTab(QWidget):
                     "but you do have access to the required website from this browser, disable this option "
                     "and try again following the steps that will appear on the screen.")
         )
+
+    def create_interaction_widget(self):
+        self.interaction_widget = QWidget(self)
+        self.interaction_widget_layout = QHBoxLayout(self.interaction_widget)
+
+        self.cancel_button = QPushButton(self.tr("Cancel Process"), self.interaction_widget)
+        self.interaction_widget_layout.addWidget(self.cancel_button)
+
+        self.continue_button = QPushButton(self.tr("Continue Process"), self.interaction_widget)
+        self.interaction_widget_layout.addWidget(self.continue_button)
+
+        self.interaction_widget.hide()
+        self.browser_tab_layout.addWidget(self.interaction_widget, 0, Qt.AlignBottom)

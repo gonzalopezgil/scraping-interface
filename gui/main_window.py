@@ -14,6 +14,10 @@ import logging
 import web.javascript_strings as jss
 import copy
 from utils.pyqt5_utils.progress_dialog import ProgressDialog
+import os
+import pandas as pd
+import json
+import xml.etree.ElementTree as ET
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +78,11 @@ class MainWindow(QMainWindow):
         self.interaction = None
         self.stop = None
         self.current_page = 0
+        self.row_count = 0
+        self.actual_process_manager = None
+
+        self.browser_tab.continue_button.clicked.connect(self.continue_process)
+        self.browser_tab.cancel_button.clicked.connect(self.show_modal_dialog_to_cancel)
 
     def export_data(self, action):
         file_format = action.text().split(" ")[-1].lower()
@@ -133,6 +142,32 @@ class MainWindow(QMainWindow):
             logger.warning("Error: no file name entered")
             return None
         
+    def count_rows(self, filename):
+        if not filename or not os.path.exists(filename):
+            logger.warning("File does not exist. No information found.")
+            return None
+
+        _, file_extension = os.path.splitext(filename)
+        file_extension = file_extension.lower()
+
+        if file_extension == ".csv":
+            with open(filename, 'r') as f:
+                return sum(1 for line in f) - 1  # subtract 1 to exclude header
+        elif file_extension == ".xlsx":
+            df = pd.read_excel(filename)
+            return len(df)
+        elif file_extension == ".json":
+            with open(filename, 'r') as f:
+                data = json.load(f)
+            return len(data)
+        elif file_extension == ".xml":
+            tree = ET.parse(filename)
+            root = tree.getroot()
+            return len(root.findall('item'))
+        else:
+            logger.warning(f"Unsupported file format: {file_extension}")
+            return None
+        
     def change_page(self):
         self.browser_tab.process_manager.set_titles(self.browser_tab.get_column_titles())
 
@@ -156,6 +191,51 @@ class MainWindow(QMainWindow):
             self.process_manager = process_manager
             self.reset_process()
             QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager, scrape=False))
+
+    def require_user_interaction(self, file_name):
+        count = self.count_rows(file_name)
+        if not count or count <= self.row_count:
+            self.dialog.close()
+            self.browser_tab.enable_elements_layout(self.browser_tab.navigation_bar_layout, False)
+
+            self.interaction = self.process_manager.interaction
+            self.stop = self.process_manager.stop
+            self.process_manager.interaction = None
+            self.process_manager.stop = None
+            self.actual_process_manager = copy.deepcopy(self.process_manager)
+
+            self.browser_tab.pagination_widget.setVisible(True)
+            self.browser_tab.scrape_widget.setVisible(True)
+            self.browser_tab.toggle_pagination()
+            self.browser_tab.toggle_scrape_widget()
+
+            self.browser_tab.interaction_widget.show()
+            
+            QMessageBox.information(self, self.tr("Attention"), self.tr("No information found. Please interact with the browser to continue the process."))
+        else:
+            self.row_count = count
+            self.change_page()
+
+    def continue_process(self):
+        self.browser_tab.interaction_widget.hide()
+        self.process_manager = self.actual_process_manager
+        self.actual_process_manager = None
+        self.browser_tab.browser.page().toHtml(lambda html: self.start_thread(html))
+
+    def cancel_process(self):
+        self.row_count = 0
+        self.browser_tab.interaction_widget.hide()
+        process_manager = self.actual_process_manager
+        self.actual_process_manager = None
+        self.browser_tab.browser.load(QUrl(process_manager.url))
+        self.process_manager = process_manager
+        self.reset_process()
+        self.browser_tab.enable_elements_layout(self.browser_tab.navigation_bar_layout, True)
+        QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager, scrape=False))
+
+    def show_modal_dialog_to_cancel(self):
+        self.dialog.show()
+        QTimer.singleShot(0, self.cancel_process)
 
     def reset_process(self):
         self.stop = None
@@ -192,8 +272,9 @@ class MainWindow(QMainWindow):
         if append:
             self.dialog = ProgressDialog()
             self.dialog.show()
-
-        self.start_thread(html)
+            QTimer.singleShot(0, lambda: self.start_thread(html))
+        else:
+            self.start_thread(html)
 
     def start_thread(self, html):
         file_name = self.process_manager.file_name
@@ -221,7 +302,7 @@ class MainWindow(QMainWindow):
             self.thread.start()
             if append:
                 self.thread.join()
-                self.change_page()
+                self.require_user_interaction(file_name)
             else:
                 self.tabs.setCurrentIndex(2)
                 self.reset_process()
