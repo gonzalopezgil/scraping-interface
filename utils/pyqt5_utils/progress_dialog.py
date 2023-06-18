@@ -12,3 +12,5 @@ class ProgressDialog(QDialog):
         layout = QVBoxLayout(self)
         label = QLabel(self.tr("Please wait for the process to finish..."), self)
         layout.addWidget(label)
+
+        self.setWindowTitle("Scraping Interface")
