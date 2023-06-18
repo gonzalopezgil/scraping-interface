@@ -8,6 +8,7 @@ from scrapy.item import Item, Field
 from utils.manager.file_manager import get_folder_path
 import html
 from csv import DictReader
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -61,9 +62,21 @@ class Scraper(ABC):
                 else:
                     logger.error("Error: columns of existing file do not match input dataframe")
             elif file_extension == ".json":
-                logger.error("Error: appending to JSON files is not supported")
+                with open(file_name, 'r') as f:
+                    data = json.load(f)
+                data.extend(dataframe.to_dict('records'))
+                with open(file_name, 'w') as f:
+                    json.dump(data, f)
             elif file_extension == ".xml":
-                logger.error("Error: appending to XML files is not supported")
+                parser = ET.XMLParser(encoding="utf-8")
+                tree = ET.parse(file_name, parser=parser)
+                root = tree.getroot()
+                for _, row in dataframe.iterrows():
+                    item = ET.SubElement(root, "item")
+                    for col_name, value in row.items():
+                        col = ET.SubElement(item, col_name)
+                        col.text = str(value)
+                tree.write(file_name, encoding="utf-8", xml_declaration=True)
             else:
                 logger.error(f"Error: unsupported file format: {file_extension}")
         else:
