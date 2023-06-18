@@ -7,6 +7,7 @@ import logging
 from scrapy.item import Item, Field
 from utils.manager.file_manager import get_folder_path
 import html
+from csv import DictReader
 
 logger = logging.getLogger(__name__)
 
@@ -38,28 +39,50 @@ class Scraper(ABC):
         else:
             return elements
 
-    def save_file(self, dataframe, file_name):
+    def save_file(self, dataframe, file_name, append):
         _, file_extension = os.path.splitext(file_name)
         file_extension = file_extension.lower()
 
-        if file_extension == ".xlsx":
-            dataframe.to_excel(file_name)
-        elif file_extension == ".csv":
-            dataframe.to_csv(file_name, index=False, encoding="utf-8-sig")
-        elif file_extension == ".json":
-            dataframe.to_json(file_name, orient="records")
-        elif file_extension == ".xml":
-            root = ET.Element("root")
-            for index, row in dataframe.iterrows():
-                item = ET.SubElement(root, "item")
-                for col_name, value in row.items():
-                    col = ET.SubElement(item, col_name)
-                    col.text = str(value)
-
-            tree = ET.ElementTree(root)
-            tree.write(file_name, encoding="utf-8", xml_declaration=True)
+        if append and os.path.exists(file_name):
+            if file_extension == ".csv":
+                current_headers = next(DictReader(open(file_name)))
+                if set(current_headers[1:]) == set(dataframe.columns):
+                    dataframe.to_csv(file_name, mode='a', index=False, header=False, encoding="utf-8-sig")
+                else:
+                    logger.error("Error: columns of existing file do not match input dataframe")
+            elif file_extension == ".xlsx":
+                current_df = pd.read_excel(file_name, usecols=lambda x: x != 'Unnamed: 0')
+                if set(current_df.columns) == set(dataframe.columns):
+                    appended_df = pd.concat([current_df, dataframe], ignore_index=True)
+                    appended_df.index += 1
+                    appended_df.to_excel(file_name, index=True)
+                else:
+                    logger.error("Error: columns of existing file do not match input dataframe")
+            elif file_extension == ".json":
+                logger.error("Error: appending to JSON files is not supported")
+            elif file_extension == ".xml":
+                logger.error("Error: appending to XML files is not supported")
+            else:
+                logger.error(f"Error: unsupported file format: {file_extension}")
         else:
-            logger.error(f"Error: unsupported file format: {file_extension}")
+            if file_extension == ".xlsx":
+                dataframe.to_excel(file_name, index=True)
+            elif file_extension == ".csv":
+                dataframe.to_csv(file_name, index=True, encoding="utf-8-sig")
+            elif file_extension == ".json":
+                dataframe.to_json(file_name, orient="records")
+            elif file_extension == ".xml":
+                root = ET.Element("root")
+                for index, row in dataframe.iterrows():
+                    item = ET.SubElement(root, "item")
+                    for col_name, value in row.items():
+                        col = ET.SubElement(item, col_name)
+                        col.text = str(value)
+
+                tree = ET.ElementTree(root)
+                tree.write(file_name, encoding="utf-8", xml_declaration=True)
+            else:
+                logger.error(f"Error: unsupported file format: {file_extension}")
 
     def generalise_xpath(self, xpath):
         final_xpath = ""

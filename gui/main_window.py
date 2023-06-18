@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QFileDialog, QTableWidgetItem
+from PyQt5.QtCore import QTimer, QUrl, pyqtSlot
 from gui.browser_tab import BrowserTab
 from gui.processes_tab import ProcessesTab
 from gui.settings_tab import SettingsTab
@@ -10,6 +11,9 @@ from gui.home_tab import HomeTab
 from utils.manager.template_manager import load_template
 from utils.manager.process_manager import ProcessStatus
 import logging
+import web.javascript_strings as jss
+import copy
+from utils.pyqt5_utils.progress_dialog import ProgressDialog
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +47,8 @@ class MainWindow(QMainWindow):
 
         self.signal_manager.process_signal.connect(self.processes_tab.update_status)
         self.signal_manager.pagination_signal.connect(self.browser_tab.browser.page().on_pagination_button_clicked)
+        self.signal_manager.browser_signal.connect(lambda: self.browser_tab.browser.page().toHtml(lambda html: self.start_thread(html)))
+        self.signal_manager.tab_signal.connect(self.switch_to_process_tab)
         self.browser_tab.save_template_button.clicked.connect(self.home_tab.update_templates_list)
         self.settings_tab.clear_templates_button.clicked.connect(self.home_tab.update_templates_list)
 
@@ -65,11 +71,15 @@ class MainWindow(QMainWindow):
 
         self.home_tab.template_clicked.connect(self.handle_template_click)
 
+        self.interaction = None
+        self.stop = None
+        self.current_page = 0
+
     def export_data(self, action):
         file_format = action.text().split(" ")[-1].lower()
         logger.info(f"Exporting data to {file_format}")
 
-        self.browser_tab.browser.page().toHtml(lambda html: self.start_thread(html, file_format))
+        self.browser_tab.browser.page().toHtml(lambda html: self.scrape(html, file_format))
 
     def handle_template_click(self, template_id):
         # Change the tab to the BrowserTab
@@ -85,6 +95,11 @@ class MainWindow(QMainWindow):
         self.browser_tab.url_field.setText(self.home_tab.search_input.text())
         self.browser_tab.load_url()
         self.tabs.setCurrentIndex(1)
+
+    @pyqtSlot()
+    def switch_to_process_tab(self):
+        self.tabs.setCurrentIndex(2)
+        self.dialog.close()
 
     def enter_file_name(self, file_format):
         file_extensions = {
@@ -115,40 +130,113 @@ class MainWindow(QMainWindow):
                 i += 1
             return filename
         else:
-            logger.error("Error: no file name entered")
+            logger.warning("Error: no file name entered")
             return None
+        
+    def change_page(self):
+        self.browser_tab.process_manager.set_titles(self.browser_tab.get_column_titles())
 
-    def start_thread(self, html, file_format):
+        self.interaction = self.process_manager.interaction
+        self.stop = self.process_manager.stop
+        self.process_manager.interaction = None
+        self.process_manager.stop = None
+        process_manager = copy.deepcopy(self.browser_tab.process_manager)
+                                           
+        self.browser_tab.toggle_pagination()
+        self.browser_tab.toggle_scrape_widget()
+        js_code = f"var xpath = '{process_manager.pagination_xpath}'; {jss.CLICK_ELEMENT_JS}"
+        self.browser_tab.browser.page().runJavaScript(js_code)
+
+        if self.current_page < process_manager.max_pages:
+            QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager))
+            self.process_manager = process_manager
+            self.current_page += 1
+        else:
+            self.browser_tab.browser.load(QUrl(process_manager.url))
+            self.process_manager = process_manager
+            self.reset_process()
+            QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager, scrape=False))
+
+    def reset_process(self):
+        self.stop = None
+        self.interaction = None
+        self.process_manager.stop = None
+        self.process_manager.interaction = None
+        self.process_manager.url = None
+        self.process_manager.file_name = None
+        self.process_manager.append = False
+        self.process_manager.unique_id = None
+        self.process_manager.max_pages = None
+
+    def scrape(self, html, file_format):
         url = self.browser_tab.browser.url().toString()
         column_titles = self.browser_tab.get_column_titles()
-        process_manager = self.process_manager
         unique_id, stop, interaction = self.processes_tab.add_row(url, "", column_titles)
-        file_name = self.enter_file_name(file_format)
+        append = self.browser_tab.pagination_widget.isVisible() and not self.browser_tab.automated_checkbox.isChecked()
+        max_pages = self.browser_tab.max_pages_input.value()
+
+        self.process_manager.append = append
+        self.process_manager.unique_id = unique_id
+        self.process_manager.stop = stop
+        self.process_manager.interaction = interaction
+        self.process_manager.url = url
+        self.process_manager.max_pages = max_pages
+
+        file_name = None
+        if not self.process_manager.file_name:
+            file_name = self.enter_file_name(file_format)
+            if not file_name:
+                return
+            self.process_manager.file_name = file_name
+
+        if append:
+            self.dialog = ProgressDialog()
+            self.dialog.show()
+
+        self.start_thread(html)
+
+    def start_thread(self, html):
+        file_name = self.process_manager.file_name
+        append = self.process_manager.append
+        url = self.browser_tab.browser.url().toString()
+        column_titles = self.browser_tab.get_column_titles()
+        unique_id = self.process_manager.unique_id
+        process_manager = self.process_manager
+        interaction = self.process_manager.interaction if self.process_manager.interaction else self.interaction
+        stop = self.process_manager.stop if self.process_manager.stop else self.stop
+
         if file_name:
             if self.process_manager.pagination_xpath:
-                max_pages = self.browser_tab.max_pages_input.value()
-                if not max_pages or max_pages == 0:
-                    max_pages = None
-                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, unique_id, process_manager, self.signal_manager, interaction, html, stop, max_pages), daemon=True)
+                if not self.browser_tab.automated_checkbox.isChecked():
+                    max_pages = 1 # only download the current page
+                else:    
+                    max_pages = self.browser_tab.max_pages_input.value()
+                    if not max_pages or max_pages == 0:
+                        max_pages = None
+                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, unique_id, process_manager, self.signal_manager, interaction, html, stop, max_pages, append), daemon=True)
             else:
                 if self.browser_tab.pagination_widget.isVisible():
                     self.process_manager.pagination_xpath = 'fake'
-                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, unique_id, process_manager, self.signal_manager, interaction, html, stop, 1), daemon=True)
+                self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, unique_id, process_manager, self.signal_manager, interaction, html, stop, 1, append), daemon=True)
             self.thread.start()
+            if append:
+                self.thread.join()
+                self.change_page()
+            else:
+                self.tabs.setCurrentIndex(2)
+                self.reset_process()
         else:
             self.signal_manager.process_signal.emit(unique_id, str(ProcessStatus.STOPPED.value), "")
 
-    def thread_function(self, url, column_titles, file_name, row, process_manager, signal_manager, interaction, html=None, stop=None, max_pages=None):
-        self.tabs.setCurrentIndex(2)
+
+    def thread_function(self, url, column_titles, file_name, row, process_manager, signal_manager, interaction, html=None, stop=None, max_pages=None, append=False):
+        pagination_xpath = process_manager.pagination_xpath if max_pages and max_pages > 1 else None
 
         scraper = SeleniumScraper()
-        scraper.before_scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), process_manager.pagination_xpath, file_name, signal_manager, row, html, stop, interaction, max_pages)
+        scraper.before_scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), pagination_xpath, file_name, signal_manager, row, html, stop, interaction, max_pages, append)
 
     def show_no_preview_results(self):
         QMessageBox.warning(self, self.tr("Warning"), self.tr("No preview results to show"), QMessageBox.Ok)
-
-    def save_file(self, dataframe, file_name):
-        dataframe.to_excel(file_name)
 
     def closeEvent(self, event):
         if self.thread and self.thread.is_alive():

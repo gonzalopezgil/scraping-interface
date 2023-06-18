@@ -77,7 +77,7 @@ class SeleniumScraper(Scraper):
     def close_webpage(self, obj):
         obj.quit()
 
-    def before_scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, stop, interaction, max_pages=None):
+    def before_scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, stop, interaction, max_pages=None, append=False):
         self.update_progress("1%", stop, signal_manager, row)
         if pagination_xpath:
             obj = self.get_webpage(url)
@@ -170,9 +170,9 @@ class SeleniumScraper(Scraper):
         if pagination_xpath:
             self.close_webpage(obj)
 
-        self.after_scrape(results, labels, selected_text, file_name, row, signal_manager, stop)
+        self.after_scrape(results, labels, selected_text, file_name, row, signal_manager, stop, append)
 
-    def after_scrape(self, results, labels, selected_text, file_name, row, signal_manager, stop):
+    def after_scrape(self, results, labels, selected_text, file_name, row, signal_manager, stop, append):
         self.update_progress("91%", stop, signal_manager, row)
         dict_results = self.merge_list_dicts(results)
         self.update_progress("92%", stop, signal_manager, row)
@@ -188,7 +188,7 @@ class SeleniumScraper(Scraper):
             self.update_progress("96%", stop, signal_manager, row)
 
             if df is not None and file_name is not None:
-                self.save_file(df, file_name)
+                self.save_file(df, file_name, append)
                 signal_manager.process_signal.emit(row, str(ProcessStatus.FINISHED.value), file_name)
         else:
             logger.error("Error: No elements found")

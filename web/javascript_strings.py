@@ -394,3 +394,29 @@ LOGIN_DETECTION_JS = """
         });
     })();
 """
+
+# define xpath variable before calling this function
+CLICK_ELEMENT_JS = """
+    var iterator = document.evaluate(xpath, document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
+    var nextElement = iterator.iterateNext();
+
+    if(nextElement != null) {
+        nextElement.click();
+        console.log('Element clicked: ' + xpath);
+    } else {
+        console.log('No element found');
+    }
+"""
+
+GET_HEIGHT_JS = 'return document.body.scrollHeight'
+
+COMPARE_HEIGHTS_JS = """
+    if (typeof(old_height) === 'undefined') {
+        window.old_height = document.body.scrollHeight;
+    }
+    window.scrollTo(0, document.body.scrollHeight);
+    var new_height = document.body.scrollHeight;
+    var result = window.old_height != new_height;
+    window.old_height = new_height;
+    result;
+"""

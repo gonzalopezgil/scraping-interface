@@ -34,6 +34,7 @@ class Column:
         self.visual_index = visual_index
         self.first_text = None
         self.num_elements = None
+        self.title = None
 
     def get_xpath(self):
         return self.xpath
@@ -63,6 +64,13 @@ class ProcessManager:
     def __init__(self):
         self.columns = []
         self.pagination_xpath = None
+        self.file_name = None
+        self.append = False
+        self.unique_id = None
+        self.stop = None
+        self.interaction = None
+        self.url = None
+        self.max_pages = None
 
     def create_column(self, xpath):
         visual_index = len(self.columns) + 1
@@ -92,6 +100,14 @@ class ProcessManager:
         column = self.get_column(index)
         if column:
             column.first_text = text
+
+    def set_titles(self, titles):
+        if len(titles) == len(self.columns):
+            for i, title in enumerate(titles):
+                self.columns[i].title = title
+
+    def get_titles(self):
+        return [column.title for column in self.columns]
 
     def clear_columns(self):
         self.columns = []

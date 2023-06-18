@@ -10,6 +10,7 @@ import threading
 from utils.pyqt5_utils.custom_table_widget import CustomTableWidget
 from utils.manager.template_manager import save_template, get_column_data_from_template
 import static
+import random
 
 COLUMN_COUNT = 0
 PAGINATION_WIDGET_WIDTH_PERCENTAGE = 1/3
@@ -21,6 +22,7 @@ class BrowserTab(QWidget):
         self.process_manager = process_manager
         self.signal_manager = signal_manager
         self.settings = settings
+
         self.browser_tab_layout = QVBoxLayout(self)
         self.browser_tab_layout.addWidget(QWidget(self))
 
@@ -260,6 +262,8 @@ class BrowserTab(QWidget):
         self.pagination_xpath_input.setMinimumWidth(int(height_hint * 0.75))
         self.pagination_xpath_input.setMaximumHeight(int(height_hint * 0.75))
 
+        self.wait_data = False
+
         self.setStyleSheet(f"""
             BrowserTab {{
                 background-image: url({static.background_path});
@@ -325,6 +329,7 @@ class BrowserTab(QWidget):
             self.pagination_checkbox.setText(self.PAGINATION_OFF_TEXT)
             self.signal_manager.pagination_signal.emit(False)
             self.process_manager.pagination_xpath = None
+            self.process_manager.file_name = None
 
         else:
             self.pagination_widget.show()
@@ -430,6 +435,11 @@ class BrowserTab(QWidget):
                 if self.table_widget.rowCount() < j+1:
                     self.table_widget.setRowCount(j+1)
                 self.table_widget.setItem(j, i, QTableWidgetItem(item))
+        
+        if self.wait_data and self.table_widget.columnCount() == len(items.keys()):
+            self.wait_data = False
+            self.signal_manager.tab_signal.emit()
+        
     
     def preview_scrape(self, html):
         thread = threading.Thread(target=self.thread_preview_scrape, args=(self.browser.url().toString(), self.get_column_titles(), self.process_manager.get_all_xpaths(), html), daemon=True)
@@ -540,6 +550,47 @@ class BrowserTab(QWidget):
 
         # Set the xpaths in the xpath table
         self.set_xpaths(get_column_data_from_template(self.selected_template, "xpath"))
+
+    @pyqtSlot()
+    def infinite_scroll(self):
+        
+        def process_heights(result):
+            if result:
+                random_time = random.randint(1000, 3000)
+                QTimer.singleShot(random_time, handle_scroll_height)
+            else:
+                # emit the signal here, once the infinite scrolling has finished
+                self.signal_manager.browser_signal.emit()
+
+        def handle_scroll_height(result=None):
+            self.browser.page().runJavaScript(jss.COMPARE_HEIGHTS_JS, process_heights)
+
+        self.browser.page().runJavaScript(jss.GET_HEIGHT_JS, handle_scroll_height)
+
+    def set_process_manager(self, process_manager, scrape=True):
+        self.process_manager = process_manager
+        self.browser.page().process_manager = process_manager
+        self.browser.page().runJavaScript(jss.START_JS)
+        self.toggle_scrape_widget()
+
+        if process_manager and process_manager.pagination_xpath:
+            self.toggle_pagination()
+            self.pagination_xpath_input.setText(process_manager.pagination_xpath)
+            self.handle_pagination_changed()
+
+        self.set_column_titles(process_manager.get_titles())
+
+        # Set the first texts in the first row of the table widget
+        self.set_first_row_data(process_manager.get_all_first_texts())
+
+        # Set the xpaths in the xpath table
+        self.set_xpaths(process_manager.get_all_xpaths())
+
+        if scrape:
+            # Start the infinite scroll
+            self.infinite_scroll()
+        else:
+            self.wait_data = True
 
     def set_column_titles(self, column_titles):
         self.table_widget.setColumnCount(len(column_titles))
