@@ -662,7 +662,7 @@ class BrowserTab(QWidget):
         self.interaction_widget = QWidget(self)
         self.interaction_widget_layout = QHBoxLayout(self.interaction_widget)
 
-        self.cancel_button = QPushButton(self.tr("Cancel Process"), self.interaction_widget)
+        self.cancel_button = QPushButton(self.tr("Stop Process"), self.interaction_widget)
         self.interaction_widget_layout.addWidget(self.cancel_button)
 
         self.continue_button = QPushButton(self.tr("Continue Process"), self.interaction_widget)
