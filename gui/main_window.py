@@ -114,6 +114,10 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def switch_to_process_tab(self):
         self.tabs.setCurrentIndex(2)
+        table_view = self.processes_tab.table
+        last_row_index = table_view.model().rowCount() - 1
+        table_view.scrollToBottom()
+        table_view.selectRow(last_row_index)
         self.dialog.close()
 
     def enter_file_name(self, file_format):
@@ -360,6 +364,10 @@ class MainWindow(QMainWindow):
                 self.require_user_interaction(file_name, self.tr("No information found in the current page. Please interact with the browser until you see the data to continue the process."))
             else:
                 self.tabs.setCurrentIndex(2)
+                table_view = self.processes_tab.table
+                last_row_index = table_view.model().rowCount() - 1
+                table_view.scrollToBottom()
+                table_view.selectRow(last_row_index)
                 self.reset_process()
         else:
             self.signal_manager.process_signal.emit(unique_id, str(ProcessStatus.STOPPED.value), "")
