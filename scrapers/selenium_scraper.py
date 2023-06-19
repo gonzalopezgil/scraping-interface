@@ -93,11 +93,10 @@ class SeleniumScraper(Scraper):
         xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
 
         pages = 0
-        max_pages = max_pages if max_pages else 100
         next_page = True
         results = []
         actual_percentage = 10
-        increment = 10/max_pages
+        increment = 10/max_pages if max_pages and max_pages != float('inf') else 0.5
 
         # Clean the pagination xpath in case it has blank lines
         pagination_xpaths = []

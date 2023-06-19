@@ -320,6 +320,8 @@ class MainWindow(QMainWindow):
         append = self.browser_tab.pagination_widget.isVisible() and not self.browser_tab.automated_checkbox.isChecked()
         
         max_pages = self.browser_tab.max_pages_input.value()
+        if max_pages == 0:
+            max_pages = float('inf')
         if "\n" in self.process_manager.pagination_xpath:
             pagination_xpaths = self.process_manager.pagination_xpath.split("\n")
             pagination_xpaths = [xpath for xpath in pagination_xpaths if xpath.strip()]
@@ -357,8 +359,8 @@ class MainWindow(QMainWindow):
                     max_pages = 1 # only download the current page
                 else:    
                     max_pages = self.browser_tab.max_pages_input.value()
-                    if not max_pages or max_pages == 0:
-                        max_pages = None
+                    if max_pages == 0:
+                        max_pages = float('inf')
                 self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, unique_id, process_manager, self.signal_manager, interaction, html, stop, max_pages, append), daemon=True)
             else:
                 if self.browser_tab.pagination_widget.isVisible():
@@ -381,6 +383,11 @@ class MainWindow(QMainWindow):
 
     def thread_function(self, url, column_titles, file_name, row, process_manager, signal_manager, interaction, html=None, stop=None, max_pages=None, append=False):
         pagination_xpath = process_manager.pagination_xpath if max_pages and max_pages > 1 else None
+        if "\n" in self.process_manager.pagination_xpath:
+            pagination_xpaths = self.process_manager.pagination_xpath.split("\n")
+            pagination_xpaths = [xpath for xpath in pagination_xpaths if xpath.strip()]
+            if len(pagination_xpaths) > 0:
+                max_pages = len(pagination_xpaths) + 1
 
         scraper = SeleniumScraper()
         scraper.before_scrape(url, column_titles, process_manager.get_all_first_texts(), process_manager.get_all_xpaths(), pagination_xpath, file_name, signal_manager, row, html, stop, interaction, max_pages, append)

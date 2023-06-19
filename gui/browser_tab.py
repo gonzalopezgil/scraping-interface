@@ -68,8 +68,9 @@ class BrowserTab(QWidget):
         self.max_pages_label = QLabel(self.tr("Maximum pages to scrape:"))
         self.second_row_layout.addWidget(self.max_pages_label)
         self.max_pages_input = QSpinBox(self)
-        self.max_pages_input.setMinimum(1)
+        self.max_pages_input.setMinimum(0)
         self.max_pages_input.setMaximum(1000000)
+        self.max_pages_input.setSpecialValueText(self.tr("Unlimited"))
         self.second_row_layout.addWidget(self.max_pages_input)
 
         # Add stretch to push the remaining widgets to the right
