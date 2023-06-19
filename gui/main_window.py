@@ -83,7 +83,6 @@ class MainWindow(QMainWindow):
         self.current_page = 0
         self.row_count = 0
         self.actual_process_manager = None
-        self.current_url = None
 
         self.browser_tab.continue_button.clicked.connect(self.continue_process)
         self.browser_tab.cancel_button.clicked.connect(self.show_modal_dialog_to_cancel)
@@ -180,8 +179,6 @@ class MainWindow(QMainWindow):
             return None
         
     def change_page(self):
-        self.current_url = self.browser_tab.browser.url().toString()
-
         process_manager = self.actual_process_manager
         process_manager.interaction = self.interaction
         process_manager.stop = self.stop
@@ -215,9 +212,11 @@ class MainWindow(QMainWindow):
         process_manager = self.process_manager
         self.current_page += 1
         if self.current_page < process_manager.max_pages and process_manager.pagination_xpath and process_manager.pagination_xpath != 'fake':
-            self.current_url = None
-            QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager))
-            self.process_manager = process_manager
+            if result:
+                QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager))
+                self.process_manager = process_manager
+            else:
+                self.require_user_interaction(process_manager.file_name, self.tr("No pagination button found. Please click on the next page button to continue the process or cancel to stop it."))
         else:
             self.current_page = 0
             self.row_count = 0

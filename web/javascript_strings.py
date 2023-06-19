@@ -406,8 +406,10 @@ CLICK_ELEMENT_JS = """
     if(nextElement != null) {
         nextElement.click();
         console.log('Element clicked: ' + xpath);
+        true;
     } else {
         console.log('No element found');
+        false;
     }
 """
 
