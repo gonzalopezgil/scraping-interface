@@ -178,13 +178,13 @@ class MainWindow(QMainWindow):
     def change_page(self):
         self.current_url = self.browser_tab.browser.url().toString()
 
-        self.browser_tab.process_manager.set_titles(self.browser_tab.get_column_titles())
-
-        self.interaction = self.process_manager.interaction
-        self.stop = self.process_manager.stop
-        self.process_manager.interaction = None
-        self.process_manager.stop = None
-        process_manager = copy.deepcopy(self.browser_tab.process_manager)
+        process_manager = self.actual_process_manager
+        process_manager.interaction = self.interaction
+        process_manager.stop = self.stop
+        self.interaction = None
+        self.stop = None
+        
+        process_manager.set_titles(self.browser_tab.get_column_titles())
                                            
         self.browser_tab.toggle_pagination()
         self.browser_tab.toggle_scrape_widget()
@@ -205,14 +205,10 @@ class MainWindow(QMainWindow):
             self.browser_tab.browser.page().runJavaScript(js_code)
             self.browser_tab.browser.page().loadFinished.connect(self.handle_next_page)
             # setup a timeout to check if page has changed
-            QTimer.singleShot(4000, self.check_page_change)
+            QTimer.singleShot(4000, self.handle_next_page)
         else:
             self.handle_next_page()
 
-    def check_page_change(self):
-        new_url = self.browser_tab.browser.url().toString()
-        if new_url == self.current_url:
-            self.handle_next_page()
 
     def handle_next_page(self, result=None):
         try:
@@ -245,16 +241,16 @@ class MainWindow(QMainWindow):
             QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager, scrape=False))
 
     def require_user_interaction(self, file_name, message):
+        self.interaction = self.process_manager.interaction
+        self.stop = self.process_manager.stop
+        self.process_manager.interaction = None
+        self.process_manager.stop = None
+        self.actual_process_manager = copy.deepcopy(self.process_manager)
+
         count = self.count_rows(file_name)
         if not count or count <= self.row_count:
             self.dialog.close()
             self.browser_tab.enable_elements_layout(self.browser_tab.navigation_bar_layout, False)
-
-            self.interaction = self.process_manager.interaction
-            self.stop = self.process_manager.stop
-            self.process_manager.interaction = None
-            self.process_manager.stop = None
-            self.actual_process_manager = copy.deepcopy(self.process_manager)
 
             self.browser_tab.pagination_widget.setVisible(True)
             self.browser_tab.scrape_widget.setVisible(True)
