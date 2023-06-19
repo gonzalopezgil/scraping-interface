@@ -322,7 +322,7 @@ class MainWindow(QMainWindow):
         max_pages = self.browser_tab.max_pages_input.value()
         if max_pages == 0:
             max_pages = float('inf')
-        if "\n" in self.process_manager.pagination_xpath:
+        if self.process_manager.pagination_xpath and "\n" in self.process_manager.pagination_xpath:
             pagination_xpaths = self.process_manager.pagination_xpath.split("\n")
             pagination_xpaths = [xpath for xpath in pagination_xpaths if xpath.strip()]
             if len(pagination_xpaths) > 0:
@@ -334,6 +334,7 @@ class MainWindow(QMainWindow):
         self.process_manager.interaction = interaction
         self.process_manager.url = url
         self.process_manager.max_pages = max_pages
+        self.process_manager.set_titles(column_titles)
 
         if append:
             self.notification_manager.disable_notifications()
@@ -347,7 +348,7 @@ class MainWindow(QMainWindow):
         file_name = self.process_manager.file_name
         append = self.process_manager.append
         url = self.browser_tab.browser.url().toString()
-        column_titles = self.browser_tab.get_column_titles()
+        column_titles = self.browser_tab.get_column_titles() if not append else self.process_manager.get_titles()
         unique_id = self.process_manager.unique_id
         process_manager = self.process_manager
         interaction = self.process_manager.interaction if self.process_manager.interaction else self.interaction
