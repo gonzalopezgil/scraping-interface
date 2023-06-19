@@ -569,10 +569,9 @@ class BrowserTab(QWidget):
 
     @pyqtSlot()
     def infinite_scroll(self):
-        
         def process_heights(result):
             if result:
-                random_time = random.randint(1000, 3000)
+                random_time = random.randint(100, 500)
                 QTimer.singleShot(random_time, handle_scroll_height)
             else:
                 # emit the signal here, once the infinite scrolling has finished

@@ -47,6 +47,9 @@ DISABLE_LINKS_JS = """
 """
 
 START_JS = """
+    window.old_height = undefined;
+    window.scroll_increment = undefined;
+
     var redElements = [];
     var greenElements = [];
 
@@ -412,10 +415,14 @@ GET_HEIGHT_JS = 'return document.body.scrollHeight'
 
 COMPARE_HEIGHTS_JS = """
     if (typeof(old_height) === 'undefined') {
-        window.old_height = document.body.scrollHeight;
+        console.log('old_height is undefined')
+        window.old_height = 0;
     }
-    window.scrollTo(0, document.body.scrollHeight);
-    var new_height = document.body.scrollHeight;
+    if (typeof(scroll_increment) === 'undefined') {
+        window.scroll_increment = Math.floor(Math.random() * (1000 - 750)) + 750;  // Scroll increment will be a random number between 750 and 1000
+    }
+    window.scrollTo(0, window.old_height + window.scroll_increment);
+    var new_height = window.pageYOffset;
     var result = window.old_height != new_height;
     window.old_height = new_height;
     result;
