@@ -276,6 +276,10 @@ class MainWindow(QMainWindow):
         self.browser_tab.interaction_widget.hide()
         self.process_manager = self.actual_process_manager
         self.actual_process_manager = None
+        self.process_manager.stop = self.stop
+        self.process_manager.interaction = self.interaction
+        self.stop = None
+        self.interaction = None
         self.browser_tab.browser.page().toHtml(lambda html: self.start_thread(html))
 
     def cancel_process(self):
@@ -283,8 +287,19 @@ class MainWindow(QMainWindow):
         self.browser_tab.interaction_widget.hide()
         process_manager = self.actual_process_manager
         self.actual_process_manager = None
+        process_manager.stop = self.stop
+        process_manager.interaction = self.interaction
+        self.stop = None
+        self.interaction = None
         self.browser_tab.browser.load(QUrl(process_manager.url))
         self.process_manager = process_manager
+
+        count = self.count_rows(process_manager.file_name)
+        if count and count > 0:
+            self.signal_manager.process_signal.emit(process_manager.unique_id, str(ProcessStatus.FINISHED.value), process_manager.file_name)
+        else:
+            self.signal_manager.process_signal.emit(process_manager.unique_id, str(ProcessStatus.STOPPED.value), "")
+
         self.reset_process()
         self.browser_tab.enable_elements_layout(self.browser_tab.navigation_bar_layout, True)
         self.notification_manager.enable_notifications()
@@ -304,7 +319,6 @@ class MainWindow(QMainWindow):
         self.process_manager.append = False
         self.process_manager.unique_id = None
         self.process_manager.max_pages = None
-        self.process_manager.pagination_xpaths = None
 
     def scrape(self, html, file_format):
         url = self.browser_tab.browser.url().toString()
