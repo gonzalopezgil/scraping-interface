@@ -4,124 +4,129 @@
 <context>
     <name>BrowserTab</name>
     <message>
-        <location filename="../gui/browser_tab.py" line="56"/>
+        <location filename="../gui/browser_tab.py" line="59"/>
         <source>Click on the pagination buttons or enter the XPaths, one per line</source>
         <translation>Haga click en los botones de paginación o ingrese los XPath, uno por línea</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="65"/>
+        <location filename="../gui/browser_tab.py" line="68"/>
         <source>Maximum pages to scrape:</source>
         <translation>Máximo de páginas a extraer:</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="152"/>
+        <location filename="../gui/browser_tab.py" line="156"/>
         <source>Pagination</source>
         <translation>Paginación</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="158"/>
+        <location filename="../gui/browser_tab.py" line="162"/>
         <source>Save Template</source>
         <translation>Guardar Plantilla</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="165"/>
+        <location filename="../gui/browser_tab.py" line="169"/>
         <source>Download Data</source>
         <translation>Descargar Datos</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="172"/>
+        <location filename="../gui/browser_tab.py" line="176"/>
         <source>Download Excel</source>
         <translation>Descargar Excel</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="173"/>
+        <location filename="../gui/browser_tab.py" line="177"/>
         <source>Download CSV</source>
         <translation>Descargar CSV</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="174"/>
+        <location filename="../gui/browser_tab.py" line="178"/>
         <source>Download JSON</source>
         <translation>Descargar JSON</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="175"/>
+        <location filename="../gui/browser_tab.py" line="179"/>
         <source>Download XML</source>
         <translation>Descargar XML</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="231"/>
+        <location filename="../gui/browser_tab.py" line="235"/>
         <source>Scrape</source>
         <translation>Extraer</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="361"/>
+        <location filename="../gui/browser_tab.py" line="365"/>
         <source>Template saved successfully</source>
         <translation>Plantilla guardada correctamente</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="363"/>
+        <location filename="../gui/browser_tab.py" line="367"/>
         <source>Error saving template</source>
         <translation>Error al guardar la plantilla</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="367"/>
+        <location filename="../gui/browser_tab.py" line="371"/>
         <source>Information</source>
         <translation>Información</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="433"/>
+        <location filename="../gui/browser_tab.py" line="437"/>
         <source>Edit Column Header</source>
         <translation>Editar título de la columna</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="433"/>
+        <location filename="../gui/browser_tab.py" line="437"/>
         <source>Enter new column header text:</source>
         <translation>Ingrese el nuevo título de la columna:</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="524"/>
+        <location filename="../gui/browser_tab.py" line="533"/>
         <source>Remove Column</source>
         <translation>Eliminar Columna</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="30"/>
+        <location filename="../gui/browser_tab.py" line="33"/>
         <source>Search or enter a URL</source>
         <translation>Buscar o introducir URL</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="31"/>
+        <location filename="../gui/browser_tab.py" line="34"/>
         <source>Click to select the pagination button...</source>
         <translation>Click para seleccionar el botón de paginación...</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="32"/>
+        <location filename="../gui/browser_tab.py" line="35"/>
         <source>Click to stop selecting the pagination button...</source>
         <translation>Click para dejar de seleccionar el botón de paginación...</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="75"/>
+        <location filename="../gui/browser_tab.py" line="79"/>
         <source>Automated</source>
         <translation>Automático</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="644"/>
+        <location filename="../gui/browser_tab.py" line="652"/>
         <source>Help</source>
         <translation>Ayuda</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="644"/>
+        <location filename="../gui/browser_tab.py" line="652"/>
         <source>If you encounter any issues that prevent the successful completion of scraping during the automatic pagination process (IP blocks, failure to find the pagination button, etc.), but you do have access to the required website from this browser, disable this option and try again. Note that the interface will be blocked until the process is completed.</source>
         <translation>En caso de encontrar problemas que impidan terminar el scraping correctamente durante el proceso de paginación automática (bloqueos de IPs, fallo al encontrar botón de paginación, etc), pero sí tienes acceso acceso a la web requerida desde este navegador, desactiva esta opción e inténtalo de nuevo. Ten en cuenta que la interfaz se bloqueará hasta que el proceso se haya completado.</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="657"/>
-        <source>Cancel Process</source>
-        <translation>Cancelar Proceso</translation>
-    </message>
-    <message>
-        <location filename="../gui/browser_tab.py" line="660"/>
+        <location filename="../gui/browser_tab.py" line="668"/>
         <source>Continue Process</source>
         <translation>Continuar Proceso</translation>
+    </message>
+    <message>
+        <location filename="../gui/browser_tab.py" line="73"/>
+        <source>Unlimited</source>
+        <translation>Ilimitado</translation>
+    </message>
+    <message>
+        <location filename="../gui/browser_tab.py" line="665"/>
+        <source>Stop Process</source>
+        <translation>Detener Proceso</translation>
     </message>
 </context>
 <context>
@@ -155,54 +160,59 @@
         <translation>Configuración</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="124"/>
+        <location filename="../gui/main_window.py" line="130"/>
         <source>Save File</source>
         <translation>Guardar archivo</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="350"/>
+        <location filename="../gui/main_window.py" line="402"/>
         <source>Warning</source>
         <translation>Aviso</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="345"/>
+        <location filename="../gui/main_window.py" line="397"/>
         <source>No preview results to show</source>
         <translation>No existen resultados de vista previa para mostrar</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="350"/>
+        <location filename="../gui/main_window.py" line="402"/>
         <source>The thread is still running. Do you want to force it to stop?</source>
         <translation>Existe al menos un hilo en ejecución. ¿Desea forzarlo a detenerse?</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="210"/>
+        <location filename="../gui/main_window.py" line="229"/>
         <source>Process finished</source>
         <translation>Proceso finalizado</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="210"/>
+        <location filename="../gui/main_window.py" line="229"/>
         <source>A process has finished successfully</source>
         <translation>Un proceso ha terminado con éxito</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="233"/>
+        <location filename="../gui/main_window.py" line="252"/>
         <source>Interaction required</source>
         <translation>Interacción requerida</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="233"/>
+        <location filename="../gui/main_window.py" line="252"/>
         <source>Please interact with the browser to continue the process</source>
         <translation>Por favor, interactúa con el navegador para continuar un proceso</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="235"/>
+        <location filename="../gui/main_window.py" line="254"/>
         <source>Attention</source>
         <translation>Atención</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="235"/>
+        <location filename="../gui/main_window.py" line="373"/>
         <source>No information found in the current page. Please interact with the browser until you see the data to continue the process.</source>
         <translation>No se encontró información en la página actual. Por favor, interactúa con el navegador hasta que veas los datos para continuar el proceso.</translation>
+    </message>
+    <message>
+        <location filename="../gui/main_window.py" line="219"/>
+        <source>No pagination button found. Please click on the next page button to continue the process or cancel to stop it.</source>
+        <translation>No se encontró el botón de paginación. Por favor, navegue manualmente hasta la próxima página para continuar el proceso o deténgalo si ha llegado al final.</translation>
     </message>
 </context>
 <context>
