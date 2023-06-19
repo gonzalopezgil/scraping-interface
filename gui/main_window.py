@@ -309,6 +309,14 @@ class MainWindow(QMainWindow):
     def scrape(self, html, file_format):
         url = self.browser_tab.browser.url().toString()
         column_titles = self.browser_tab.get_column_titles()
+
+        file_name = None
+        if not self.process_manager.file_name:
+            file_name = self.enter_file_name(file_format)
+            if not file_name:
+                return
+            self.process_manager.file_name = file_name
+
         unique_id, stop, interaction = self.processes_tab.add_row(url, "", column_titles)
         append = self.browser_tab.pagination_widget.isVisible() and not self.browser_tab.automated_checkbox.isChecked()
         max_pages = self.browser_tab.max_pages_input.value()
@@ -319,13 +327,6 @@ class MainWindow(QMainWindow):
         self.process_manager.interaction = interaction
         self.process_manager.url = url
         self.process_manager.max_pages = max_pages
-
-        file_name = None
-        if not self.process_manager.file_name:
-            file_name = self.enter_file_name(file_format)
-            if not file_name:
-                return
-            self.process_manager.file_name = file_name
 
         if append:
             self.notification_manager.disable_notifications()
