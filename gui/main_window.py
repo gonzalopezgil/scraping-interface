@@ -202,32 +202,18 @@ class MainWindow(QMainWindow):
 
         self.process_manager = process_manager
         if process_manager.pagination_xpath and process_manager.pagination_xpath != 'fake':
-            self.browser_tab.browser.page().runJavaScript(js_code)
-            self.browser_tab.browser.page().loadFinished.connect(self.handle_next_page)
-            # setup a timeout to check if page has changed
-            QTimer.singleShot(4000, self.handle_next_page)
+            self.browser_tab.browser.page().runJavaScript(js_code, self.handle_next_page)
         else:
             self.handle_next_page()
 
 
     def handle_next_page(self, result=None):
-        try:
-            self.browser_tab.browser.page().loadFinished.disconnect(self.handle_next_page)
-        except TypeError:
-            # if the function was called manually, the signal would not be connected, then just pass
-            pass
         process_manager = self.process_manager
         self.current_page += 1
         if self.current_page < process_manager.max_pages and process_manager.pagination_xpath and process_manager.pagination_xpath != 'fake':
-            new_url = self.browser_tab.browser.url().toString()
-            if new_url == self.current_url:
-                self.current_url = None
-                self.process_manager = process_manager
-                self.require_user_interaction(process_manager.file_name, self.tr("No pagination button found. Please click on the next page button to continue the process or cancel to stop it."))
-            else:
-                self.current_url = None
-                QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager))
-                self.process_manager = process_manager
+            self.current_url = None
+            QTimer.singleShot(4000, lambda: self.browser_tab.set_process_manager(process_manager))
+            self.process_manager = process_manager
         else:
             self.current_page = 0
             self.row_count = 0
