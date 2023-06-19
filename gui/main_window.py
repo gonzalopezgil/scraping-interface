@@ -318,7 +318,13 @@ class MainWindow(QMainWindow):
 
         unique_id, stop, interaction = self.processes_tab.add_row(url, "", column_titles)
         append = self.browser_tab.pagination_widget.isVisible() and not self.browser_tab.automated_checkbox.isChecked()
+        
         max_pages = self.browser_tab.max_pages_input.value()
+        if "\n" in self.process_manager.pagination_xpath:
+            pagination_xpaths = self.process_manager.pagination_xpath.split("\n")
+            pagination_xpaths = [xpath for xpath in pagination_xpaths if xpath.strip()]
+            if len(pagination_xpaths) > 0:
+                max_pages = len(pagination_xpaths) + 1
 
         self.process_manager.append = append
         self.process_manager.unique_id = unique_id
