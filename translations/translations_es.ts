@@ -99,11 +99,6 @@
         <translation>Click para dejar de seleccionar el botón de paginación...</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="79"/>
-        <source>Automated</source>
-        <translation>Automático</translation>
-    </message>
-    <message>
         <location filename="../gui/browser_tab.py" line="652"/>
         <source>Help</source>
         <translation>Ayuda</translation>
@@ -127,6 +122,11 @@
         <location filename="../gui/browser_tab.py" line="665"/>
         <source>Stop Process</source>
         <translation>Detener Proceso</translation>
+    </message>
+    <message>
+        <location filename="../gui/browser_tab.py" line="79"/>
+        <source>Run in the background</source>
+        <translation>Ejecutar en segundo plano</translation>
     </message>
 </context>
 <context>
@@ -165,17 +165,17 @@
         <translation>Guardar archivo</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="402"/>
+        <location filename="../gui/main_window.py" line="408"/>
         <source>Warning</source>
         <translation>Aviso</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="397"/>
+        <location filename="../gui/main_window.py" line="403"/>
         <source>No preview results to show</source>
         <translation>No existen resultados de vista previa para mostrar</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="402"/>
+        <location filename="../gui/main_window.py" line="408"/>
         <source>The thread is still running. Do you want to force it to stop?</source>
         <translation>Existe al menos un hilo en ejecución. ¿Desea forzarlo a detenerse?</translation>
     </message>
@@ -205,7 +205,7 @@
         <translation>Atención</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="373"/>
+        <location filename="../gui/main_window.py" line="376"/>
         <source>No information found in the current page. Please interact with the browser until you see the data to continue the process.</source>
         <translation>No se encontró información en la página actual. Por favor, interactúa con el navegador hasta que veas los datos para continuar el proceso.</translation>
     </message>
