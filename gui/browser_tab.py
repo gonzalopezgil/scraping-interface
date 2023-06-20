@@ -76,7 +76,7 @@ class BrowserTab(QWidget):
         # Add stretch to push the remaining widgets to the right
         self.second_row_layout.addStretch()
 
-        self.automated_checkbox = QCheckBox(self.tr("Automated"), self)
+        self.automated_checkbox = QCheckBox(self.tr("Run in the background"), self)
         self.automated_checkbox.setChecked(True)  # set default as automated
         self.second_row_layout.addWidget(self.automated_checkbox)
 
