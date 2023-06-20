@@ -368,6 +368,8 @@ class MainWindow(QMainWindow):
                     self.process_manager.pagination_xpath = 'fake'
                 self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, unique_id, process_manager, self.signal_manager, interaction, html, stop, 1, append), daemon=True)
             self.thread.start()
+            if self.process_manager.pagination_xpath and self.process_manager.pagination_xpath == 'fake':
+                self.process_manager.pagination_xpath = None
             if append:
                 self.thread.join()
                 self.require_user_interaction(file_name, self.tr("No information found in the current page. Please interact with the browser until you see the data to continue the process."))
