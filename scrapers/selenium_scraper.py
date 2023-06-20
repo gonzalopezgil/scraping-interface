@@ -77,7 +77,7 @@ class SeleniumScraper(Scraper):
     def close_webpage(self, obj):
         obj.quit()
 
-    def before_scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, stop, interaction, max_pages=None, append=False):
+    def before_scrape(self, url, labels, selected_text, xpaths, pagination_xpath, file_name, signal_manager, row, html, stop, interaction, max_pages=1, append=False):
         self.update_progress("1%", stop, signal_manager, row)
         if pagination_xpath:
             obj = self.get_webpage(url)

@@ -364,7 +364,7 @@ class MainWindow(QMainWindow):
                         max_pages = float('inf')
                 self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, unique_id, process_manager, self.signal_manager, interaction, html, stop, max_pages, append), daemon=True)
             else:
-                if self.browser_tab.pagination_widget.isVisible():
+                if self.browser_tab.pagination_widget.isVisible() and self.browser_tab.automated_checkbox.isChecked():
                     self.process_manager.pagination_xpath = 'fake'
                 self.thread = threading.Thread(target=self.thread_function, args=(url, column_titles, file_name, unique_id, process_manager, self.signal_manager, interaction, html, stop, 1, append), daemon=True)
             self.thread.start()
@@ -383,8 +383,11 @@ class MainWindow(QMainWindow):
 
 
     def thread_function(self, url, column_titles, file_name, row, process_manager, signal_manager, interaction, html=None, stop=None, max_pages=None, append=False):
-        pagination_xpath = process_manager.pagination_xpath if max_pages and max_pages > 1 else None
-        if "\n" in self.process_manager.pagination_xpath:
+        if process_manager.pagination_xpath and process_manager.pagination_xpath == 'fake':
+            pagination_xpath = 'fake'
+        else:
+            pagination_xpath = process_manager.pagination_xpath if process_manager.pagination_xpath and max_pages and max_pages > 1 else None
+        if self.process_manager.pagination_xpath and "\n" in self.process_manager.pagination_xpath:
             pagination_xpaths = self.process_manager.pagination_xpath.split("\n")
             pagination_xpaths = [xpath for xpath in pagination_xpaths if xpath.strip()]
             if len(pagination_xpaths) > 0:
