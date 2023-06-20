@@ -26,7 +26,7 @@ class TestScraper(unittest.TestCase):
         import pandas as pd
         dataframe = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
         filename = 'test_file.csv'
-        self.scraper.save_file(dataframe, filename)
+        self.scraper.save_file(dataframe, filename, False)
         self.assertTrue(os.path.exists(filename))
         os.remove(filename)  # cleanup after the test
 

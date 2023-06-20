@@ -22,7 +22,7 @@ xpaths = [
 ]
 selected_text = ['Mark', 'Otto', '@mdo']
 pagination_xpath = None
-max_pages = None
+max_pages = 1
 expected_count = 6
 test_type = 'Static page'
 
