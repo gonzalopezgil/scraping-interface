@@ -269,6 +269,7 @@ class MainWindow(QMainWindow):
 
     def cancel_process(self):
         self.row_count = 0
+        self.current_page = 0
         self.browser_tab.interaction_widget.hide()
         process_manager = self.actual_process_manager
         self.actual_process_manager = None
