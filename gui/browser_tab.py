@@ -546,7 +546,7 @@ class BrowserTab(QWidget):
         xpath1 = self.table_xpath.item(0, col1).text()
         xpath2 = self.table_xpath.item(0, col2).text()
         # Combine the xpaths
-        new_xpath = self.join_xpaths(xpath1, xpath2)
+        new_xpath = self.simplify_xpaths(xpath1, xpath2)
         # Determine the column to keep and the one to remove
         column_to_keep, column_to_remove = sorted([col1, col2])
         # Update the xpath in the kept column
@@ -555,9 +555,34 @@ class BrowserTab(QWidget):
         self.remove_column(column_to_remove)
         # Handle cell changed
         self.handle_cell_changed(0, column_to_keep)
+    
+    def simplify_xpaths(self, xpath1, xpath2):
+        components1 = xpath1.split('//')
+        components2 = xpath2.split('//')
 
-    def join_xpaths(self, xpath1, xpath2):
-        return xpath1 + ' | ' + xpath2
+        # Check if both paths have the same length
+        if len(components1) != len(components2):
+            return xpath1 + ' | ' + xpath2
+
+        simplified_components = []
+
+        for comp1, comp2 in zip(components1, components2):
+            # Check if the components are exactly the same
+            if comp1 == comp2:
+                simplified_components.append(comp1)
+            else:
+                # If they're not, compare the base tags without attributes
+                base_tag1 = comp1.split('[')[0]
+                base_tag2 = comp2.split('[')[0]
+
+                if base_tag1 == base_tag2:
+                    simplified_components.append(base_tag1)
+                else:
+                    # If base tags are also different, return original XPaths
+                    return xpath1 + ' | ' + xpath2
+
+        simplified_xpath = '//'.join(simplified_components)
+        return simplified_xpath
 
     def create_table_context_menu(self, pos, table):
         # Get the index of the cell at the position pos
