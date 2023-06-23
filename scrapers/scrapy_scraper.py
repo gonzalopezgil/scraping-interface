@@ -39,11 +39,30 @@ class ScrapyScraper(Scraper, Spider):
 
     def parse(self, response):
         obj = Selector(text=self.html)
+
+        full_xpaths = {}
+        for xpath in self.xpaths:
+            if ' | ' in xpath:
+                full_xpaths[xpath] = xpath.split(' | ')
+            else:
+                full_xpaths[xpath] = [xpath]
+
+        full_xpaths_list = [xpath for xpath_list in full_xpaths.values() for xpath in xpath_list]
         
-        general_xpaths = [self.generalise_xpath(xpath) for xpath in self.xpaths]
+        general_xpaths = [self.generalise_xpath(xpath) for xpath in full_xpaths_list]
         prefix = self.get_common_xpath(general_xpaths)
         elements = self.get_elements(prefix, obj)
-        xpath_suffixes = self.get_suffixes(prefix, general_xpaths)
+        
+        # Generate the suffixes
+        suffixes = self.get_suffixes(prefix, general_xpaths)
+        
+        # Associate original XPath with suffixes
+        original_xpath_to_suffixes = {}
+        for original, split_xpaths in full_xpaths.items():
+            original_xpath_to_suffixes[original] = [suffixes[full_xpaths_list.index(split_xpath)] for split_xpath in split_xpaths]
+        
+        # Reconstruct the xpaths with suffixes
+        xpath_suffixes = [" | .".join(suffixes) for suffixes in original_xpath_to_suffixes.values()]
 
         if elements is None or len(elements) == 0:
             logger.error("Error: No elements found")

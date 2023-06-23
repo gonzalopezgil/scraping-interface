@@ -390,8 +390,8 @@ class MainWindow(QMainWindow):
             pagination_xpath = 'fake'
         else:
             pagination_xpath = process_manager.pagination_xpath if process_manager.pagination_xpath and max_pages and max_pages > 1 else None
-        if self.process_manager.pagination_xpath and "\n" in self.process_manager.pagination_xpath:
-            pagination_xpaths = self.process_manager.pagination_xpath.split("\n")
+        if process_manager.pagination_xpath and "\n" in process_manager.pagination_xpath:
+            pagination_xpaths = process_manager.pagination_xpath.split("\n")
             pagination_xpaths = [xpath for xpath in pagination_xpaths if xpath.strip()]
             if len(pagination_xpaths) > 0:
                 max_pages = len(pagination_xpaths) + 1

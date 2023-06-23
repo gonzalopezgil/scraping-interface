@@ -452,15 +452,18 @@ class BrowserTab(QWidget):
             self.signal_manager.tab_signal.emit()
     
     def preview_scrape(self, html):
-        thread = threading.Thread(target=self.thread_preview_scrape, args=(self.browser.url().toString(), self.get_column_titles(), self.process_manager.get_all_xpaths(), html), daemon=True)
+        thread = threading.Thread(target=self.thread_preview_scrape, args=(self.browser.url().toString(), self.get_column_titles(), self.process_manager.get_all_xpaths(), html, self.process_manager.get_all_first_texts()), daemon=True)
         thread.start()
 
-    def thread_preview_scrape(self, url, column_titles, xpaths, html):
+    def thread_preview_scrape(self, url, column_titles, xpaths, html, selected_texts):
         scraper = ScrapyScraper()
         try:
             items = scraper.scrape(url, column_titles, xpaths, html, max_items=5)
             actual_column_titles = self.get_column_titles()
             if items is not None and len(items) > 0 and column_titles == actual_column_titles:
+                for i, key in enumerate(items.keys()):
+                    if len(items[key]) == 0 or all(item == "" for item in items[key]):
+                        items[key] = [selected_texts[i]] + [""] * 4
                 self.signal_manager.table_items_signal.emit(items)
             elif self.wait_data:
                 self.signal_manager.table_items_signal.emit({})
@@ -518,9 +521,43 @@ class BrowserTab(QWidget):
     def create_horizontal_header_context_menu(self, pos):
         column = self.table_widget.horizontalHeader().logicalIndexAt(pos)
         menu = QMenu(self)
+        combine_action = menu.addAction(self.tr("Combine Column"))
         remove_action = menu.addAction(self.tr("Remove Column"))
+        combine_action.triggered.connect(lambda: self.combine_column(column))
         remove_action.triggered.connect(lambda: self.remove_column(column))
         menu.exec_(self.table_widget.mapToGlobal(pos))
+
+    def combine_column(self, original_column):
+        column_titles = self.get_column_titles()
+        if len(column_titles) <= 1:
+            QMessageBox.warning(self, self.tr('Warning'), self.tr('No more columns to combine.'))
+            return
+        
+        column_titles.pop(original_column)
+        column, ok = QInputDialog.getItem(self, self.tr("Combine Column"), self.tr("Choose column to combine:"), column_titles, 0, False)
+
+        if ok and column:
+            column_index = column_titles.index(column)
+            if column_index >= original_column:
+                column_index += 1
+            self._combine_columns(original_column, column_index)
+
+    def _combine_columns(self, col1, col2):
+        xpath1 = self.table_xpath.item(0, col1).text()
+        xpath2 = self.table_xpath.item(0, col2).text()
+        # Combine the xpaths
+        new_xpath = self.join_xpaths(xpath1, xpath2)
+        # Determine the column to keep and the one to remove
+        column_to_keep, column_to_remove = sorted([col1, col2])
+        # Update the xpath in the kept column
+        self.table_xpath.setItem(0, column_to_keep, QTableWidgetItem(new_xpath))
+        # Remove the other column
+        self.remove_column(column_to_remove)
+        # Handle cell changed
+        self.handle_cell_changed(0, column_to_keep)
+
+    def join_xpaths(self, xpath1, xpath2):
+        return xpath1 + ' | ' + xpath2
 
     def create_table_context_menu(self, pos, table):
         # Get the index of the cell at the position pos
@@ -530,8 +567,11 @@ class BrowserTab(QWidget):
         if index.isValid():
             column = index.column()
             menu = QMenu(self)
+            combine_action = QAction(self.tr("Combine Column"), self)
             remove_action = QAction(self.tr("Remove Column"), self)
+            combine_action.triggered.connect(lambda: self.combine_column(column))
             remove_action.triggered.connect(lambda: self.remove_column(column))
+            menu.addAction(combine_action)
             menu.addAction(remove_action)
             menu.exec_(table.viewport().mapToGlobal(pos))
 

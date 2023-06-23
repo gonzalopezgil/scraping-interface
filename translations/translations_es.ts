@@ -79,7 +79,7 @@
         <translation>Ingrese el nuevo título de la columna:</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="533"/>
+        <location filename="../gui/browser_tab.py" line="568"/>
         <source>Remove Column</source>
         <translation>Eliminar Columna</translation>
     </message>
@@ -99,17 +99,17 @@
         <translation>Click para dejar de seleccionar el botón de paginación...</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="652"/>
+        <location filename="../gui/browser_tab.py" line="689"/>
         <source>Help</source>
         <translation>Ayuda</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="652"/>
+        <location filename="../gui/browser_tab.py" line="689"/>
         <source>If you encounter any issues that prevent the successful completion of scraping during the automatic pagination process (IP blocks, failure to find the pagination button, etc.), but you do have access to the required website from this browser, disable this option and try again. Note that the interface will be blocked until the process is completed.</source>
         <translation>En caso de encontrar problemas que impidan terminar el scraping correctamente durante el proceso de paginación automática (bloqueos de IPs, fallo al encontrar botón de paginación, etc), pero sí tienes acceso acceso a la web requerida desde este navegador, desactiva esta opción e inténtalo de nuevo. Ten en cuenta que la interfaz se bloqueará hasta que el proceso se haya completado.</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="668"/>
+        <location filename="../gui/browser_tab.py" line="705"/>
         <source>Continue Process</source>
         <translation>Continuar Proceso</translation>
     </message>
@@ -119,7 +119,7 @@
         <translation>Ilimitado</translation>
     </message>
     <message>
-        <location filename="../gui/browser_tab.py" line="665"/>
+        <location filename="../gui/browser_tab.py" line="702"/>
         <source>Stop Process</source>
         <translation>Detener Proceso</translation>
     </message>
@@ -127,6 +127,26 @@
         <location filename="../gui/browser_tab.py" line="79"/>
         <source>Run in the background</source>
         <translation>Ejecutar en segundo plano</translation>
+    </message>
+    <message>
+        <location filename="../gui/browser_tab.py" line="567"/>
+        <source>Combine Column</source>
+        <translation>Combinar Columna</translation>
+    </message>
+    <message>
+        <location filename="../gui/browser_tab.py" line="530"/>
+        <source>Warning</source>
+        <translation>Aviso</translation>
+    </message>
+    <message>
+        <location filename="../gui/browser_tab.py" line="530"/>
+        <source>No more columns to combine.</source>
+        <translation>No existen más columnas con las que combinar.</translation>
+    </message>
+    <message>
+        <location filename="../gui/browser_tab.py" line="534"/>
+        <source>Choose column to combine:</source>
+        <translation>Elegir columna para combinar:</translation>
     </message>
 </context>
 <context>
