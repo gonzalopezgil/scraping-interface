@@ -65,7 +65,7 @@ class BrowserTab(QWidget):
         # along with a checkbox to set automation on or off and a help button in a horizontal layout
         self.second_row_layout = QHBoxLayout()
 
-        self.max_pages_label = QLabel(self.tr("Maximum pages to scrape:"))
+        self.max_pages_label = QLabel(self.tr("Pages to scrape:"))
         self.second_row_layout.addWidget(self.max_pages_label)
         self.max_pages_input = QSpinBox(self)
         self.max_pages_input.setMinimum(0)

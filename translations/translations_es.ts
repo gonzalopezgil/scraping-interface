@@ -10,8 +10,8 @@
     </message>
     <message>
         <location filename="../gui/browser_tab.py" line="68"/>
-        <source>Maximum pages to scrape:</source>
-        <translation>Máximo de páginas a extraer:</translation>
+        <source>Pages to scrape:</source>
+        <translation>Páginas a extraer:</translation>
     </message>
     <message>
         <location filename="../gui/browser_tab.py" line="156"/>
@@ -185,17 +185,17 @@
         <translation>Guardar archivo</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="408"/>
+        <location filename="../gui/main_window.py" line="409"/>
         <source>Warning</source>
         <translation>Aviso</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="403"/>
+        <location filename="../gui/main_window.py" line="404"/>
         <source>No preview results to show</source>
         <translation>No existen resultados de vista previa para mostrar</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="408"/>
+        <location filename="../gui/main_window.py" line="409"/>
         <source>The thread is still running. Do you want to force it to stop?</source>
         <translation>Existe al menos un hilo en ejecución. ¿Desea forzarlo a detenerse?</translation>
     </message>
@@ -225,7 +225,7 @@
         <translation>Atención</translation>
     </message>
     <message>
-        <location filename="../gui/main_window.py" line="376"/>
+        <location filename="../gui/main_window.py" line="377"/>
         <source>No information found in the current page. Please interact with the browser until you see the data to continue the process.</source>
         <translation>No se encontró información en la página actual. Por favor, interactúa con el navegador hasta que veas los datos para continuar el proceso.</translation>
     </message>
