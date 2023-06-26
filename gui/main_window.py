@@ -265,6 +265,7 @@ class MainWindow(QMainWindow):
         self.process_manager.interaction = self.interaction
         self.stop = None
         self.interaction = None
+        self.browser_tab.enable_elements_layout(self.browser_tab.navigation_bar_layout, True)
         self.browser_tab.browser.page().toHtml(lambda html: self.start_thread(html))
 
     def cancel_process(self):
