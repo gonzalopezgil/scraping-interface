@@ -41,19 +41,19 @@ python main.py
 ## 🛠️ Usage
 
 1. Launch the application, and you will be presented with a user-friendly interface with four tabs: Home, Browser, Processes and Settings.
-![Home](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/7a0e93e6-335c-4f8c-9aea-4eed7f896819)
+![Home](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/a174d806-680f-4aa9-a5cf-2a91984fcdf9)
 2. Use the browser tab to navigate, search and interact with sites.
-![Browser](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/7491e89c-048e-492d-a42e-703d147a2edc)
+![Browser](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/cfab8a85-3cb8-467f-9f71-fdbe8d6eebd1)
 3. When you're ready to extract data, navigate to the desired web page and click the "Scrape" button. The program will display the extracted data in a table for preview.
-![BrowserScraping](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/a0678460-5e65-4707-9339-2f03bf87d2df)
+![BrowserScraping](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/1f205cf4-2c01-433a-9ef3-2a1bd75ebb78)
 4. Customize your selection using generalized XPath expressions and modify the table as needed.
-![BrowserSelection](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/c3ebfd19-55b2-4dcb-b39d-663fa950bc48)
+![BrowserSelection](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/8a842879-984c-4a35-b535-9f5d98f4c6b9)
 5. Configure pagination settings, save templates for future use, and choose the desired data export format in the respective process.
-![BrowserPagination](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/40a63199-336b-49d1-8935-695dd87c3de2)
+![BrowserPagination](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/a7d0dbcd-05c0-4b09-968d-f1593ba40948)
 6. Monitor the scraping processes in the Processes tab, and manage them by stopping, interacting to solve manual actions or opening the output files.
-![Processes](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/fd19a58e-33fa-4ab4-bd0b-f5f0d0849927)
+![Processes](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/ea863539-c681-45fd-8af8-6b9dda205591)
 7. Adjust application settings, including browser preferences and language management in the Settings tab.
-![Settings](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/d32409d6-2b55-4f62-a6e6-80a79c38f448)
+![Settings](https://github.com/gonzalopezgil/scraping-interface/assets/74659017/01a705de-cc56-4d3c-9562-e2e1db54fd15)
 
 ## :octocat: Contributing
 
